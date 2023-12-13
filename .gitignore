@@ -1,0 +1,22 @@
+.Rproj.user
+.Rhistory
+.RData
+.DS_Store
+*/**/.DS_Store
+.Rprofile
+
+# Ignore raw data
+100_data_raw/*
+200_data_clean/*
+
+# Ignore secrets
+# DO NOT change this
+secrets/*
+
+/.quarto/
+
+# ignore renv files
+renv/
+
+# ignore freeze cache
+_freeze
