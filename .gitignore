@@ -4,6 +4,8 @@
 .DS_Store
 */**/.DS_Store
 .Rprofile
+# Jupyter Notebook
+.ipynb_checkpoints
 
 # Ignore raw data
 100_data_raw/*
