@@ -1,24 +1,12 @@
-# RAG model for writing use case study on research topic and author finding and searching scholar publications using LlamaIndex
+# RAG pipeline for writing use case study on research topic and author finding and searching scholar publications using LlamaIndex
 
-"""
-Publication search with SemanticScholar
-"""
 
 import os
 import json
 import logging
-from llama_index import (
-    SimpleDirectoryReader,
-    VectorStoreIndex,
-    ServiceContext,
-    get_response_synthesizer,
-    StorageContext, 
-    load_index_from_storage
-)
-from llama_index.llms import OpenAI
-from llama_index.query_engine import CitationQueryEngine, RetrieverQueryEngine
+from llama_index import get_response_synthesizer, load_index_from_storage
+from llama_index.query_engine import RetrieverQueryEngine
 from llama_index.retrievers import VectorIndexRetriever
-from llama_hub.semanticscholar import SemanticScholarReader
 from llama_index.postprocessor import SimilarityPostprocessor
 from llama_index.prompts import PromptTemplate
 from llama_index.llms import ChatMessage, MessageRole
@@ -26,172 +14,26 @@ from llama_index.chat_engine.condense_question import CondenseQuestionChatEngine
 from llama_index.chat_engine import CondensePlusContextChatEngine 
 from llama_index.memory import ChatMemoryBuffer
 
-path_index = '../index_store'
-path_openai_key = '../openai_sih_key.txt'
-path_prompts = './rag/templates'
-fname_system_prompt = 'Prompt_context.md'
-fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
-context_window = 4096
-num_output = 600
-model_llm = "gpt-4-1106-preview"
-temperature = 0.1
+from utils.pubprocess import publications_to_markdown, clean_publications
+from retriever.semanticscholar import read_semanticscholar
+from indexengine.process import (
+    create_index, 
+    add_docs_to_index, 
+    load_index, 
+    query_publication_index
+    )
+
+
+_fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
+_list_max_word =  [250, 300, 500, 300]
+_context_window = 4096
+_num_output = 600
+_scholar_limit = 20
+_model_llm = "gpt-4-1106-preview"
+_temperature = 0.1
+
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
-
-
-
-
-def add_docs_to_index(path_docs, index):
-    """
-    Add all data in path_docs to index.
-    Data can incl Markdown, PDFs, Word documents, PowerPoint decks, images, audio and video.
-    
-    :param path_docs: path to documents. 
-    :param index: index to add documents to
-
-    :return: index
-    """
-    docs = SimpleDirectoryReader(path_docs)
-    index.add_documents(docs)
-    return index
-
-def load_index(path_index):
-    """
-    Load index from storage path
-
-    :param path_index: path to index
-
-    :return: index
-
-    """
-    if os.path.exists(path_index) and len(os.listdir(path_index)) > 0:
-        # rebuild storage context
-        storage_context = StorageContext.from_defaults(persist_dir=path_index)
-        # load index
-        index = load_index_from_storage(storage_context)
-        return index
-    else:
-        logging.error("Index not found")
-        return None
-    
-
-def create_index(docstore, 
-                 outpath_index = None, 
-                 model_llm = "gpt-4-1106-preview",
-                 temperature = 0.1, 
-                 context_window = 4096, 
-                 num_output = 600):
-    """
-    Create index from docstore and store index in outpath_index
-
-    :param docstore: database with documents to index
-    :param outpath_index: path to store index, if None index is not stored
-    :param model_llm: str, model to use for index
-    :param temperature: float, temperature for LLM model
-    :param context_window: int, context window size in number of tokens
-    :param num_output: int, number of output tokens
-
-    :return: index
-    """
-    llm = OpenAI(
-        temperature=temperature,
-        model=model_llm,
-        max_tokens=num_output)
-
-    # Create service context
-    service_context = ServiceContext.from_defaults(
-        llm=llm,
-        context_window=context_window,
-        num_output=num_output,
-        )
-    # Create index
-    index = VectorStoreIndex.from_documents(docstore, service_context=service_context)
-    # store index
-    if outpath_index is not None:
-        os.makedirs(outpath_index, exist_ok=True)
-        index.storage_context.persist(persist_dir=outpath_index)
-    return index
-
-
-def read_semanticscholar(query_space, full_text = False):
-    """
-    Search and read scholar online documents using LlamaHub's Semantic Scholar
-    :param query_space: str, query space to search. This is the name of the area of research
-    :param fulltext: bool, if True, full text is returned
-
-    :return: documents
-    """
-    s2reader = SemanticScholarReader()
-    docstore = s2reader.load_data(query=query_space, limit=30, full_text=full_text)
-    # number of documents
-    logging.info(f"Number of SemanticScholar documents found: {len(docstore)}")
-    return docstore
-
-
-def query_publication_index(query, index, top_k = 5):
-    """
-    Query index for relevant publications to question.
-
-    :param query: str, question to publication index
-    :param index: publication index to query
-    :param top_k: int, number of top publications to return
-
-    :return: response
-    """
-    query_engine = CitationQueryEngine.from_args(
-        index,
-        similarity_top_k=top_k,
-        citation_chunk_size=512,
-    )
-    # query the index for relevant publications to question
-    response = query_engine.query(query)
-    print("Answer: ", response)
-    print("Source nodes: ")
-    for node in response.source_nodes:
-        print(node.node.metadata)
-    return response
-
-
-def publications_to_markdown(publications):
-    markdown_list = []
-
-    for pub_id, pub_details in publications.items():
-        title = pub_details.get('title', 'No Title')
-        authors = ', '.join(pub_details.get('authors', []))
-        venue = pub_details.get('venue', 'No Venue')
-        year = pub_details.get('year', 'No Year')
-        doi = pub_details.get('externalIds', {}).get('DOI', 'No DOI')
-        link = pub_details.get('openAccessPdf', '')
-
-        # Constructing the markdown string for each publication
-        markdown_entry = f"* {authors}. \"{title}.\" {venue} ({year}). "
-        markdown_entry += f"DOI: [{doi}](https://doi.org/{doi})" if doi != 'No DOI' else "DOI: No DOI"
-        markdown_entry += f". [Access Publication]({link})" if link else ""
-
-        markdown_list.append(markdown_entry)
-
-    return '\n\n'.join(markdown_list)
-
-def clean_publications(list_sources):
-    """
-    Flatten list of dictionaries of publication sources and remove duplicates
-
-    :param sources: list of dictionaries
-
-    :return: cleaned sources
-    """
-    flattened_dict = {k: v for d in list_sources for k, v in d.items()}
-
-    # Remove duplicates based on 'paperId'
-    unique_papers = {}
-    for key, value in flattened_dict.items():
-        paper_id = value['paperId']
-        if paper_id not in unique_papers:
-            unique_papers[paper_id] = value
-
-    # Convert back to list of dictionaries
-    #result = [{k: v} for k, v in unique_papers.items()]
-    return unique_papers
 
 
 class RAGscholar:
@@ -208,7 +50,7 @@ class RAGscholar:
     def __init__(self, 
                 path_templates, 
                 fname_system_prompt, 
-                fname_report_template, 
+                fname_report_template,
                 outpath, 
                 path_index, 
                 path_openai_key = None, 
@@ -388,8 +230,8 @@ class RAGscholar:
     def generate_case_study(self):
         
         with open(self.fname_report_template, "r") as file:
-            report_text = file.read()
-        report = json.dumps(report_text, indent=2)
+            report = file.read()
+        #report = json.dumps(report_text, indent=2)
         report = report.replace("ORG_NAME", self.organisation)
         report = report.replace("TITLE_NAME", self.research_topic)
         report = report.replace("RESEARCH_PERIOD", self.research_period)
@@ -439,12 +281,17 @@ class RAGscholar:
 
         # Search, retrieve and read documents from Semantic Scholar
         logging.info("Searching and reading documents from Semantic Scholar ...")
-        self.documents = read_semanticscholar(self.research_topic + ", " + self.author)
+        self.documents = read_semanticscholar(self.research_topic + ", " + self.author, limit = _scholar_limit)
 
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
         self.path_index = os.path.join(self.path_index, path_index_name)
-        self.index = create_index(self.documents, self.path_index)
+        self.index = create_index(self.documents, 
+                                  self.path_index, 
+                                  temperature=_temperature, 
+                                  context_window=_context_window, 
+                                  num_output=_num_output, 
+                                  model_llm=_model_llm)
 
         # Initialize chat engine with context prompt
         #self.generate_chatengine_condensecontext()
@@ -454,83 +301,9 @@ class RAGscholar:
         # Run through prompt questions
         logging.info("Processing questions ...")
         self.prompt_pipeline(
-            list_prompt_filenames = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md'],
-            list_max_word = [250, 300, 500, 300]
+            list_prompt_filenames = _fnames_question_prompt,
+            list_max_word = _list_max_word
         )
         logging.info("Generating case study ...")
         self.generate_case_study()
         logging.info("FINISHED.")
-
-
-
-    
-
-def test_RAGscholar():
-    rag = RAGscholar(path_index = '../index_store', 
-                     path_openai_key = '../openai_sih_key.txt', 
-                     load_index_from_storage = True)
-    
-    #query_space = "Emergency nursing care, Kate Curtis, University of Sydney"
-    #rag.generate_index(query_space)
-    query = "Find publication sources related to 'emergency nursing care' by Kate Curtis from the University of Sydney"
-    response_publications = rag.query_index_from_docs(query, top_k = 5)
-
-    query = """
-    Write about research impact for 'Improving the safety and quality of emergency nursing care' 
-    by Kate Curtis from the University of Sydney"
-    """
-    response_query = rag.query_llm_index(query, top_k = 5)
-
-
-def test_RAGscholar_run():
-    
-    rag = RAGscholar(path_templates = './agents/templates/',
-                    fname_system_prompt = 'Prompt_context.md',
-                    fname_report_template = 'Report.md',
-                    outpath = '../results/',
-                    path_index = '../index_store', 
-                    path_openai_key = '../openai_sih_key.txt')
-    query_author="Anthony Weiss"
-    query_topic="Elastin"
-    research_period = "2013-2021"
-    impact_period = "2013-2023"
-    organisation = "University of Sydney"
-    rag.run(query_topic, 
-            query_author,
-            research_period,
-            impact_period,
-            organisation)
-
-
-       """
-        prompt = "What is the problem this research seeks to address and why is it significant?? (Max 250 words)"
-        response = self.chat_engine.chat(prompt)
-
-        content_list = []
-        source_list = []
-        content = response.response
-        sources = response.sources[0].raw_output.metadata
-        content_list.append(content)
-        source_list.append(sources) 
-        # check word count of content
-        word_count = len(content.split())
-        word_max =250
-        if word_count > word_max:
-            logging.info("Word count exceeds maximum word count. Content is run again though the model.")
-            response = self.chat_engine.chat(f"Shorten the last response by {word_count - word_max} words.")
-        prompt = "What are the research outputs of this study?​? (Max 300 words)"
-        response = self.chat_engine.chat(prompt)
-        content = response.response
-        sources = response.sources[0].raw_output.metadata
-        content_list.append(content)
-        source_list.append(sources) 
-        prompt =  "What impacts has this research delivered to date? (Max 500 words)"
-        response = self.chat_engine.chat(prompt)
-        content = response.response
-        sources = response.sources[0].raw_output.metadata
-        prompt = "What impact from your research is expected in the future? (Max 300 words)"
-        response = self.chat_engine.chat(prompt)
-        content = response.response
-        sources = response.sources[0].raw_output.metadata
-        response = self.chat_engine.chat(f"Shorten the last response by  words.")
-        """
