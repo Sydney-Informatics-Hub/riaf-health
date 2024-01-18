@@ -1,10 +1,10 @@
-# Main Script for generating the Use-Case Study Report
+# Main Script RAG Scholar to generate use-case studies for NSW Health Research Impact Assessment Framework'
 
 import argparse
 from rag import RAGscholar
 
 def main():
-    parser = argparse.ArgumentParser(description='RAG Scholar')
+    parser = argparse.ArgumentParser(description='RAG Scholar generating use-case studies for NSW Health Research Impact Assessment Framework')
     parser.add_argument('--query_author', type=str,
                         help='Author name to search for')
     parser.add_argument('--query_topic', type=str, help='Topic for Uue-case Study')
@@ -44,3 +44,7 @@ def main():
             args.research_period,
             args.impact_period,
             args.organisation)
+    
+    
+if __name__ == "__main__":
+    main()
