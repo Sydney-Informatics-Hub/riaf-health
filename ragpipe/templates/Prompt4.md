@@ -1,0 +1,1 @@
+What impact from this research is expected in the future? (Max 300 words)
