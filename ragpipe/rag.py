@@ -127,6 +127,38 @@ class RAGscholar:
         # query
         response = query_engine.query(query)
         return response
+    
+
+    def generate_chatengine_react(self):
+        """
+        ReAct agent: follows a flexible approach where the agent decides 
+        whether to use the query engine tool to generate responses or not.
+        """
+        query_engine = self.generate_query_engine()
+        self.chat_engine = self.index.as_chat_engine(chat_mode="react", 
+                                                     verbose=True, 
+                                                     query_engine=query_engine)
+        system_prompt = self.generate_system_prompt()
+        custom_chat_history = [
+            ChatMessage(role=MessageRole.SYSTEM, content=system_prompt),
+            ]
+        response = self.chat_engine.chat("Are you ready?", custom_chat_history)
+
+
+    def generate_chatengine_openai(self):
+        """
+        ReAct agent: follows a flexible approach where the agent decides 
+        whether to use the query engine tool to generate responses or not.
+        """
+        query_engine = self.generate_query_engine()
+        self.chat_engine = self.index.as_chat_engine(chat_mode="openai", 
+                                                     verbose=True)
+        system_prompt = self.generate_system_prompt()
+        custom_chat_history = [
+            ChatMessage(role=MessageRole.SYSTEM, content=system_prompt),
+            ]
+        # Add system prompt
+        response = self.chat_engine.chat("Are you ready?", custom_chat_history)
 
 
     def generate_chatengine_condense(self):
@@ -220,14 +252,14 @@ class RAGscholar:
             logging.info(f"Querying chat engine with prompt {i} ...")
             content, sources = self.query_chatengine(prompt_text)
             # Check content size
-            while len(content.split()) > list_max_word[i]:
-                logging.info("Word count exceeds maximum word count. Content is run again though the model.")
-                content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
+            #while len(content.split()) > list_max_word[i]:
+            #    logging.info("Word count exceeds maximum word count. Content is run again though the model.")
+            #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
             self.list_answers.append(content)
             self.list_sources.append(sources)
     
 
-    def generate_case_study(self):
+    def generate_case_study(self, process_sources = False):
         
         with open(self.fname_report_template, "r") as file:
             report = file.read()
@@ -243,12 +275,13 @@ class RAGscholar:
             report += f"## {question}\n"
             report += f"{self.list_answers[i]}\n"
         # Process sources
-        logging.info("Processing publications ...")
-        sources = clean_publications(self.list_sources) 
-        sources_text = publications_to_markdown(sources)
-        report += "\n\n"
-        report += "## Sources of evidence\n"
-        report += sources_text
+        if process_sources:
+            logging.info("Processing publications ...")
+            sources = clean_publications(self.list_sources) 
+            sources_text = publications_to_markdown(sources)
+            report += "\n\n"
+            report += "## Sources of evidence\n"
+            report += sources_text
 
         # Save report
         with open(os.path.join(self.outpath, "Use_Case_Study.md"), "w") as file:
@@ -298,7 +331,8 @@ class RAGscholar:
         # Initialize chat engine with context prompt
         #self.generate_chatengine_condensecontext()
         logging.info("Initializing chat engine ...")
-        self.generate_chatengine_condense()
+        #self.generate_chatengine_condense()
+        self.generate_chatengine_openai()
 
         # Run through prompt questions
         logging.info("Processing questions ...")
