@@ -16,7 +16,7 @@ def test_RAGscholar_run1():
     organisation = "University of Sydney"
     rag.run(query_topic, 
             query_author,
-            keywords = keywords,
+            keywords,
             research_period,
             impact_period,
             organisation)
@@ -37,7 +37,7 @@ def test_RAGscholar_run2():
     organisation = "University of Sydney"
     rag.run(query_topic, 
             query_author,
-            keywords = keywords,
+            keywords,
             research_period,
             impact_period,
             organisation)
@@ -58,7 +58,7 @@ def test_RAGscholar_run3():
     organisation = "Matilda Centre"
     rag.run(query_topic, 
             query_author,
-            keywords = keywords,
+            keywords,
             research_period,
             impact_period,
             organisation)
