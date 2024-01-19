@@ -8,6 +8,7 @@ def main():
     parser.add_argument('--query_author', type=str,
                         help='Author name to search for')
     parser.add_argument('--query_topic', type=str, help='Topic for Uue-case Study')
+    parser.add_argument('--query_keywords', type=str, help='Keywords for query')
     parser.add_argument('--research_period', type=str, help='Research period')
     parser.add_argument('--impact_period', type=str, help='Impact period')
     parser.add_argument('--organisation', type=str, help='Organisation')
@@ -22,6 +23,8 @@ def main():
     # Check is args are passed, if not ask user for input for arguments that have no default value:
     if args.query_topic is None:
         args.query_topic = input("Enter topic for use-case study: ")
+    if args.query_keywords is None:
+        args.query_keywords = input("Enter keyword(s) for query (separated by commas): ")
     if args.query_author is None:
         args.query_author = input("Enter author name(s) to search for: ")
     if args.organisation is None:
@@ -41,10 +44,11 @@ def main():
  
     rag.run(args.query_topic,
             args.query_author,
+            args.query_keywords,
             args.research_period,
             args.impact_period,
             args.organisation)
     
-    
+
 if __name__ == "__main__":
     main()

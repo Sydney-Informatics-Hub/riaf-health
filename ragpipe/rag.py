@@ -260,6 +260,7 @@ class RAGscholar:
     def run(self, 
             research_topic, 
             author,
+            keywords,
             research_period,
             impact_period,
             organisation):
@@ -270,6 +271,7 @@ class RAGscholar:
         path_index_name = path_index_name.replace(" ", "_")
         self.research_topic = research_topic
         self.author = author
+        self.keywords = keywords
         self.organisation = organisation
         self.research_period = research_period
         self.impact_period = impact_period
@@ -281,7 +283,7 @@ class RAGscholar:
 
         # Search, retrieve and read documents from Semantic Scholar
         logging.info("Searching and reading documents from Semantic Scholar ...")
-        self.documents = read_semanticscholar(self.research_topic + ", " + self.author, limit = _scholar_limit)
+        self.documents = read_semanticscholar(self.research_topic, self.author, self.keywords, limit = _scholar_limit)
 
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
