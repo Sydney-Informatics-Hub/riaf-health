@@ -1,2 +1,15 @@
 What impacts have your research delivered to date? (Max 500 words)
-Include also the impacts on the health system.
+Impacts should be under the one or more of the RIAF Indicator Categories:
+'Creating novel knowledge and expertise',
+'Informing decision making',
+'Health system,'
+'Determinants of health',
+'Population health',
+'Economic',
+'Reputation and brand'. 
+Generate text with a strong emphasis on past tense.
+Describe impact that have already occurred with certainty, avoiding speculative or conditional language.
+Support your statements with specific quantitative examples, references, or evidence related to RIAF indicators.
+Use the context of the RIAF and the topic of this study to provide a dot point response with quantitative numbers to justify the impact."
+
+The output MUST include references to supporting documents.
