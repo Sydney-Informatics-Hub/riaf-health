@@ -1,4 +1,4 @@
-What impacts have your research delivered to date? (Max 500 words)
+What impacts has this research delivered to date? (Max 500 words)
 Impacts should be under the one or more of the RIAF Indicator Categories:
 'Creating novel knowledge and expertise',
 'Informing decision making',
@@ -12,4 +12,4 @@ Describe impact that have already occurred with certainty, avoiding speculative 
 Support your statements with specific quantitative examples, references, or evidence related to RIAF indicators.
 Use the context of the RIAF and the topic of this study to provide a dot point response with quantitative numbers to justify the impact."
 
-The output MUST include references to supporting documents.
+You MUST cite sources along with your answer. Add citation numbers in your answer behind each sentence and provide corresponding list of references below **References**."

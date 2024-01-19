@@ -1,3 +1,2 @@
-What is the problem this research seeks to address and why is it significant? (Max 250 words)
-
-The markdown output MUST include references to supporting documents.
+What is the problem this research seeks to address and why is it significant? (Max 250 words) \n
+You MUST cite sources along with your answer. Add citation numbers in your answer behind each sentence and provide corresponding list of references below **References**."

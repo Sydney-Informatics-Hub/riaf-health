@@ -16,4 +16,4 @@ Generate text with a strong emphasis on past tense.
 Describe outputs that have already occurred with certainty, avoiding speculative or conditional language. 
 Support your statements with specific quantitative examples, references, or evidence related to RIAF indicators.
 
-The markdown output MUST extensive references to supporting documents.
+You MUST cite sources along with your answer. Add citation numbers in your answer behind each sentence and provide corresponding list of references below **References**."
