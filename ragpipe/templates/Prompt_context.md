@@ -17,7 +17,7 @@ Case Study Requirements:
 Construct a case study following the RIAF context, sub-domains, assessment criteria, and objectives. 
 
 Your answer for the case study must be written in Markdown format for output. Answers can include subsections and bullet points. 
-The output MUST include extensive references to supporting documents.
+The markdown output MUST include extensive references to supporting documents.
 
 Program Information:
 
