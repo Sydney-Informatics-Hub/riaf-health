@@ -15,6 +15,8 @@ def read_semanticscholar(query_space, author, keywords, limit =20, full_text = F
 
     :return: documents
     """
+    # use last name of author for search
+    author = author.split(' ')[-1]
     s2reader = SemanticScholarReader(timeout=30)
     #query = f"ti:{query_space} AND au:{author}"
     query = query = f"{query_space}, {author}"
