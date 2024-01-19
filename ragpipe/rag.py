@@ -203,6 +203,18 @@ class RAGscholar:
             verbose=True,
             )
         
+    def generate_chatengine_context(self):
+        # Condense Plus Context Chat Engine (WIP)
+        system_prompt = self.generate_system_prompt()
+
+        memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
+        self.chat_engine = self.index.as_chat_engine(
+            chat_mode="context",
+            memory=memory,
+            system_prompt=system_prompt,
+            verbose=True,
+            )
+        
     def query_chatengine(self, query):
         """
         Query chat engine for content and sources.
@@ -213,7 +225,10 @@ class RAGscholar:
         """
         response = self.chat_engine.chat(query)
         content = response.response
-        sources = response.sources[0].raw_output.metadata
+        try:
+            sources = response.sources[0].raw_output.metadata
+        except:
+            sources = []
         return content, sources
     
 
@@ -332,7 +347,10 @@ class RAGscholar:
         #self.generate_chatengine_condensecontext()
         logging.info("Initializing chat engine ...")
         #self.generate_chatengine_condense()
-        self.generate_chatengine_openai()
+        # mode: openAI (no publication metadata)
+        #self.generate_chatengine_openai()
+        # mode: context. retrieve context and run LLM on context
+        self.generate_chatengine_context()
 
         # Run through prompt questions
         logging.info("Processing questions ...")
