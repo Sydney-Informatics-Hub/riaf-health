@@ -2,7 +2,9 @@
 
 # Azure OpenAI setup, only needed if using Azure OpenAI
 _azure_endpoint = "https://techlab-copilots-aiservices.openai.azure.com/" 
-_azure_engine_name = "gpt-4-32k"
+# choose Azure AI model, currently deployed: 'gpt-4-32k' (2021), 'gpt-4-1106-preview' (Sep 2023), 'gpt-35-turbo', 'gpt-35-turbo-16k'
+_azure_engine_name = "gpt-4-1106-preview" 
+
 _azure_api_version = "2023-12-01-preview" 
 _azure_engine_name_embeddings = "text-embedding-ada-002"
 # see for latest https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation
