@@ -1,13 +1,16 @@
 from rag import RAGscholar
+import time
 
 def test_RAGscholar_run1():
     
+    time_now = time.time()
     rag = RAGscholar(path_templates = './templates/',
                     fname_system_prompt = 'Prompt_context.md',
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store', 
-                    path_openai_key = '../../openai_sih_key.txt')
+                    #path_openai_key = '../../openai_sih_key.txt'
+                    path_openai_key = '../../azure_openai_techlab_key.txt')
     query_author="Anthony Weiss"
     query_topic="Elastagen"
     keywords = "elastin, tissue engineering"
@@ -20,9 +23,13 @@ def test_RAGscholar_run1():
             research_period,
             impact_period,
             organisation)
+    print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
+    # typical time with OpenAI API call: 107.51 seconds
+    # typical time with Azure OpenAI API call: 92.18 seconds
     
 def test_RAGscholar_run2():
     
+    time_now = time.time()
     rag = RAGscholar(path_templates = './templates/',
                     fname_system_prompt = 'Prompt_context.md',
                     fname_report_template = 'Report.md',
@@ -41,16 +48,18 @@ def test_RAGscholar_run2():
             research_period,
             impact_period,
             organisation)
+    print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
     
 def test_RAGscholar_run3():
     
+    time_now = time.time()
     rag = RAGscholar(path_templates = './templates/',
                     fname_system_prompt = 'Prompt_context.md',
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store', 
                     path_openai_key = '../../openai_sih_key.txt')
-    query_author="Steph Kershaw, Cath Chapman"
+    query_author="Cath Chapman, Steph Kershaw"
     query_topic="Online resources to reduce the impact of crystal methamphetamine harms in the community"
     keywords = "methamphetamine, ice"
     research_period = "2017-2023"
@@ -62,3 +71,4 @@ def test_RAGscholar_run3():
             research_period,
             impact_period,
             organisation)
+    print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
