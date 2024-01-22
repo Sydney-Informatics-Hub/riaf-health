@@ -4,7 +4,19 @@
 _azure_endpoint = "https://techlab-copilots-aiservices.openai.azure.com/" 
 _azure_engine_name = "gpt-4-32k"
 _azure_api_version = "2023-12-01-preview" 
+_azure_engine_name_embeddings = "text-embedding-ada-002"
 # see for latest https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation
+
+"""
+    llm = AzureOpenAI(
+        engine=_azure_engine_name,
+        model=_model_llm,
+        temperature=_temperature,
+        azure_endpoint=_azure_endpoint,
+        api_key=os.environ["OPENAI_API_KEY"],
+        api_version=_azure_api_version,
+    )
+"""
 
 import os
 import logging
@@ -17,6 +29,7 @@ from llama_index import (
                          StorageContext, 
                         load_index_from_storage)
 from llama_index.query_engine import CitationQueryEngine, RetrieverQueryEngine
+from llama_index.embeddings import AzureOpenAIEmbedding
 
 def create_index(docstore, 
                  outpath_index = None, 
@@ -43,6 +56,7 @@ def create_index(docstore,
             temperature=temperature,
             model=model_llm,
             max_tokens=num_output)
+            embed_model = 'default'
     elif llm_service == 'azure':
         llm = AzureOpenAI(
             engine=_azure_engine_name,
@@ -52,6 +66,13 @@ def create_index(docstore,
             api_key=os.environ["OPENAI_API_KEY"],
             api_version=_azure_api_version,
         )
+        embed_model = AzureOpenAIEmbedding(
+            model="text-embedding-ada-002",
+            deployment_name=_azure_engine_name_embeddings,
+            api_key=os.environ["OPENAI_API_KEY"],
+            azure_endpoint=_azure_endpoint,
+            api_version=_azure_api_version,
+        )
     else:
         logging.error(f"LLM service {llm_service} not supported")
         return None
@@ -59,6 +80,7 @@ def create_index(docstore,
     # Create service context
     service_context = ServiceContext.from_defaults(
         llm=llm,
+        embed_model = embed_model,
         context_window=context_window,
         num_output=num_output,
         )
