@@ -56,7 +56,7 @@ def create_index(docstore,
             temperature=temperature,
             model=model_llm,
             max_tokens=num_output)
-            embed_model = 'default'
+        embed_model = 'default'
     elif llm_service == 'azure':
         llm = AzureOpenAI(
             engine=_azure_engine_name,
