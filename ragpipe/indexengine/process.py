@@ -1,8 +1,14 @@
 # Functions for creating, loading and adding documents to index
 
+# Azure OpenAI setup, only needed if using Azure OpenAI
+_azure_endpoint = "https://techlab-copilots-aiservices.openai.azure.com/" 
+_azure_engine_name = "gpt-4-32k"
+_azure_api_version = "2023-12-01-preview" 
+# see for latest https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation
+
 import os
 import logging
-from llama_index.llms import OpenAI
+from llama_index.llms import OpenAI, AzureOpenAI
 from llama_index import (
                         ServiceContext,
                          VectorStoreIndex,
@@ -17,7 +23,8 @@ def create_index(docstore,
                  model_llm = "gpt-4-1106-preview",
                  temperature = 0.1, 
                  context_window = 4096, 
-                 num_output = 600):
+                 num_output = 600,
+                 llm_service = 'openai'):
     """
     Create index from docstore and store index in outpath_index
 
@@ -27,13 +34,27 @@ def create_index(docstore,
     :param temperature: float, temperature for LLM model
     :param context_window: int, context window size in number of tokens
     :param num_output: int, number of output tokens
+    :param llm_service: str, LLM service to use: 'openai' or 'azure'
 
     :return: index
     """
-    llm = OpenAI(
-        temperature=temperature,
-        model=model_llm,
-        max_tokens=num_output)
+    if llm_service == 'openai':
+        llm = OpenAI(
+            temperature=temperature,
+            model=model_llm,
+            max_tokens=num_output)
+    elif llm_service == 'azure':
+        llm = AzureOpenAI(
+            engine=_azure_engine_name,
+            model=model_llm,
+            temperature=temperature,
+            azure_endpoint=_azure_endpoint,
+            api_key=os.environ["OPENAI_API_KEY"],
+            api_version=_azure_api_version,
+        )
+    else:
+        logging.error(f"LLM service {llm_service} not supported")
+        return None
 
     # Create service context
     service_context = ServiceContext.from_defaults(

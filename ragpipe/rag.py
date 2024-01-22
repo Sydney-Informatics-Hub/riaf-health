@@ -23,7 +23,7 @@ from indexengine.process import (
     query_publication_index
     )
 
-
+# Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
 _list_max_word =  [250, 300, 500, 300]
 _context_window = 4096
@@ -31,6 +31,9 @@ _num_output = 600
 _scholar_limit = 50
 _model_llm = "gpt-4-1106-preview"
 _temperature = 0.1
+# Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
+# make sure respective OPENAI_API_KEY is set in os.environ or keyfile
+_llm_service = "openai" # "azure" or "openai" # , see 
 
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -341,7 +344,8 @@ class RAGscholar:
                                   temperature=_temperature, 
                                   context_window=_context_window, 
                                   num_output=_num_output, 
-                                  model_llm=_model_llm)
+                                  model_llm=_model_llm,
+                                  llm_service=_llm_service)
 
         # Initialize chat engine with context prompt
         #self.generate_chatengine_condensecontext()
