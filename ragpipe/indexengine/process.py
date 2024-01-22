@@ -7,17 +7,6 @@ _azure_api_version = "2023-12-01-preview"
 _azure_engine_name_embeddings = "text-embedding-ada-002"
 # see for latest https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation
 
-"""
-    llm = AzureOpenAI(
-        engine=_azure_engine_name,
-        model=_model_llm,
-        temperature=_temperature,
-        azure_endpoint=_azure_endpoint,
-        api_key=os.environ["OPENAI_API_KEY"],
-        api_version=_azure_api_version,
-    )
-"""
-
 import os
 import logging
 from llama_index.llms import OpenAI, AzureOpenAI
