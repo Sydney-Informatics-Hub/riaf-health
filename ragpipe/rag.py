@@ -3,10 +3,8 @@
 import os
 import json
 import logging
-from llama_index import get_response_synthesizer, load_index_from_storage
-from llama_index.query_engine import RetrieverQueryEngine
+from llama_index import load_index_from_storage
 from llama_index.retrievers import VectorIndexRetriever
-from llama_index.postprocessor import SimilarityPostprocessor
 from llama_index.prompts import PromptTemplate
 from llama_index.llms import ChatMessage, MessageRole
 from llama_index.chat_engine.condense_question import CondenseQuestionChatEngine
