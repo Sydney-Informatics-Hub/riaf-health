@@ -26,11 +26,11 @@ _list_max_word =  [250, 300, 500, 300]
 _context_window = 4096
 _num_output = 600
 _scholar_limit = 50
-_model_llm = "gpt-4-1106-preview"
+_model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
-_llm_service = "azure" # "azure" or "openai" # , see 
+_llm_service = "openai" # "azure" or "openai" # , see 
 
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
