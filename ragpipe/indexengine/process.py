@@ -19,7 +19,6 @@ from llama_index import (
                          StorageContext,
                          StorageContext, 
                         load_index_from_storage)
-from llama_index.query_engine import CitationQueryEngine, RetrieverQueryEngine
 from llama_index.embeddings import AzureOpenAIEmbedding
 
 def create_index(docstore, 
@@ -116,27 +115,6 @@ def load_index(path_index):
         logging.error("Index not found")
         return None
     
-def query_publication_index(query, index, top_k = 5):
-    """
-    Query index for relevant publications to question.
 
-    :param query: str, question to publication index
-    :param index: publication index to query
-    :param top_k: int, number of top publications to return
-
-    :return: response
-    """
-    query_engine = CitationQueryEngine.from_args(
-        index,
-        similarity_top_k=top_k,
-        citation_chunk_size=512,
-    )
-    # query the index for relevant publications to question
-    response = query_engine.query(query)
-    print("Answer: ", response)
-    print("Source nodes: ")
-    for node in response.source_nodes:
-        print(node.node.metadata)
-    return response
     
 
