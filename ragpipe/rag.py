@@ -1,5 +1,4 @@
-# RAG pipeline for writing use case study on research topic and author finding and searching scholar publications using LlamaIndex
-
+# RAG pipeline for generating impact assessment studies of research activities
 
 import os
 import json
@@ -16,11 +15,11 @@ from llama_index.memory import ChatMemoryBuffer
 
 from utils.pubprocess import publications_to_markdown, clean_publications
 from retriever.semanticscholar import read_semanticscholar
+from queryengine.queryprocess import QueryEngine
 from indexengine.process import (
     create_index, 
     add_docs_to_index, 
-    load_index, 
-    query_publication_index
+    load_index
     )
 
 # Config parameters (TBD: move to config file)
@@ -33,7 +32,7 @@ _model_llm = "gpt-4-1106-preview"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
-_llm_service = "openai" # "azure" or "openai" # , see 
+_llm_service = "azure" # "azure" or "openai" # , see 
 
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -87,57 +86,12 @@ class RAGscholar:
                     os.environ["OPENAI_API_KEY"] = f.read()
 
 
-    def query_index_from_docs(self, query, top_k = 5):
-        """
-        Query index for relevant publications to question.
-        """
-        if self.index is None:
-            logging.error("Index not found")
-            return None
-        else:
-            return query_publication_index(query, self.index, top_k = top_k)
-        
-
-    def generate_query_engine(self, top_k=10):
-        if self.index is None:
-            logging.error("Index not found")
-            return None
-        
-        # Define index retriever
-        retriever = VectorIndexRetriever(
-            index=self.index,
-            similarity_top_k=top_k,
-        )
-
-        # configure response synthesizer
-        response_synthesizer = get_response_synthesizer()
-
-        # assemble query engine
-        query_engine = RetrieverQueryEngine(
-            retriever=retriever,
-            response_synthesizer=response_synthesizer,
-            node_postprocessors=[SimilarityPostprocessor(similarity_cutoff=0.7)],
-        )
-        return query_engine
-    
-    def query_llm_index(self, query, top_k = 10):
-        """
-        Query index for relevant publications to question.
-        """
-        # assemble query engine
-        query_engine = self.generate_query_engine(top_k = top_k)
-
-        # query
-        response = query_engine.query(query)
-        return response
-    
-
     def generate_chatengine_react(self):
         """
         ReAct agent: follows a flexible approach where the agent decides 
         whether to use the query engine tool to generate responses or not.
         """
-        query_engine = self.generate_query_engine()
+        query_engine = QueryEngine.generate_query_engine(self.index)
         self.chat_engine = self.index.as_chat_engine(chat_mode="react", 
                                                      verbose=True, 
                                                      query_engine=query_engine)
@@ -153,7 +107,7 @@ class RAGscholar:
         ReAct agent: follows a flexible approach where the agent decides 
         whether to use the query engine tool to generate responses or not.
         """
-        query_engine = self.generate_query_engine()
+        query_engine = QueryEngine.generate_query_engine(self.index)
         self.chat_engine = self.index.as_chat_engine(chat_mode="openai", 
                                                      verbose=True)
         system_prompt = self.generate_system_prompt()
@@ -171,7 +125,7 @@ class RAGscholar:
             ChatMessage(role=MessageRole.SYSTEM, content=system_prompt),
             ]
         #query_engine = self.index.as_query_engine(response_mode="compact")
-        query_engine = self.generate_query_engine()
+        query_engine = QueryEngine.generate_query_engine(self.index)
         self.chat_engine = CondenseQuestionChatEngine.from_defaults(
             query_engine=query_engine,
             chat_history=custom_chat_history,
@@ -307,7 +261,6 @@ class RAGscholar:
         logging.info(f"Use case study saved to {self.outpath}")
 
         
-
     def run(self, 
             research_topic, 
             author,
