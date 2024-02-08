@@ -1,9 +1,8 @@
-# Bing search API
+# Bing search API functions
 
 import json
 import requests
 import os
-
 from azure.cognitiveservices.search.customsearch import CustomSearchClient
 from azure.cognitiveservices.search.websearch import WebSearchClient
 from azure.cognitiveservices.search.websearch.models import SafeSearch
@@ -14,20 +13,18 @@ SUBSCRIPTION_KEY = os.environ['BING_CUSTOM_SEARCH_SUBSCRIPTION_KEY']
 ENDPOINT = os.environ['BING_CUSTOM_SEARCH_ENDPOINT']
 CUSTOMCONFIGID = os.environ['BING_CUSTOM_CONFIG_ID']
 
-def bing_custom_search(searchTerm):
+def bing_custom_search(query):
     """
     Perform a Bing Custom Search with the given search term, subscription key, and custom configuration ID.
 
     Args:
-    searchTerm (str): The search term for the query.
-    subscriptionKey (str): The subscription key for the Bing Custom Search API.
-    customConfigId (str): The custom configuration ID for the Bing Custom Search.
+    query (str): The search term for the query.
 
     Returns:
     dict: The search results returned by the Bing Custom Search API.
     """
     # Prepare the request URL
-    url = f'https://api.bing.microsoft.com/v7.0/custom/search?q={searchTerm}&customconfig={customConfigId}'
+    url = f'https://api.bing.microsoft.com/v7.0/custom/search?q={query}&customconfig={CUSTOMCONFIGID}'
 
     # Perform the request
     response = requests.get(url, headers={'Ocp-Apim-Subscription-Key': SUBSCRIPTION_KEY})
@@ -39,8 +36,6 @@ def bing_custom_search(searchTerm):
     else:
         # Return an error message if something went wrong
         return {"error": "Failed to retrieve search results", "status_code": response.status_code}
-
-
 
 
 
@@ -71,6 +66,36 @@ def custom_search_web_page_result_lookup(query, answer_count=5):
             return web_data.web_pages.value
         else:
             print("Didn't see any web data..")
+            return None
+
+    except Exception as err:
+        print("Encountered exception. {}".format(err))
+        return None
+    
+def news_search_with(query):
+    """New Search.
+
+    This will search  with response filters to news.
+    """
+
+    client = WebSearchClient(CognitiveServicesCredentials(SUBSCRIPTION_KEY))
+
+    try:
+        web_data = client.web.search(
+            query=query, response_filter=["News"])
+
+        # News attribute since I filtered "News"
+        if web_data.news.value:
+
+            print("Webpage Results#{}".format(len(web_data.news.value)))
+
+            #first_web_page = web_data.news.value[0]
+            #print("First web page name: {} ".format(first_web_page.name))
+            #print("First web page URL: {} ".format(first_web_page.url))
+            return web_data.news.value
+
+        else:
+            print("Didn't see any Web data..")
             return None
 
     except Exception as err:
