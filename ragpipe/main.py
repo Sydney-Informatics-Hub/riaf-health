@@ -9,8 +9,10 @@ def main():
                         help='Author name to search for')
     parser.add_argument('--query_topic', type=str, help='Topic for Uue-case Study')
     parser.add_argument('--query_keywords', type=str, help='Keywords for query')
-    parser.add_argument('--research_period', type=str, help='Research period')
-    parser.add_argument('--impact_period', type=str, help='Impact period')
+    parser.add_argument('--research_period_start', type=str, help='Research period start (year)')
+    parser.add_argument('--research_period_end', type=str, help='Research period end (year)')
+    parser.add_argument('--impact_period_start', type=str, help='Impact period start (year)')
+    parser.add_argument('--impact_period_end', type=str, help='Impact period end (year)')
     parser.add_argument('--organisation', type=str, help='Organisation')
     parser.add_argument('--path_templates', type=str, help='Path to templates', default='./templates/')
     parser.add_argument('--fname_system_prompt', type=str, help='Filename for system prompt', default='Prompt_context.md')
@@ -29,10 +31,14 @@ def main():
         args.query_author = input("Enter author name(s) to search for: ")
     if args.organisation is None:
         args.organisation = input("Enter organisation: ")
-    if args.research_period is None:
-        args.research_period = input("Enter research period: ")
-    if args.impact_period is None:
-        args.impact_period = input("Enter impact period: ")
+    if args.research_period_start is None:
+        args.research_period_start = input("Enter research period start (year):")
+    if args.research_period_end is None:
+        args.research_period_end = input("Enter research period end (year):")
+    if args.impact_period_start is None:
+        args.impact_period_start = input("Enter impact period start (year):")
+    if args.impact_period_end is None:
+        args.impact_period_end = input("Enter impact period end (year):")
     
     
     rag = RAGscholar(path_templates=args.path_templates,
@@ -45,9 +51,11 @@ def main():
     rag.run(args.query_topic,
             args.query_author,
             args.query_keywords,
-            args.research_period,
-            args.impact_period,
-            args.organisation)
+            args.organisation,
+            args.research_period_start,
+            args.research_period_end,
+            args.impact_period_start,
+            args.impact_period_end)
     
 
 if __name__ == "__main__":

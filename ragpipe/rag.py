@@ -263,9 +263,11 @@ class RAGscholar:
             research_topic, 
             author,
             keywords,
-            research_period,
-            impact_period,
-            organisation):
+            organisation,
+            research_start = None,
+            research_end = None,
+            impact_start = None,
+            impact_end = None):
         """
         Run RAG model
         """
@@ -275,8 +277,19 @@ class RAGscholar:
         self.author = author
         self.keywords = keywords
         self.organisation = organisation
-        self.research_period = research_period
-        self.impact_period = impact_period
+        try:
+            if research_start is not None:
+                self.research_start = int(research_start)
+            else:
+                self.research_start = None
+            if research_end is not None:
+                self.research_end = int(research_end)
+            else:
+                self.research_end = None
+        except:
+            logging.warning("Research period start and end must be integers. Continuing without research period.")
+            self.research_start = None
+            self.research_end = None
 
         fname_out = self.research_topic + "_by_" + self.author
         fname_out = fname_out.replace(" ", "_")
@@ -285,7 +298,12 @@ class RAGscholar:
 
         # Search, retrieve and read documents from Semantic Scholar
         logging.info("Searching and reading documents from Semantic Scholar ...")
-        self.documents = read_semanticscholar(self.research_topic, self.author, self.keywords, limit = _scholar_limit)
+        self.documents = read_semanticscholar(self.research_topic, 
+                                              self.author, 
+                                              self.keywords, 
+                                              limit = _scholar_limit,
+                                              year_start=self.research_start,
+                                              year_end=self.research_end)
 
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
