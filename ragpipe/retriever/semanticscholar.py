@@ -3,7 +3,7 @@
 import logging
 from llama_hub.semanticscholar import SemanticScholarReader
 
-def read_semanticscholar(query_space, author, keywords, limit =20, full_text = False):
+def read_semanticscholar(query_space, author, keywords, limit =20, full_text = False, year_start = None, year_end = None):
     """
     Search and read scholar online documents using Semantic Scholar API
 
@@ -12,6 +12,8 @@ def read_semanticscholar(query_space, author, keywords, limit =20, full_text = F
     :param keywords: list of str, keywords to search for (only used if query_space and author return no results)
     :param limit: int, number of documents to return
     :param fulltext: bool, if True, full text is returned
+    :param year_start: int, start year of publication
+    :param year_end: int, end year of publication
 
     :return: documents
     """
@@ -38,6 +40,14 @@ def read_semanticscholar(query_space, author, keywords, limit =20, full_text = F
         unique_paper_ids = []
         for doc in docstore:
             paper_id = doc.metadata['paperId']
+            if 'year' in doc.metadata:
+                year = doc.metadata['year']
+                if 'year_start' is not None:
+                    if year < year_start:
+                        continue                
+                if 'year_end' is not None:
+                    if year > year_end:
+                        continue   
             if paper_id not in unique_paper_ids:
                 docstore_new.append(doc)
                 unique_paper_ids.append(paper_id)
