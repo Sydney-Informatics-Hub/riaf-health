@@ -36,6 +36,28 @@ def bing_custom_search(query):
     else:
         # Return an error message if something went wrong
         return {"error": "Failed to retrieve search results", "status_code": response.status_code}
+    
+
+def bing_custom_search2(query, count=10):
+    """
+    Perform a Bing Custom Search with the given search term, subscription key, and custom configuration ID.
+
+    Args:
+    query (str): The search term for the query.
+    count (int): The number of search results to return.
+
+    Returns:
+    dict: The search results returned by the Bing Custom Search API.
+    """
+
+    search_url = "https://api.cognitive.microsoft.com/bingcustomsearch/v7.0/search"
+    headers = {"Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY}
+    params = {"q": query, "customconfig": CUSTOMCONFIGID, "count": count}
+
+    response = requests.get(search_url, headers=headers, params=params)
+    response.raise_for_status()
+
+    return response.json()
 
 
 
