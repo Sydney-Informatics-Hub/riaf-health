@@ -3,21 +3,29 @@
 import json
 import requests
 import os
-#from azure.cognitiveservices.search.customsearch import CustomSearchClient
-#from azure.cognitiveservices.search.websearch import WebSearchClient
-#from azure.cognitiveservices.search.websearch.models import SafeSearch
-#from msrest.authentication import CognitiveServicesCredentials
 
-fname_key = '../../azure_sih_bing_key.txt'
-with open(fname_key) as f:
-    SUBSCRIPTION_KEY = f.read().strip()
-ENDPOINT = "https://api.bing.microsoft.com/v7.0"
 
+def init_bing():
+    """
+    Initialize Bing search client
+    """
+    # Add your Bing Search V7 subscription key to your environment variables.
+    # Once set, you can use these variables to create the Bing Search client.
+    # SUBSCRIPTION_KEY = os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"]
+    ENDPOINT = "https://api.bing.microsoft.com/v7.0"
+    if "BING_SEARCH_V7_SUBSCRIPTION_KEY" not in os.environ:
+        fname_key = '../../azure_sih_bing_key.txt'
+        with open(fname_key) as f:
+            SUBSCRIPTION_KEY = f.read().strip()
+            os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"] = SUBSCRIPTION_KEY
+    else:
+        SUBSCRIPTION_KEY = os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"]
+    return SUBSCRIPTION_KEY, ENDPOINT
 
 
 def bing_custom_search(query, count=10, year_start = None, year_end= None):
     """
-    Perform a Bing Custom Search with the given search term, subscription key, and custom configuration ID.
+    Perform a Bing Custom Search with the given search term.
     see for search parameters: https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/reference/query-parameters
 
     Args:
@@ -25,7 +33,6 @@ def bing_custom_search(query, count=10, year_start = None, year_end= None):
     count (int): The number of search results to return.
     year_start (int): start of period to search
     year_end (int): end of period to search
-
 
     Returns:
     list of dict: The search results returned by the Bing Custom Search API.
@@ -36,7 +43,7 @@ def bing_custom_search(query, count=10, year_start = None, year_end= None):
     else:
         timeframe = None
 
-
+    SUBSCRIPTION_KEY, ENDPOINT = init_bing()
     search_url = ENDPOINT + "/search" 
     headers = {"Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY}
     params = {"q": query, "count": count, "responseFilter": "Webpages", "freshness": None}
@@ -50,6 +57,41 @@ def bing_custom_search(query, count=10, year_start = None, year_end= None):
         return None
 
     return results['webPages']['value']
+
+
+def bing_news_search(query, count=10, year_start = None, year_end= None):
+    """
+    Perform a Bing News Search with the given search term.
+    see for search parameters: https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/reference/query-parameters
+
+    Args:
+    query (str): The search term for the query.
+    count (int): The number of search results to return.
+    year_start (int): start of period to search
+    year_end (int): end of period to search
+
+    Returns:
+    list of dict: The search results returned by the Bing Custom Search API.
+    Each dict include 'name', 'url', 'snippet'
+    """
+    if year_start is not None and year_end is not None:
+        timeframe = f"{year_start}-01-01..{year_end}-12-31"
+    else:
+        timeframe = None
+
+    SUBSCRIPTION_KEY, ENDPOINT = init_bing()
+    search_url = ENDPOINT + "/search" 
+    headers = {"Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY}
+    params = {"q": query, "count": count, "responseFilter": "News", "freshness": None}
+
+    response = requests.get(search_url, headers=headers, params=params)
+    response.raise_for_status()
+
+    results = response.json()
+    if 'news' not in results:
+        return None
+
+    return results['news']['value']
 
 
 def get_urls_from_bing(dict_list):
