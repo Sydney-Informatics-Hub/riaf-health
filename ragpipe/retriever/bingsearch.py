@@ -67,6 +67,36 @@ def get_urls_from_bing(dict_list):
         url_list.append(result['url'])
     return url_list
 
+def get_titles_from_bing(dict_list):
+    """
+    Get list of titles from list of Bing search results
+
+    Args:
+    dict_list (list of dict): List of Bing search results
+
+    Returns:
+    list of str: List of titles from Bing search results
+    """
+    title_list = []
+    for result in dict_list:
+        title_list.append(result['name'])
+    return title_list
+
+def get_snippets_from_bing(dict_list):
+    """
+    Get list of snippets from list of Bing search results
+
+    Args:
+    dict_list (list of dict): List of Bing search results
+
+    Returns:
+    list of str: List of snippeets from Bing search results
+    """
+    snippet_list = []
+    for result in dict_list:
+        snippet_list.append(result['name'])
+    return snippet_list
+
 
 def get_metadata(url_list):
     """
@@ -95,5 +125,3 @@ def get_metadata(url_list):
             desc = ''
         metadata_desc.append(desc)
     return metadata_desc
-
-

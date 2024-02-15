@@ -200,6 +200,7 @@ class RAGscholar:
         system_prompt = system_prompt.replace("AUTHOR", self.author)
         system_prompt = system_prompt.replace("IMPACT_PERIOD", self.impact_period)
         system_prompt = system_prompt.replace("RESEARCH_TOPIC", self.research_topic)
+        system_prompt = system_prompt.replace("LANGUAGE_STYLE", self.language_style)
         return system_prompt
 
     def prompt_pipeline(self, 
