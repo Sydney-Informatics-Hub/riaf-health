@@ -16,7 +16,7 @@ def main():
     parser.add_argument('--organisation', type=str, help='Organisation')
     parser.add_argument('--language_style', type=str, help='Language style for report', default='analytical')
     parser.add_argument('--path_templates', type=str, help='Path to templates', default='./templates/')
-    parser.add_argument('--fname_system_prompt', type=str, help='Filename for system prompt', default='Prompt_context.md')
+    parser.add_argument('--fname_system_prompt', type=str, help='Filename for system prompt', default='Prompt_system.md')
     parser.add_argument('--fname_report_template', type=str, help='Filename for report template', default='Report.md')
     parser.add_argument('--outpath', type=str, help='Output path', default='../../results/')
     parser.add_argument('--path_index', type=str, help='Path to index', default='../../index_store')
