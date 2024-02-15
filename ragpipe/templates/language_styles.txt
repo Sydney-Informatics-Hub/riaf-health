@@ -1,0 +1,15 @@
+journalistic
+conversational
+informal
+academic
+technical
+legal
+medical
+financial
+scientific
+analytical
+promotional
+objective
+narrative
+engaging
+personal

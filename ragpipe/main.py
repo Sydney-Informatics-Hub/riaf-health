@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--impact_period_start', type=str, help='Impact period start (year)')
     parser.add_argument('--impact_period_end', type=str, help='Impact period end (year)')
     parser.add_argument('--organisation', type=str, help='Organisation')
+    parser.add_argument('--language_style', type=str, help='Language style for report', default='analytical')
     parser.add_argument('--path_templates', type=str, help='Path to templates', default='./templates/')
     parser.add_argument('--fname_system_prompt', type=str, help='Filename for system prompt', default='Prompt_context.md')
     parser.add_argument('--fname_report_template', type=str, help='Filename for report template', default='Report.md')
@@ -39,6 +40,9 @@ def main():
         args.impact_period_start = input("Enter impact period start (year):")
     if args.impact_period_end is None:
         args.impact_period_end = input("Enter impact period end (year):")
+    if args.language_style is None:
+        args.language_style = input("Enter language style for report (e.g., analytical, journalistic, academic, legal, medical): ")
+
     
     
     rag = RAGscholar(path_templates=args.path_templates,
@@ -46,7 +50,8 @@ def main():
                     fname_report_template=args.fname_report_template,
                     outpath=args.outpath,
                     path_index=args.path_index, 
-                    path_openai_key='../../openai_sih_key.txt')
+                    path_openai_key='../../openai_sih_key.txt'
+                    language_style=args.language_style)
  
     rag.run(args.query_topic,
             args.query_author,

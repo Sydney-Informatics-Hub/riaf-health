@@ -54,6 +54,7 @@ class RAGscholar:
                 outpath, 
                 path_index, 
                 path_openai_key = None, 
+                language_style = "analytical",
                 load_index_from_storage = False):
         
         self.path_index = path_index
@@ -67,6 +68,7 @@ class RAGscholar:
         self.documents = None
         self.research_topic = None
         self.author = None
+        self.language_style = language_style
 
         self.openai_init()
 
