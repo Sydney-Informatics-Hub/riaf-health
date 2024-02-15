@@ -3,8 +3,9 @@
 import requests
 from bs4 import BeautifulSoup
 from llama_index import download_loader, VectorStoreIndex
+#from llama_index.readers.web import SimpleWebPageReader # --> not working
+from llama_index import Document
 import logging
-# for asynchronous loading
 import aiohttp
 import asyncio
 
@@ -14,7 +15,7 @@ async def fetch(session, url):
         async with session.get(url) as response:
             if response.status == 200:
                 content = await response.text()
-                return BeautifulSoup(content, 'html.parser').get_text()
+                return BeautifulSoup(content, 'html.parser').get_text().encode('utf-8')
             else:
                 print(f"Error fetching {url}: Status {response.status}")
                 return None
@@ -68,14 +69,14 @@ def web2docs_simple(urls):
     Returns:
         documents: List of documents with main text content of the webpages.
     """
-    SimpleWebPageReader = download_loader("SimpleWebPageReader")
-    loader = SimpleWebPageReader()
+    SimpleWebPageReader = download_loader('SimpleWebPageReader')
+    loader = SimpleWebPageReader(html_to_text=True)
     documents = loader.load_data(urls=urls)
     return documents
 
 def web2docs_async(urls):
     """
-    Extracts main text content from  a list of webpages using asyncio and bs4.
+    Extracts main text content from a list of webpages using asyncio and bs4.
     
     Args:
         urls (list of str): List of URLs of the webpages to extract content from.
@@ -83,7 +84,8 @@ def web2docs_async(urls):
     Returns:
         documents: List of documents with main text content of the webpages.
     """
-    documents = asyncio.run(fetch_all(urls))
+    contents = asyncio.run(fetch_all(urls))
+    documents = [Document(text=content, doc_id = url) for content, url in zip(contents, urls)]
     return documents
 
 def docs2index(documents):
