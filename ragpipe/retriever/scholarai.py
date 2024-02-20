@@ -102,15 +102,13 @@ class ScholarAI:
         return paper_list
 
         
-    def filter_papers(self, papers, filter_with_llm = True):
+    def filter_papers(self, papers, filter_with_llm = True, open_access_only = True):
         """
         process papers and filter by topic and year.
 
         :param papers: list of papers
-        :param topic: str, topic to filter
-        :param year_start: int, start year of publication
-        :param year_end: int, end year of publication
         :param filter_with_llm: bool, if True, filter with LLM
+        :param open_access_only: bool, if True, only open access papers are returned
 
         :return: list of papers
         """
@@ -123,6 +121,8 @@ class ScholarAI:
                 continue
             if paper.year > self.year_end:
                 continue
+            if open_access_only and not paper.isOpenAccess:
+                continue
             # get title
             title = paper.title
             # get abstract
@@ -134,5 +134,26 @@ class ScholarAI:
                 papers_ok.append(paper)
                 citationcount.append(paper.citation_count)
                 paperIds.append(paper.paperId)
-        return papers_ok   
+        return papers_ok 
+
+    def get_papers_from_topic(self, 
+                              filter_with_llm = True, 
+                              min_citation_count = 0, 
+                              limit = 100,
+                              open_access_only = False):
+        """
+        Retrieve papers from topic and filter by publication period.
+        """
+        sch = SemanticScholar()
+        papers = sch.search_paper(self.topic, 
+                                  publication_date_or_year = f'{self.year_start}:{self.year_end}',
+                                  min_citation_count = min_citation_count,
+                                  limit = limit,
+                                  open_access_pdf = open_access_only)
+        papers = papers.items
+        if filter_with_llm:
+            papers = self.filter_papers(papers)
+        return papers 
+    
+
 
