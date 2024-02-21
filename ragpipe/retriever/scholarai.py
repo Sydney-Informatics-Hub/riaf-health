@@ -124,9 +124,9 @@ class ScholarAI:
             if open_access_only and not paper.isOpenAccess:
                 continue
             # get title
-            title = paper.title
+            title = getattr(paper, "title", None)
             # get abstract
-            abstract = paper.abstract
+            abstract = getattr(paper, "abstract", None)
             # get year
             if filter_with_llm:
                 ok = self.llmfilter(title, abstract)
@@ -156,4 +156,73 @@ class ScholarAI:
         return papers 
     
 
+    def get_full_text_docs(self, metadata):
+        pass
 
+
+    def load_data(self, papers, full_text=True):
+            """
+            Loads metadata from Semantic Scholar, retrieve full text and return as list of Document objects.
+
+            Parameters
+            ----------
+            papers: list of papers
+                The list of papers to retrieve full text from
+
+            Returns
+            -------
+            list
+                The list of Document object that contains the search results
+            """
+
+            documents = []
+            if full_text:
+                sch = SemanticScholar()
+
+            for item in papers:
+                openAccessPdf = getattr(item, "openAccessPdf", None)
+                abstract = getattr(item, "abstract", None)
+                title = getattr(item, "title", None)
+                year = getattr(item, "year", None)
+                paper_id = getattr(item, "paperId", None)
+                url_openAccessPdf = openAccessPdf.get("url") if openAccessPdf else None
+                url_semanticscholar = getattr(item, "url", None)
+                reference = getattr(item, "citationStyles", None)
+                if reference:
+                    try:
+                        reference = reference['bibtex'] + "\n url_openAccessPdf"
+                    except:
+                        reference = None
+
+                text = None
+                # concat title and abstract
+                if abstract and title:
+                    text = title + " " + abstract
+                elif not abstract:
+                    text = title
+
+                metadata = {
+                    "title": title,
+                    "authors": [author["name"] for author in getattr(item, "authors", [])],
+                    "venue": getattr(item, "venue", None),
+                    "year": year,
+                    "reference": reference,
+                    "paperId": paper_id,
+                    "citationCount": getattr(item, "citationCount", None),
+                    "influentialCitationCount": getattr(item, "influentialCitationCount", None),
+                    "url_openAccessPdf": url_openAccessPdf,
+                    "href_semanticscholar": url_semanticscholar,
+                    "externalIds": getattr(item, "externalIds", None),
+                    "fieldsOfStudy": getattr(item, "fieldsOfStudy", None),
+                }
+                if full_text and url_openAccessPdf:
+                    text = get_full_text_docs(metadata)
+                    
+                documents.append(Document(text=text, extra_info=metadata))
+
+
+            #if full_text:
+            #    full_text_documents = self.get_full_text_docs(documents)
+            #    documents.extend(full_text_documents)
+            return documents
+    
