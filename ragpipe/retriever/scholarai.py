@@ -5,9 +5,18 @@ import time
 import requests
 import logging
 from semanticscholar import SemanticScholar
+import arxiv
+import shutil
 from llama_index.llms.openai import OpenAI
 from llama_index.llms.azure_openai import AzureOpenAI
 from llama_index.core.llms import ChatMessage
+from llama_index.readers.base import BaseReader
+from llama_index.readers.schema.base import Document
+from PyPDF2 import PdfReader
+
+
+from pdfdownloader import download_pdf, download_pdf_from_arxiv
+
 
 LLMSERVICE = 'azure' # 'openai' or 'azure'
 AZURE_ENDPOINT = "https://techlab-copilots-aiservices.openai.azure.com/" 
@@ -15,12 +24,14 @@ AZURE_API_VERSION = "2023-12-01-preview"
 AZURE_ENGINE = "gpt-35-turbo"
 
 class ScholarAI:
-    def __init__(self, topic, authors, year_start = None, year_end = None):
+    def __init__(self, topic, authors, year_start = None, year_end = None, outpath_pdfs = 'pdfs', delete_pdfs = False):
         self.topic = topic
         self.authors = authors
         self.year_start = year_start
         self.year_end = year_end
         self.llm = None
+        self.outpath_pdfs = outpath_pdfs
+        self.delete_pdfs = delete_pdfs
 
     def init_llm(self):
         if LLMSERVICE == 'openai':
@@ -156,11 +167,38 @@ class ScholarAI:
         return papers 
     
 
-    def get_full_text_docs(self, metadata):
-        pass
+    def get_full_text_docs(self, metadata, base_dir = 'pdfs'):
+        url = metadata["openAccessPdf"]
+        externalIds = metadata["externalIds"]
+        paper_id = metadata["paperId"]
+        file_path = None
+        persist_dir = os.path.join(base_dir, f"{paper_id}.pdf")
+        if url and not os.path.exists(persist_dir):
+            # Download the document first
+            file_path = download_pdf(metadata["paperId"], url, persist_dir)
+
+        if (not url
+            and externalIds
+            and "ArXiv" in externalIds
+            and not os.path.exists(persist_dir)):
+            # download the pdf from arxiv
+            file_path = download_pdf_from_arxiv(paper_id, externalIds["ArXiv"], base_dir)
+
+        if file_path:
+            try:
+                pdf = PdfReader(open(file_path, "rb"))
+            except Exception as e:
+                logging.error(f"Failed to read pdf with exception: {e}. Skipping document...")
+                return None
+
+            text = ""
+            for page in pdf.pages:
+                text += page.extract_text()
+
+        return text
 
 
-    def load_data(self, papers, full_text=True):
+    def load_data(self, papers, full_text=True, delete_pdfs = False):
             """
             Loads metadata from Semantic Scholar, retrieve full text and return as list of Document objects.
 
@@ -174,7 +212,6 @@ class ScholarAI:
             list
                 The list of Document object that contains the search results
             """
-
             documents = []
             if full_text:
                 sch = SemanticScholar()
@@ -183,6 +220,7 @@ class ScholarAI:
                 openAccessPdf = getattr(item, "openAccessPdf", None)
                 abstract = getattr(item, "abstract", None)
                 title = getattr(item, "title", None)
+                authors = [author["name"] for author in getattr(item, "authors", [])]
                 year = getattr(item, "year", None)
                 paper_id = getattr(item, "paperId", None)
                 url_openAccessPdf = openAccessPdf.get("url") if openAccessPdf else None
@@ -203,7 +241,7 @@ class ScholarAI:
 
                 metadata = {
                     "title": title,
-                    "authors": [author["name"] for author in getattr(item, "authors", [])],
+                    "authors": authors,
                     "venue": getattr(item, "venue", None),
                     "year": year,
                     "reference": reference,
@@ -216,13 +254,14 @@ class ScholarAI:
                     "fieldsOfStudy": getattr(item, "fieldsOfStudy", None),
                 }
                 if full_text and url_openAccessPdf:
-                    text = get_full_text_docs(metadata)
+                    text_content = self.get_full_text_docs(metadata, base_dir = self.outpath_pdfs)
+                    if text_content:
+                        text = text_content
                     
                 documents.append(Document(text=text, extra_info=metadata))
 
+            if delete_pdfs:
+                shutil.rmtree(self.outpath_pdfs)
 
-            #if full_text:
-            #    full_text_documents = self.get_full_text_docs(documents)
-            #    documents.extend(full_text_documents)
             return documents
     
