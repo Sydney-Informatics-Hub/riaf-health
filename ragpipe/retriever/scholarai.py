@@ -100,7 +100,7 @@ class ScholarAI:
         """
         Retrieve papers from authors and filter by topic and publication period.
 
-        :param max_authors: int, maximum number of top author names to consider that are retrieved from Semantic Scholar
+        :param max_authors: int, maximum number of top author names to consider that are retrieved from Semantic Scholar for each author
         :param max_papers: int, maximum number of papers to retrieve
         """
         sch = SemanticScholar()
@@ -156,7 +156,7 @@ class ScholarAI:
                 ok = self.llmfilter(title, abstract)
             if ok:
                 papers_ok.append(paper)
-                citationcount.append(paper.citation_count)
+                citationcount.append(paper.citationCount)
         return papers_ok, citationcount
 
     def get_papers_from_topic(self, 
@@ -180,7 +180,7 @@ class ScholarAI:
     
 
     def get_full_text_docs(self, metadata, base_dir = 'pdfs'):
-        url = metadata["openAccessPdf"]
+        url = metadata["url_openAccessPdf"]
         externalIds = metadata["externalIds"]
         paper_id = metadata["paperId"]
         file_path = None
@@ -206,11 +206,14 @@ class ScholarAI:
             text = ""
             for page in pdf.pages:
                 text += page.extract_text()
+        else:
+            logging.error(f"Failed to download pdf from {url} or arxiv")
+            return None
 
         return text
 
 
-    def load_data(self, papers, full_text=True, delete_pdfs = False, max_documents = 100):
+    def load_data(self, papers, full_text=True, delete_pdfs = False):
             """
             Loads metadata from Semantic Scholar, retrieve full text and return as list of Document objects.
             Automatically sorts papers by citation count and returns the top max_documents.
@@ -223,8 +226,6 @@ class ScholarAI:
                 If True, retrieve full text
             delete_pdfs: bool
                 If True, delete pdfs after retrieving full text
-            max_documents: int
-                Maximum number of documents to return
 
             Returns
             -------
@@ -284,16 +285,21 @@ class ScholarAI:
 
             return documents
     
-    def get_documents(self, authors, topic, filter_with_llm = True, open_access_only = True):
+    def get_documents(self, filter_with_llm = True, open_access_only = True):
         """
         Retrieve documents from papers given authors and filter by publication period and topic.
 
-        :param authors: list of str, author names
-        :param topic: str, topic to search for
         :param filter_with_llm: bool, if True, filter with LLM
         :param open_access_only: bool, if True, only open access papers are returned
         """
+        logging.info("Searching and processing papers...")
         papers = self.get_papers_from_authors()
-        documents = self.load_data(papers, full_text = True, delete_pdfs = self.delete_pdfs)
-        return documents
+        if papers:
+            logging.info(f"Number of papers found from authors: {len(papers)}")
+            logging.info("Extracting content and metadata from papers...")
+            documents = self.load_data(papers, full_text = True, delete_pdfs = self.delete_pdfs)
+            return documents
+        else:
+            logging.error("No papers found from authors")    
+            return None
     
