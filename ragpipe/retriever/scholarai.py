@@ -13,9 +13,8 @@ from llama_index.core.llms import ChatMessage
 from llama_index.readers.base import BaseReader
 from llama_index.readers.schema.base import Document
 from PyPDF2 import PdfReader
-
-
-from pdfdownloader import download_pdf, download_pdf_from_arxiv
+# local imports
+from retriever.pdfdownloader import download_pdf, download_pdf_from_arxiv
 
 
 LLMSERVICE = 'azure' # 'openai' or 'azure'
@@ -24,7 +23,13 @@ AZURE_API_VERSION = "2023-12-01-preview"
 AZURE_ENGINE = "gpt-35-turbo"
 
 class ScholarAI:
-    def __init__(self, topic, authors, year_start = None, year_end = None, outpath_pdfs = 'pdfs', delete_pdfs = False):
+    def __init__(self, 
+                 topic, 
+                 authors, 
+                 year_start = None, 
+                 year_end = None, 
+                 outpath_pdfs = 'pdfs', 
+                 delete_pdfs = False):
         self.topic = topic
         self.authors = authors
         self.year_start = year_start
@@ -91,15 +96,16 @@ class ScholarAI:
             logging.error(f"LLM response not understood: {result}")
             return None
         
-    def get_papers_from_authors(self, max_authornames = 3):
+    def get_papers_from_authors(self, max_authornames = 3, max_papers = 100):
         """
         Retrieve papers from authors and filter by topic and publication period.
 
         :param max_authors: int, maximum number of top author names to consider that are retrieved from Semantic Scholar
+        :param max_papers: int, maximum number of papers to retrieve
         """
         sch = SemanticScholar()
-        authors_ids = []
         paper_list = []
+        citations = []
         for author in self.authors:
             results = sch.search_author(author)
             if len(results) > max_authornames:
@@ -108,8 +114,14 @@ class ScholarAI:
             #author_ids = [results[i].authorId for i in range(min(len(results), max_authors))]
             for result in results:
                 papers = result.papers
-                papers = self.filter_papers(papers)
+                papers, citationcounts = self.filter_papers(papers)
                 paper_list.extend(papers)
+                citations.extend(citationcounts)
+        # sort lists by citations (descending) and select top max
+        idx_sorted = sorted(range(len(citations)), key=lambda k: citations[k], reverse=True)
+        paper_list = [paper_list[i] for i in idx_sorted]
+        if max_papers:
+            paper_list = paper_list[0:max_papers]
         return paper_list
 
         
@@ -121,11 +133,12 @@ class ScholarAI:
         :param filter_with_llm: bool, if True, filter with LLM
         :param open_access_only: bool, if True, only open access papers are returned
 
-        :return: list of papers
+        :return: 
+            - list of papers
+            - list of citation counts
         """
         papers_ok = []
         citationcount = []
-        paperIds = []
         ok = True
         for paper in papers:
             if paper.year < self.year_start:
@@ -144,8 +157,7 @@ class ScholarAI:
             if ok:
                 papers_ok.append(paper)
                 citationcount.append(paper.citation_count)
-                paperIds.append(paper.paperId)
-        return papers_ok 
+        return papers_ok, citationcount
 
     def get_papers_from_topic(self, 
                               filter_with_llm = True, 
@@ -198,14 +210,21 @@ class ScholarAI:
         return text
 
 
-    def load_data(self, papers, full_text=True, delete_pdfs = False):
+    def load_data(self, papers, full_text=True, delete_pdfs = False, max_documents = 100):
             """
             Loads metadata from Semantic Scholar, retrieve full text and return as list of Document objects.
+            Automatically sorts papers by citation count and returns the top max_documents.
 
             Parameters
             ----------
             papers: list of papers
                 The list of papers to retrieve full text from
+            full_text: bool
+                If True, retrieve full text
+            delete_pdfs: bool
+                If True, delete pdfs after retrieving full text
+            max_documents: int
+                Maximum number of documents to return
 
             Returns
             -------
@@ -264,4 +283,17 @@ class ScholarAI:
                 shutil.rmtree(self.outpath_pdfs)
 
             return documents
+    
+    def get_documents(self, authors, topic, filter_with_llm = True, open_access_only = True):
+        """
+        Retrieve documents from papers given authors and filter by publication period and topic.
+
+        :param authors: list of str, author names
+        :param topic: str, topic to search for
+        :param filter_with_llm: bool, if True, filter with LLM
+        :param open_access_only: bool, if True, only open access papers are returned
+        """
+        papers = self.get_papers_from_authors()
+        documents = self.load_data(papers, full_text = True, delete_pdfs = self.delete_pdfs)
+        return documents
     
