@@ -1,4 +1,28 @@
-# AI powered publication retrieval
+"""
+Scholar AI class to retrieve papers from authors and topic and filter by publication period and topic.
+
+This class add the following functionality to Semantic Scholar API:
+- Filter papers by topic using LLM (GPT-3.5-turbo)
+- custom filter and ranking of papers by publication period and citations
+- Download open-access PDFs and retrieve full text from papers
+- Store metadata and content of papers in Document objects for further LLM processing
+
+How to use:
+
+set environment variable OPENAI_API_KEY  with your Azure OpenAI key (default) or OpenAI key.
+
+Python:
+------ 
+from retriever.scholarai import ScholarAI
+scholar = ScholarAI(topic = ..., authors = [..., ...], year_start=..., year_end = ...)
+papers = scholar.get_papers_from_authors(max_papers = 20)
+documents = scholar.load_data(papers)
+------
+
+see for example: tests/test_scholarai.py
+
+Author: Sebastian Haan
+"""
 
 import os
 import time
@@ -107,11 +131,10 @@ class ScholarAI:
         paper_list = []
         citations = []
         for author in self.authors:
+            logging.info(f"Searching papers for author: {author}")
             results = sch.search_author(author)
             if len(results) > max_authornames:
                 results = results[0:max_authornames]
-            #author_names = [results[i].name for i in range(min(len(results), max_authors))]
-            #author_ids = [results[i].authorId for i in range(min(len(results), max_authors))]
             for result in results:
                 papers = result.papers
                 papers, citationcounts = self.filter_papers(papers)
@@ -166,6 +189,13 @@ class ScholarAI:
                               open_access_only = False):
         """
         Retrieve papers from topic and filter by publication period.
+
+        :param filter_with_llm: bool, if True, filter with LLM
+        :param min_citation_count: int, minimum citation count
+        :param limit: int, maximum number of papers to retrieve
+        :param open_access_only: bool, if True, only open access papers are returned
+
+        :return: list of papers
         """
         sch = SemanticScholar()
         papers = sch.search_paper(self.topic, 
@@ -180,6 +210,14 @@ class ScholarAI:
     
 
     def get_full_text_docs(self, metadata, base_dir = 'pdfs'):
+        """
+        Retrieve full text from papers.
+
+        :param metadata: dict, metadata of paper
+        :param base_dir: str, directory to store pdfs
+
+        :return: text
+        """
         url = metadata["url_openAccessPdf"]
         externalIds = metadata["externalIds"]
         paper_id = metadata["paperId"]
