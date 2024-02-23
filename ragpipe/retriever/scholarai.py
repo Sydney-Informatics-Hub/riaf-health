@@ -163,6 +163,8 @@ class ScholarAI:
         papers_ok = []
         citationcount = []
         ok = True
+        if filter_with_llm:
+            print(f"Checking {len(papers)} abstracts with LLM for relevance...")
         for paper in papers:
             if paper.year < self.year_start:
                 continue
@@ -180,6 +182,7 @@ class ScholarAI:
             if ok:
                 papers_ok.append(paper)
                 citationcount.append(paper.citationCount)
+        print(f"Number of relevant papers found for author: {len(papers)}")
         return papers_ok, citationcount
 
     def get_papers_from_topic(self, 
@@ -232,6 +235,9 @@ class ScholarAI:
             and "ArXiv" in externalIds
             and not os.path.exists(persist_dir)):
             # download the pdf from arxiv
+            file_path = download_pdf_from_arxiv(paper_id, externalIds["ArXiv"], base_dir)
+
+        if not file_path and "ArXiv" in externalIds:
             file_path = download_pdf_from_arxiv(paper_id, externalIds["ArXiv"], base_dir)
 
         if file_path:
