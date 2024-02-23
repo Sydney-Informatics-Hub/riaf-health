@@ -11,8 +11,10 @@ from llama_index.chat_engine.condense_question import CondenseQuestionChatEngine
 from llama_index.chat_engine import CondensePlusContextChatEngine 
 from llama_index.memory import ChatMemoryBuffer
 
+# local package imports
 from utils.pubprocess import publications_to_markdown, clean_publications
-from retriever.semanticscholar import read_semanticscholar
+from retriever.semanticscholar import read_semanticscholar 
+from retriever.scholarai import ScholarAI
 from queryengine.queryprocess import QueryEngine
 from indexengine.process import (
     create_index, 
@@ -31,6 +33,7 @@ _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
 _llm_service = "openai" # "azure" or "openai" # , see 
+_use_scholarai = True # use scholarai to retrieve documents. Much more accurate but slower than semanticscholar
 
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -300,13 +303,28 @@ class RAGscholar:
         os.makedirs(self.outpath, exist_ok=True)
 
         # Search, retrieve and read documents from Semantic Scholar
-        logging.info("Searching and reading documents from Semantic Scholar ...")
-        self.documents = read_semanticscholar(self.research_topic, 
-                                              self.author, 
-                                              self.keywords, 
-                                              limit = _scholar_limit,
-                                              year_start=self.research_start,
-                                              year_end=self.research_end)
+        if _use_scholarai:
+            logging.info("Searching and reading documents with AI-assisted Semantic Scholar...")
+            # check if author is a list
+            if isinstance(self.author, list):
+                authors = self.author
+            else:
+                authors = [self.author]
+            scholar = ScholarAI(self.research_topic,
+                                authors, 
+                                year_start= self.research_start, 
+                                year_end = self.research_end)
+            papers = scholar.get_papers_from_authors(max_papers = _scholar_limit)
+            documents = scholar.load_data(papers)
+
+        else:
+            logging.info("Searching and reading documents from Semantic Scholar API ..")
+            self.documents = read_semanticscholar(self.research_topic, 
+                                                self.author, 
+                                                self.keywords, 
+                                                limit = _scholar_limit,
+                                                year_start=self.research_start,
+                                                year_end=self.research_end)
 
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
