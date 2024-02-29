@@ -74,18 +74,30 @@ def web2docs_simple(urls):
     documents = loader.load_data(urls=urls)
     return documents
 
-def web2docs_async(urls):
+def web2docs_async(urls, titles):
     """
     Extracts main text content from a list of webpages using asyncio and bs4.
     
     Args:
         urls (list of str): List of URLs of the webpages to extract content from.
+        titles (list of str): List of titles of the webpages to extract content from.
         
     Returns:
         documents: List of documents with main text content of the webpages.
     """
     contents = asyncio.run(fetch_all(urls))
-    documents = [Document(text=content, doc_id = url) for content, url in zip(contents, urls)]
+    # filter for contents that are not None
+    contents_ok = []
+    urls_ok = []
+    titles_ok = []
+    for i in range(len(contents)):
+        if contents[i]:
+            contents_ok.append(contents[i])
+            urls_ok.append(urls[i])
+            titles_ok.append(titles[i])
+
+    metadata = [{'href': url, 'title': title} for url, title in zip(urls_ok,titles_ok)]
+    documents = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(contents_ok, urls_ok, metadata)]
     return documents
 
 def docs2index(documents):
