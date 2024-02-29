@@ -15,6 +15,8 @@ from llama_index.memory import ChatMemoryBuffer
 from utils.pubprocess import publications_to_markdown, clean_publications
 from retriever.semanticscholar import read_semanticscholar 
 from retriever.scholarai import ScholarAI
+from retriever.bingsearch import bing_custom_search, get_urls_from_bing, get_titles_from_bing
+from retriever.webcontent import web2docs_async, web2docs_simple
 from queryengine.queryprocess import QueryEngine
 from indexengine.process import (
     create_index, 
@@ -283,19 +285,33 @@ class RAGscholar:
         self.author = author
         self.keywords = keywords
         self.organisation = organisation
-        try:
-            if research_start is not None:
+        
+        if research_start is not None:
+            try:
                 self.research_start = int(research_start)
-            else:
+            except:
+                logging.warning("Research period start be integers. Continuing without.")
                 self.research_start = None
-            if research_end is not None:
+        if research_end is not None:
+            try:
                 self.research_end = int(research_end)
-            else:
+            except:
+                logging.warning("Research period end be integers. Continuing without.")
                 self.research_end = None
-        except:
-            logging.warning("Research period start and end must be integers. Continuing without research period.")
-            self.research_start = None
-            self.research_end = None
+        if impact_start is not None:
+            try:
+                self.impact_start = int(impact_start)
+            except:
+                logging.warning("Research impact start be integers. Continuing without.")
+                self.impact_start = None
+        if impact_end is not None:
+            try:
+                self.impact_end = int(impact_end)
+            except:
+                logging.warning("Research impact end be integers. Continuing without.")
+                self.impact_end = None
+
+
 
         fname_out = self.research_topic + "_by_" + self.author
         fname_out = fname_out.replace(" ", "_")
@@ -325,6 +341,17 @@ class RAGscholar:
                                                 limit = _scholar_limit,
                                                 year_start=self.research_start,
                                                 year_end=self.research_end)
+            
+        # Search web for content related to research topic
+        bing_results = bing_custom_search(self.research_topic, 
+                                          count=3, 
+                                          year_start = self.impact_start, 
+                                          year_end= self.impact_end)
+        if len(bing_results) > 0:
+            urls = get_urls_from_bing(bing_results)
+            titles = get_titles_from_bing(bing_results)
+            documents_web = web2docs_async(urls)
+            self.documents = self.documents + documents_web
 
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
