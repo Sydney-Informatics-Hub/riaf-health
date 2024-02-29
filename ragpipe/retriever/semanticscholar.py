@@ -1,7 +1,30 @@
-# Functions for creating, loading and adding documents to index
+# Functions for searching publications with SemantiScholar API
+# for more info about API see https://api.semanticscholar.org/api-docs/#tag/Paper-Data/operation/post_graph_get_papers
+
+"""
+metadata example:
+{'title': 'Tropoelastin and Elastin Assembly',
+ 'venue': 'Frontiers in Bioengineering and Biotechnology',
+ 'year': 2021,
+ 'paperId': 'c450bf38350269cd8be8bbdcd39ccf598da403bf',
+ 'citationCount': 58,
+ 'openAccessPdf': 'https://www.frontiersin.org/articles/10.3389/fbioe.2021.643110/pdf',
+ 'authors': ['J. Ozsvar',
+  'Chengeng Yang',
+  'S. Cain',
+  'C. Baldock',
+  'A. Tarakanova',
+  'A. Weiss'],
+ 'externalIds': {'PubMedCentral': '7947355',
+  'DOI': '10.3389/fbioe.2021.643110',
+  'CorpusId': 232041511,
+  'PubMed': '33718344'}}
+"""
 
 import logging
+import requests
 from llama_hub.semanticscholar import SemanticScholarReader
+#import crossref_commons.retrieval
 
 def read_semanticscholar(query_space, author, keywords, limit =20, full_text = False, year_start = None, year_end = None):
     """
@@ -42,10 +65,10 @@ def read_semanticscholar(query_space, author, keywords, limit =20, full_text = F
             paper_id = doc.metadata['paperId']
             if 'year' in doc.metadata:
                 year = doc.metadata['year']
-                if 'year_start' is not None:
+                if year_start is not None:
                     if year < year_start:
                         continue                
-                if 'year_end' is not None:
+                if year_end is not None:
                     if year > year_end:
                         continue   
             if paper_id not in unique_paper_ids:
@@ -56,3 +79,44 @@ def read_semanticscholar(query_space, author, keywords, limit =20, full_text = F
     else:
         logging.info(f"No SemanticScholar documents found for topic nor any keyword")
         return None
+    
+
+
+
+
+
+
+
+
+    
+def get_datacite_metadata(doi):
+    """
+    for testing
+    Get metadata from DataCite for a publication with a given DOI
+
+    :param doi: str, DOI of publication
+
+    :return: metadata
+    """
+    #email = 'crossref.flakily508@passmail.net'
+    #url = f"https://api.datacite.org/dois/{doi}"
+    #url = f"https://doi.org/api/handles/{doi}?pretty"
+    #url = f"https://doi.org/api/handles/{doi}?type=URL&callback=processResponse" # --> not enough info
+    url = f"https://doi.crossref.org/search/doi?pid={email}&format=info&doi={doi}" # --> not enough info
+    #url = f"https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}/authors?fields=affiliations" # --> affiliations typically empty
+    
+    """
+    response = requests.get(url)
+    if response.status_code == 200:
+        metadata = response.json()
+        return metadata
+    else:
+        logging.error(f"Error getting DataCite metadata for DOI: {doi}")
+        return None
+    """
+    
+    metadata = crossref_commons.retrieval.get_publication_as_json(doi)
+    # only sometimes affilitations are included, otherwise empyt []
+    # however, it may include ORCID, which can be subsequently used to get affiliations 
+    #(https://info.orcid.org/documentation/api-tutorials/api-tutorial-read-data-on-a-record/)
+    # https://github.com/ORCID/python-orcid
