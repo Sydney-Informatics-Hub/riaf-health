@@ -34,7 +34,7 @@ _model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
-_llm_service = "openai" # "azure" or "openai" # , see 
+_llm_service = "azure" # "azure" or "openai" # , see 
 _use_scholarai = True # use scholarai to retrieve documents. Much more accurate but slower than semanticscholar
 
 
@@ -331,7 +331,7 @@ class RAGscholar:
                                 year_start= self.research_start, 
                                 year_end = self.research_end)
             papers = scholar.get_papers_from_authors(max_papers = _scholar_limit)
-            documents = scholar.load_data(papers)
+            self.documents = scholar.load_data(papers)
 
         else:
             logging.info("Searching and reading documents from Semantic Scholar API ..")
@@ -351,7 +351,8 @@ class RAGscholar:
             urls = get_urls_from_bing(bing_results)
             titles = get_titles_from_bing(bing_results)
             documents_web = web2docs_async(urls, titles)
-            self.documents = self.documents + documents_web
+            if len(self.documents) > 0:
+                self.documents = self.documents + documents_web
 
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
