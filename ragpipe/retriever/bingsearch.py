@@ -1,4 +1,22 @@
-# Bing search API functions
+"""
+Bing search
+
+This module provides functions to perform Bing search and get metadata from the search results.
+This module is used in main.py to get search results from Bing and in webcontent.py to get data from the search results.
+The Bing search client is initialized with the Bing Search V7 subscription key and the endpoint.
+The module contains the following functions:
+    - init_bing()
+    - bing_custom_search(query, count=10, year_start = None, year_end= None)
+    - bing_news_search(query, count=10, year_start = None, year_end= None)
+    - get_urls_from_bing(dict_list)
+    - get_titles_from_bing(dict_list)
+    - get_snippets_from_bing(dict_list)
+    - get_metadata(url_list)
+
+See for example usage and tests in test_webquery.py
+
+Author: Sebastian Haan
+"""
 
 import json
 import requests

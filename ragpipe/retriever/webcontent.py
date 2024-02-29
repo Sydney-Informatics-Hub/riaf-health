@@ -1,9 +1,20 @@
-# webpage content retrieval
+""" 
+This module contains functions to extract text content and metadata from webpages given a list of urls.
+It also creates an index database from the extracted content.
+The module contains the following functions:
+    - custom_webextract(url)
+    - web2docs_simple(urls)
+    - web2docs_async(urls, titles)
+    - docs2index(documents)
+
+See for example usage and tests in test_webquery.py
+
+Author: Sebastian Haan
+"""
 
 import requests
 from bs4 import BeautifulSoup
 from llama_index import download_loader, VectorStoreIndex
-#from llama_index.readers.web import SimpleWebPageReader # --> not working
 from llama_index import Document
 import logging
 import aiohttp
