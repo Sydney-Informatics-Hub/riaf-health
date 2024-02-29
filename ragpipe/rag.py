@@ -350,7 +350,7 @@ class RAGscholar:
         if len(bing_results) > 0:
             urls = get_urls_from_bing(bing_results)
             titles = get_titles_from_bing(bing_results)
-            documents_web = web2docs_async(urls)
+            documents_web = web2docs_async(urls, titles)
             self.documents = self.documents + documents_web
 
         # generate index store and save index in self.path_index
