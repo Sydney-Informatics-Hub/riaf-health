@@ -310,7 +310,8 @@ class RAGscholar:
             except:
                 logging.warning("Research impact end be integers. Continuing without.")
                 self.impact_end = None
-
+        self.research_period = f"{self.research_start}-{self.research_end}"
+        self.impact_period = f"{self.impact_start}-{self.impact_end}"
 
 
         fname_out = self.research_topic + "_by_" + self.author
