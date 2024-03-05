@@ -262,7 +262,7 @@ class ScholarAI:
         return text
 
 
-    def load_data(self, papers, full_text=True, delete_pdfs = False):
+    def load_data(self, papers, full_text=True):
             """
             Loads metadata from Semantic Scholar, retrieve full text and return as list of Document objects.
             Automatically sorts papers by citation count and returns the top max_documents.
@@ -273,8 +273,6 @@ class ScholarAI:
                 The list of papers to retrieve full text from
             full_text: bool
                 If True, retrieve full text
-            delete_pdfs: bool
-                If True, delete pdfs after retrieving full text
 
             Returns
             -------
@@ -329,7 +327,7 @@ class ScholarAI:
                     
                 documents.append(Document(text=text, extra_info=metadata))
 
-            if delete_pdfs:
+            if self.delete_pdfs:
                 shutil.rmtree(self.outpath_pdfs)
 
             return documents
@@ -346,7 +344,7 @@ class ScholarAI:
         if papers:
             logging.info(f"Number of papers found from authors: {len(papers)}")
             logging.info("Extracting content and metadata from papers...")
-            documents = self.load_data(papers, full_text = True, delete_pdfs = self.delete_pdfs)
+            documents = self.load_data(papers, full_text = True)
             return documents
         else:
             logging.error("No papers found from authors")    

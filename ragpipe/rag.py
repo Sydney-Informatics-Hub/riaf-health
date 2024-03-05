@@ -275,15 +275,35 @@ class RAGscholar:
             research_start = None,
             research_end = None,
             impact_start = None,
-            impact_end = None):
+            impact_end = None,
+            scholarai_delete_pdfs = False):
         """
-        Run RAG model
+        Run RAG pipeline.
+
+        :param research_topic: str, research topic
+        :param author: str, author name
+        :param keywords: str, keywords
+        :param organisation: str, organisation
+        :param research_start: int, research period start
+        :param research_end: int, research period end
+        :param impact_start: int, impact period start
+        :param impact_end: int, impact period end
+        :param scholarai_delete_pdfs: bool, delete pdfs after processing
+
+        The pipeline includes the following key steps:
+        - Search and process documents from Semantic Scholar
+        - Search web for content related to research topic
+        - Generate index store and save data and metadata in database
+        - Initialize chat engine with context prompt
+        - Run through prompt questions
+        - Generate case study
         """
         path_index_name = research_topic + "_by_" + author
         path_index_name = path_index_name.replace(" ", "_")
         self.research_topic = research_topic
         self.author = author
         self.keywords = keywords
+        self.scholarai_delete_pdfs = scholarai_delete_pdfs
         self.organisation = organisation
         
         if research_start is not None:
@@ -330,7 +350,8 @@ class RAGscholar:
             scholar = ScholarAI(self.research_topic,
                                 authors, 
                                 year_start= self.research_start, 
-                                year_end = self.research_end)
+                                year_end = self.research_end,
+                                delete_pdfs = self.scholarai_delete_pdfs)
             papers = scholar.get_papers_from_authors(max_papers = _scholar_limit)
             self.documents = scholar.load_data(papers)
 
