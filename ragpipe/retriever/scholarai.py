@@ -226,6 +226,11 @@ class ScholarAI:
         paper_id = metadata["paperId"]
         file_path = None
         persist_dir = os.path.join(base_dir, f"{paper_id}.pdf")
+        # check if pdf exists
+        if os.path.exists(persist_dir):
+            file_path = persist_dir
+            logging.info(f"PDF already downloaded: {file_path}")
+
         if url and not os.path.exists(persist_dir):
             # Download the document first
             file_path = download_pdf(metadata["paperId"], url, persist_dir)
