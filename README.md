@@ -33,6 +33,13 @@ The software pipeline `ragpipe` automatically generates a research impact use-ca
 9. Report generator: produce, format, and save the final use case study report (see 'ragpipe/rag.py')
 10. Report conversion (Optional): Converting the report into different formats (Markdown, HTML, PDF, DOCX).
 
+## Installation
+```
+conda create -n riaf python=3.11
+conda activate riaf
+pip install semanticscholar==0.7.0 arxiv==2.1.0 llama-index==0.9.30 llama-hub==0.0.71 llama-index-core==0.10.3 llama-index-readers-web==0.1.2 pypdf2==3.0.1
+pip install  llama-index-core==0.10.3
+```
 
 ## Project Partners
 
