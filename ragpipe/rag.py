@@ -194,6 +194,26 @@ class RAGscholar:
         return content, sources
     
 
+    def generate_review_engine(self, 
+                           filename_review_prompt = "review_prompt.json"):
+        """
+        LLM review engine using review criteria as specified in filename_qa_prompt.
+
+        :param filename_review_prompt: str, filename of review prompt
+
+        :return: response
+        """
+        with open(os.path.join(self.path_templates, filename_review_prompt), "r") as file:
+            review_text = file.read()
+        review_prompt = json.dumps(review_text, indent=2)
+        # replace in review prompt the following: 
+        #    ORG_NAME with org_name, RESEARCH_PERIOD with research_period, STAFF_NAMES with staff_names, IMPACT_PERIOD with impact_period
+        #   QUESTION1 with question1, QUESTION2 with question2, QUESTION3 with question3, QUESTION4 with question4
+        #   ANSWER1 with answer1, ANSWER2 with answer2, ANSWER3 with answer3, ANSWER4 with answer4
+        pass
+
+    
+
     def generate_system_prompt(self):
         with open(self.fname_system_prompt, "r") as file:
             case_study_text = file.read()
@@ -235,6 +255,10 @@ class RAGscholar:
             #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
             self.list_answers.append(content)
             self.list_sources.append(sources)
+            # Add QA review agent to check list_answers (TBD)
+            #self.generate_review_engine()
+
+
     
 
     def generate_case_study(self, process_sources = False):
