@@ -4,10 +4,37 @@
 
 To measure health and medical research impact, a new Research Impact Assessment Framework (RIAF) has been developed. The RIAF evaluates the research environment and the alignment and influence of research, with the goal of providing funders a holistic analysis of NSW’s health and medical research ecosystem for making informed investment decisions.
 
-The current design of the case study template includes four questions and gives researchers the freedom to use a set of indicators that are 
-relevant to their research program. Use of AI-powered LLM solutions would improve the scalability of the framework and reduce the burden on participants.
+To improve the scalability of this framework, an AI powered software has been developed that allows researchers and funding organisations to generate assessment reports about the research impact for a given research group and topic. Research impact is evaluated along distinct criteria such as overall problem addressed, research impact-to-date, and potential future applications. The current design of the case study template includes four assessment criteria and provides researchers the freedom to use a set of indicators that are relevant to their research program (e.g. research/impact period). 
 
-This project aims to develop software and AI solutions to generate use-case studies and their research impact.
+The AI generator combines Large Language Models (LLM) with factual knowledge retrievers such as scholar publications and web content. For a complete overview of retrievers see modules in directory ragpipe/retrievers.
+
+## Installation
+
+Please follow the installations steps as outlined below
+
+1) Clone github repo:
+```shell
+git clone git@github.sydney.edu.au:informatics/PIPE-4668-RIAF_NSWHEALTH.git
+cd PIPE-4668-RIAF_NSWHEALTH/ragpipe
+```
+
+To install dependencies, ensure you have Mamba or Conda installed. Then install dependencies:
+
+```shell
+conda install -f environment.yaml
+```
+
+Activate environment:
+
+```shell
+conda activate azure_ai
+```
+
+
+## Use-case examples
+
+Example how to generate assessment report can be found in the file `tests/use_case_studies`.
+
 
 ## RAG Pipeline
 
@@ -17,6 +44,7 @@ The software pipeline `ragpipe` automatically generates a research impact use-ca
 2. User input: via CLI or config file (see main.py)
     - Topic
     - Author
+    - Keywords
     - Organisation
     - Research period
     - Research impact period.
