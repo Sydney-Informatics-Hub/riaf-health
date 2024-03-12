@@ -14,9 +14,8 @@ AZURE_ENGINE = "gpt-35-turbo"
 
 class ReviewAgent:
     def __init__(self, 
-                 filename_review_prompt = "review_prompt.json",
+                 filename_review_prompt = "review_criteria.txt",
                  path_templates = './templates/'):
-        self.content = content
         self.filename_review_prompt = os.path.join(path_templates, filename_review_prompt)
 
         if LLMSERVICE == 'openai':
@@ -49,7 +48,7 @@ class ReviewAgent:
 
         :param content: str, content
         """
-        prompt = (f"Provide instructive feedback how to improve the following content: \n"
+        prompt = (f"Given the review criteria, provide instructive and concise feedback how to improve the following content: \n"
                     + f"{content}")
         messages = [
                 ChatMessage(role="system", content=self.system_prompt),
