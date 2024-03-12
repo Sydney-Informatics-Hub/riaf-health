@@ -11,6 +11,7 @@ from llama_index.chat_engine.condense_question import CondenseQuestionChatEngine
 from llama_index.chat_engine import CondensePlusContextChatEngine 
 from llama_index.memory import ChatMemoryBuffer
 
+
 # local package imports
 from utils.pubprocess import publications_to_markdown, clean_publications
 from retriever.semanticscholar import read_semanticscholar 
@@ -18,6 +19,7 @@ from retriever.scholarai import ScholarAI
 from retriever.bingsearch import bing_custom_search, get_urls_from_bing, get_titles_from_bing
 from retriever.webcontent import web2docs_async, web2docs_simple
 from queryengine.queryprocess import QueryEngine
+from queryengine.reviewer import ReviewAgent
 from indexengine.process import (
     create_index, 
     add_docs_to_index, 
@@ -194,24 +196,6 @@ class RAGscholar:
         return content, sources
     
 
-    def generate_review_engine(self, 
-                           filename_review_prompt = "review_prompt.json"):
-        """
-        LLM review engine using review criteria as specified in filename_qa_prompt.
-
-        :param filename_review_prompt: str, filename of review prompt
-
-        :return: response
-        """
-        with open(os.path.join(self.path_templates, filename_review_prompt), "r") as file:
-            review_text = file.read()
-        review_prompt = json.dumps(review_text, indent=2)
-        # replace in review prompt the following: 
-        #    ORG_NAME with org_name, RESEARCH_PERIOD with research_period, STAFF_NAMES with staff_names, IMPACT_PERIOD with impact_period
-        #   QUESTION1 with question1, QUESTION2 with question2, QUESTION3 with question3, QUESTION4 with question4
-        #   ANSWER1 with answer1, ANSWER2 with answer2, ANSWER3 with answer3, ANSWER4 with answer4
-        pass
-
     
 
     def generate_system_prompt(self):
@@ -242,6 +226,8 @@ class RAGscholar:
         self.list_answers = []
         self.list_sources = []
         self.list_questions = []
+        # Initialize review agent
+        review_agent = ReviewAgent()
         for i, prompt_filename in enumerate(list_prompt_filenames):
             with open(os.path.join(self.path_templates, prompt_filename), "r") as file:
                 prompt_text = file.read()
@@ -253,12 +239,13 @@ class RAGscholar:
             #while len(content.split()) > list_max_word[i]:
             #    logging.info("Word count exceeds maximum word count. Content is run again though the model.")
             #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
+            review_txt = review_agent.run(content)
+            if review_txt is not None:
+                review_prompt = (f"Improve the previous response given the following review: \n"
+                                    + f"{review_txt}")
+                content, sources = self.query_chatengine(review_prompt)
             self.list_answers.append(content)
             self.list_sources.append(sources)
-            # Add QA review agent to check list_answers (TBD)
-            #self.generate_review_engine()
-
-
     
 
     def generate_case_study(self, process_sources = False):
