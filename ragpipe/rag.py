@@ -214,12 +214,14 @@ class RAGscholar:
 
     def prompt_pipeline(self, 
                         list_prompt_filenames = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md'],
-                        list_max_word = [250, 300, 500, 300]):
+                        list_max_word = [250, 300, 500, 300],
+                        review = False):
         """
         Run through prompts from list of prompt filenames.
 
         :param list_prompt_filenames: list of prompt filenames
         :param list_max_word: list of max word count for each prompt
+        :param review: bool (Default False). Use review agent to review content and improve response
 
         :return: list_questions, list_answers, list_sources
         """
@@ -227,7 +229,9 @@ class RAGscholar:
         self.list_sources = []
         self.list_questions = []
         # Initialize review agent
-        review_agent = ReviewAgent()
+        # TBD should review agent evaluate each question separately or final report?
+        if review:
+            review_agent = ReviewAgent()
         for i, prompt_filename in enumerate(list_prompt_filenames):
             with open(os.path.join(self.path_templates, prompt_filename), "r") as file:
                 prompt_text = file.read()
@@ -239,11 +243,12 @@ class RAGscholar:
             #while len(content.split()) > list_max_word[i]:
             #    logging.info("Word count exceeds maximum word count. Content is run again though the model.")
             #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
-            review_txt = review_agent.run(content)
-            if review_txt is not None:
-                review_prompt = (f"Improve the previous response given the following review: \n"
-                                    + f"{review_txt}")
-                content, sources = self.query_chatengine(review_prompt)
+            if review:
+                review_txt = review_agent.run(content)
+                if review_txt is not None:
+                    review_prompt = (f"Improve the previous response given the following review: \n"
+                                        + f"{review_txt}")
+                    content, sources = self.query_chatengine(review_prompt)
             self.list_answers.append(content)
             self.list_sources.append(sources)
     
