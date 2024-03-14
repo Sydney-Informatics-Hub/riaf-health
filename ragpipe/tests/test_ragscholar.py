@@ -26,7 +26,8 @@ def test_RAGscholar():
             research_period_start,
             research_period_end,
             impact_period_start,
-            impact_period_end
+            impact_period_end,
+            local_document_path = '../local_documents/'
             )
     print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
     
