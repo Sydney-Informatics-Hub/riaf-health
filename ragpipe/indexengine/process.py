@@ -20,7 +20,6 @@ from llama_index import (
                          StorageContext, 
                         load_index_from_storage,
                         )
-from llama_index.core.node_parser import SimpleNodeParser
 from llama_index.embeddings import AzureOpenAIEmbedding
 
 def create_index(docstore, 
@@ -96,17 +95,9 @@ def add_docs_to_index(path_docs, index):
     """
     print("Loading new documents...")
     new_documents = SimpleDirectoryReader(path_docs).load_data()
-    for d in new_documents:
-        print(d)
 
-    # Parse documents into nodes
-    print("Parsing new documents into nodes...")
-    parser = SimpleNodeParser()
-    new_nodes = parser.get_nodes_from_documents(new_documents)
-
-    # Add nodes to the existing index
-    print("Adding new nodes to the existing index...")
-    index.insert_nodes(new_nodes)
+    for doc in new_documents:
+        index.insert(doc)
 
     return index
 
