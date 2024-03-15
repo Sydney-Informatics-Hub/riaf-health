@@ -11,7 +11,6 @@ from llama_index.chat_engine.condense_question import CondenseQuestionChatEngine
 from llama_index.chat_engine import CondensePlusContextChatEngine 
 from llama_index.memory import ChatMemoryBuffer
 
-
 # local package imports
 from utils.pubprocess import publications_to_markdown, clean_publications
 from retriever.semanticscholar import read_semanticscholar 
