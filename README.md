@@ -21,13 +21,13 @@ cd PIPE-4668-RIAF_NSWHEALTH/ragpipe
 To install dependencies, ensure you have Mamba or Conda installed. Then install dependencies:
 
 ```shell
-conda install -f environment.yaml
+conda env create -f environment.yaml
 ```
 
 Activate environment:
 
 ```shell
-conda activate azure_ai
+conda activate riaf
 ```
 
 
@@ -65,7 +65,7 @@ The software pipeline `ragpipe` automatically generates a research impact use-ca
 ```
 conda create -n riaf python=3.11
 conda activate riaf
-pip install semanticscholar==0.7.0 arxiv==2.1.0 llama-index==0.9.30 llama-hub==0.0.71 llama-index-core==0.10.3 llama-index-readers-web==0.1.2 pypdf2==3.0.1
+pip install semanticscholar==0.7.0 arxiv==2.1.0 llama-index==0.9.30 llama-hub==0.0.71 llama-index-readers-web==0.1.2 pypdf2==3.0.1 pypdf
 pip install  llama-index-core==0.10.3
 ```
 
