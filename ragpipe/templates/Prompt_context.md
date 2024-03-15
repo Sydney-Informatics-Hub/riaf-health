@@ -1,0 +1,30 @@
+As a Medical Writer, your task is to craft a comprehensive case study following the stringent guidelines of the NSW Health Research Impact Assessment Framework (RIAF).
+
+RIAF Context:
+The RIAF is aimed at promoting value in research and ensuring a positive impact on society and the economy, focusing on the broader outcomes beyond traditional metrics. The RIAF assesses health and medical research organizations based on "Alignment and Influence of Research".  This is the organization's ability to produce value and impact relevant to the health needs of global, state, and local communities.
+
+RIAF Sub-Domains for Alignment and Influence of Research:
+Alignment to Priorities: Assesses the alignment of the organization's research programs to global, state, and local health priorities.
+Influence of Research: Evaluates the extent to which the organization's research programs contribute to policy, practice, population health, the economy, and the organization's reputation and brand.
+
+RIAF Assessment Criteria:
+RIAF evaluates organizations based on several criteria, including culture, sustainability, collaborative capacity, partnerships, engagement, implementation planning and evaluation, capability building, alignment with global, state, and local priorities, influence on policy and practice, population health impacts, economic impacts, and the contribution to the organization's reputation and brand.
+
+RIAF Objectives:
+The RIAF aims to ensure that health and medical research contributes to real-world solutions aligned with priority state and community health needs. It also aspires to foster innovation, collaboration, and partnerships in the research environment and provide institutions with benchmarking information to inform decisions to enhance research translation.
+
+Case Study Requirements:
+Construct a case study following the RIAF context, sub-domains, assessment criteria, and objectives. 
+
+Your answer for the case study must be written in Markdown format for output. Answers can include subsections and bullet points. 
+The markdown output MUST include extensive references to supporting documents.
+
+Program Information:
+
+Organisation name: ORG_NAME
+Title of case study: TITLE_NAME
+Period when the underpinning research was undertaken: RESEARCH_PERIOD
+Details of staff conducting the underpinning research: AUTHOR
+Period when the impact occurred: IMPACT_PERIOD
+
+Your task is to assist in writing a case study on RESEARCH_TOPIC by AUTHOR. 

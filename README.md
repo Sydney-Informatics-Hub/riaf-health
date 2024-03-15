@@ -1,54 +1,84 @@
-# Analysis Template (Python)
+# AI Generator for Research Impact Assessment Studies
 
-This is a template for a new Python analysis project that uses Quarto to create a client-accessible website.
+## Introduction
 
+To measure health and medical research impact, a new Research Impact Assessment Framework (RIAF) has been developed. The RIAF evaluates the research environment and the alignment and influence of research, with the goal of providing funders a holistic analysis of NSW’s health and medical research ecosystem for making informed investment decisions.
 
-## Setup
+To improve the scalability of this framework, an AI powered software has been developed that allows researchers and funding organisations to generate assessment reports about the research impact for a given research group and topic. Research impact is evaluated along distinct criteria such as overall problem addressed, research impact-to-date, and potential future applications. The current design of the case study template includes four assessment criteria and provides researchers the freedom to use a set of indicators that are relevant to their research program (e.g. research/impact period). 
 
-1. [Quarto](https://quarto.org/) needs to be installed.
+The AI generator combines Large Language Models (LLM) with factual knowledge retrievers such as scholar publications and web content. For a complete overview of retrievers see modules in directory ragpipe/retrievers.
 
-2. Create and activate new conda environment for the project:
+## Installation
 
-```bash
-conda create -n project-env-name python==3.9
+Please follow the installations steps as outlined below
 
-conda activate project-env-name
+1) Clone github repo:
+```shell
+git clone git@github.sydney.edu.au:informatics/PIPE-4668-RIAF_NSWHEALTH.git
+cd PIPE-4668-RIAF_NSWHEALTH/ragpipe
 ```
 
-3. Record project requirements in a 'requirements.txt' and use pip to manage:
+To install dependencies, ensure you have Mamba or Conda installed. Then install dependencies:
 
-```bash
-pip install -r requirements.txt
-``` 
+```shell
+conda env create -f environment.yaml
+```
 
-There are many options for setting up Python environments and managing dependencies, but for most situations using conda for environment management and pip for Python library management is the most easy to implement and straight foreward solution to avoid [Python environment pains](https://xkcd.com/1987/). 
+Activate environment:
 
-## Repository File Structure
+```shell
+conda activate riaf
+```
 
-The project itself should contain the following folders:
 
-  - 003\_literature
-  - 100\_data\_cleaning\_scripts\_EDA
-  - 100\_data\_raw
-  - 200\_data\_clean
-  - 300\_test\_data
-  - 400\_analysis
-  - 500\_report
+## Use-case examples
 
-You can create new folders if you need more flexibility, using 3-digit prefixes to determine where they sit in the workflow, e.g. a folder called `999_other/` would go at the end.
+Example how to generate assessment report can be found in the file `tests/use_case_studies`.
 
-## Quarto Website Rendering
 
-To render the website, execute `quarto render --to all` from the project directory. 
+## RAG Pipeline
 
-Don't forget to edit the following files:
+The software pipeline `ragpipe` automatically generates a research impact use-case study for a given topic and author. The pipeline includes the following steps:
 
-- [ ] index.qmd
-- [ ] about.qmd
-- [ ] _quarto.yml (with your name and links to your specific project repo)
+1. Templates: context instructions and question prompts (see folder 'ragpipe/templates')
+2. User input: via CLI or config file (see main.py)
+    - Topic
+    - Author
+    - Keywords
+    - Organisation
+    - Research period
+    - Research impact period.
+3. Data search engines (see folder ragpipe/retriever): Retrieving relevant publications (arXiv, SemanticScholar, GoogleScholar).
+4. Data reader: Reading data from these sources and text conversion
+5. Data index generator: Index data, extract metadata and store content as vector database (see 'ragpipe/indexengine/process.py')
+6. RAG engine (see 'ragpipe/rag.py'): Retrieving context based on:
+    - query
+    - instructions
+    - publication content vector embeddings
+    - publication metadata
+7. LLM multi-stage prompt engine: Iterate over questions and check answers
+8. Reference engine: retrieve corresponding publication references and convert to readable format  (see 'ragpipe/utils/pubprocess.py')
+9. Report generator: produce, format, and save the final use case study report (see 'ragpipe/rag.py')
+10. Report conversion (Optional): Converting the report into different formats (Markdown, HTML, PDF, DOCX).
 
-Also you will need to tick the GitHub pages to serve the site from the `main` branch, `docs` folder.
+## Installation
+```
+conda create -n riaf python=3.11
+conda activate riaf
+pip install semanticscholar==0.7.0 arxiv==2.1.0 llama-index==0.9.30 llama-hub==0.0.71 llama-index-readers-web==0.1.2 pypdf2==3.0.1 pypdf
+pip install  llama-index-core==0.10.3
+```
 
-If there are other resources (e.g., Data stored elsewhere, literature stored elsewhere) that are linked to the project, they should be listed in this Readme document.
+## Project Partners
 
-In general, data should not be uploaded to GitHub and is be excluded via the .gitignore file. A link to, or information on how to get access to the data if you have the correct permissions, must be included in the readme for the project.
+- Janine Richards <janine.richards@sydney.edu.au>
+- Mona Shamshiri <mona.shamshiri@sydney.edu.au>
+
+
+## Attribution and Acknowledgement
+
+Acknowledgments are an important way for us to demonstrate the value we bring to your research. Your research outcomes are vital for ongoing funding of the Sydney Informatics Hub.
+
+If you make use of this software for your research project, please include the following acknowledgment:
+
+“This research was supported by the Sydney Informatics Hub, a Core Research Facility of the University of Sydney."

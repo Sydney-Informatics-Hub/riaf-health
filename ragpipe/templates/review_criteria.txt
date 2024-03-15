@@ -1,0 +1,13 @@
+Relevance: The text should be strictly relevant to the topic of discussion.
+Clarity: The text should be clear and understandable without ambiguity.
+Accuracy: All factual information should be accurate and verifiable.
+Target specific: Needs to understand target audience for the impact.
+Time specific: Needs to capture the stage of the impact (formative, maturing, established).
+Time specific: Needs information on timeframe to impact/expected impact.
+Impact specific: Needs to be clear on what impact is being measured (e.g. dissemination of resources vs making behavioural change).
+Contextual: Needs to start categorising the research into a broad field with contextual information for framing around the normal pathway to impact in that discipline. 
+Solution specific:  Needs to capture what burden in the health system its focussed on solving.
+Avoid duplicate or similar responses.
+Optional: Significance needs to be demonstrated with evidence.
+Optional: Needs to outline a timeline for this type of case and how far along the journey they are.
+Optional: Case study needs to focus on impact already created.
