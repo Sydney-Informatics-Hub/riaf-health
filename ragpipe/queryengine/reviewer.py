@@ -40,6 +40,11 @@ class ReviewAgent:
             logging.error(f"Review prompt {self.filename_review_prompt} not found")
         with open(self.filename_review_prompt, "r") as file:
             review_criteria = file.read()
+        self.system_prompt = ("You are an LLM agent that acts as a reviewer. You will review the output from another LLM query. \n"
+                            "Follow the review criteria strictly and suggest changes to the text if necessary. \n"
+                            "Only suggest changes if they are necessary. \n\n"
+                            "The review criteria are as follows: \n"
+                            f"{review_criteria}")
         self.system_prompt = json.dumps(review_criteria, indent=2)
 
     def run(self, content):
