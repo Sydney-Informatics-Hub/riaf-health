@@ -46,6 +46,11 @@ AZURE_ENDPOINT = "https://techlab-copilots-aiservices.openai.azure.com/"
 AZURE_API_VERSION = "2023-12-01-preview" 
 AZURE_ENGINE = "gpt-35-turbo"
 
+#LLMSERVICE = 'azure' # 'openai' or 'azure'
+#AZURE_ENDPOINT = "https://apim-techlab-usydtechlabgenai.azure-api.net/" 
+#AZURE_API_VERSION = "2023-12-01-preview'" 
+#AZURE_ENGINE = "GPT35shopfront"
+
 class ScholarAI:
     def __init__(self, 
                  topic, 
