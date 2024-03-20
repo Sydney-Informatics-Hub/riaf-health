@@ -35,7 +35,7 @@ _model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
-_llm_service = "azure" # "azure" or "openai" # , see 
+_llm_service = "openai" # "azure" or "openai" # , see 
 _use_scholarai = True # use scholarai to retrieve documents. Much more accurate but slower than semanticscholar
 
 
@@ -238,12 +238,14 @@ class RAGscholar:
             # query chat engine
             logging.info(f"Querying chat engine with prompt {i} ...")
             content, sources = self.query_chatengine(prompt_text)
+            logging.info(f"Response {i}: {content}")
             # Check content size
             #while len(content.split()) > list_max_word[i]:
             #    logging.info("Word count exceeds maximum word count. Content is run again though the model.")
             #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
             if review:
                 review_txt = review_agent.run(content, i)
+                logging.info(f"Review response {i}: {review_txt}")
                 if review_txt is not None:
                     logging.info("Reviewing response ...")
                     review_prompt = (f"Improve the previous response given the review below: \n"
@@ -251,6 +253,7 @@ class RAGscholar:
                                         + "Review: \n"
                                         + f"{review_txt}")
                     content, sources = self.query_chatengine(review_prompt)
+                    logging.info(f"Response {i} after review: {content}")
                 else:
                     logging.info("No review response. Continuing with original response.")
             self.list_answers.append(content)
