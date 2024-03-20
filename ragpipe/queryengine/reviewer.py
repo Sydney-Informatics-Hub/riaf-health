@@ -14,9 +14,9 @@ AZURE_ENGINE = "gpt-35-turbo"
 
 class ReviewAgent:
     def __init__(self, 
-                 filename_review_prompt = "review_criteria.txt",
+                 filenames_review = ['Review1.md', 'Review2.md', 'Review3.md', 'Review4.md'],
                  path_templates = './templates/'):
-        self.filename_review_prompt = os.path.join(path_templates, filename_review_prompt)
+        self.filenames_review = [os.path.join(path_templates, filename) for filename in filenames_review]
 
         if LLMSERVICE == 'openai':
             self.llm = OpenAI(
@@ -35,25 +35,27 @@ class ReviewAgent:
         else:
             logging.error(f"LLM service {LLMSERVICE} not supported")
             self.llm = None\
-        # check if review_prompt exists
-        if not os.path.exists(self.filename_review_prompt):
-            logging.error(f"Review prompt {self.filename_review_prompt} not found")
-        with open(self.filename_review_prompt, "r") as file:
-            review_criteria = file.read()
-        self.system_prompt = ("You are an LLM agent that acts as a reviewer. You will review the output from another LLM query. \n"
-                            "Follow the review criteria strictly and suggest changes to the text if necessary. \n"
-                            "Only suggest changes if they are necessary. \n\n"
-                            "The review criteria are as follows: \n"
-                            f"{review_criteria}")
-        self.system_prompt = json.dumps(review_criteria, indent=2)
+        # check if review filenames exists
+        for filename in self.filenames_review:
+            if not os.path.exists(filename):
+                raise ValueError(f"Review file {filename} does not exist")
 
-    def run(self, content):
+
+    def run(self, content, question_number):
         """
-        LLM run to review a paper.
+        LLM run to review a paper given a response and a question number
 
         :param content: str, content
+        :param question_number: int, question number, 0 - 3
         """
-        prompt = (f"Given the review criteria, provide instructive and concise feedback how to improve the following content: \n"
+        with open(self.filenames_review[question_number], "r") as file:
+            review_criteria = file.read()
+        self.system_prompt = ("You are an LLM agent that acts as a reviewer. You will review the response from another LLM query. \n"
+                            "Follow the review criteria strictly and suggest changes to the text if necessary. \n"
+                            "Only suggest changes if they are necessary. \n\n"
+                            f"{review_criteria}")
+        #self.system_prompt = json.dumps(review_criteria, indent=2)
+        prompt = (f"Given the review criteria above, provide instructive and concise feedback how to improve the following response: \n"
                     + f"{content}")
         messages = [
                 ChatMessage(role="system", content=self.system_prompt),
