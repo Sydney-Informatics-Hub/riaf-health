@@ -52,7 +52,8 @@ class ReviewAgent:
             review_criteria = file.read()
         self.system_prompt = ("You are an LLM agent that acts as a reviewer. You will review the response from another LLM query. \n"
                             "Follow the review criteria strictly and suggest changes to the text if necessary. \n"
-                            "Only suggest changes if they are necessary. \n\n"
+                            "You do not need to address all review criteria, only suggest changes if they are necessary. \n"
+                            "Suggestions must be short and concise. \n\n"
                             f"{review_criteria}")
         #self.system_prompt = json.dumps(review_criteria, indent=2)
         prompt = (f"Given the review criteria above, provide instructive and concise feedback how to improve the following response: \n"
