@@ -214,7 +214,7 @@ class RAGscholar:
     def prompt_pipeline(self, 
                         list_prompt_filenames = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md'],
                         list_max_word = [250, 300, 500, 300],
-                        review = False):
+                        review = True):
         """
         Run through prompts from list of prompt filenames.
 
@@ -243,9 +243,11 @@ class RAGscholar:
             #    logging.info("Word count exceeds maximum word count. Content is run again though the model.")
             #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
             if review:
-                review_txt = review_agent.run(content)
+                review_txt = review_agent.run(content, i)
                 if review_txt is not None:
-                    review_prompt = (f"Improve the previous response given the following review: \n"
+                    review_prompt = (f"Improve the previous response given the review below: \n"
+                                        + "Do not deviate from the original instructions for this question. \n"
+                                        + "Review: \n"
                                         + f"{review_txt}")
                     content, sources = self.query_chatengine(review_prompt)
             self.list_answers.append(content)
