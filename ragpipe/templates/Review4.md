@@ -4,7 +4,7 @@ Evaluate the response to the question: "What impact from this research is expect
 - Clarity: The text should be clear and understandable without ambiguity.
 - Accuracy: All factual information should be accurate and verifiable.
 - Needs to outline a timeline for this type of case and how far along the journey they are.
-- Significance of impact needs to be demonstrated with evidence.
+- Target specific: Needs to understand target audience for the impact (geographic reach, demographics, end-users)
 - Solution specific:  Needs to capture what burden in the health system its focussed on solving.
 - Impact specific: Needs to be clear on what impact is being measured (e.g. dissemination of resources vs making behavioural change).
 - Avoid duplicate or similar responses.

@@ -6,6 +6,7 @@ Evaluate the response to the question: "What impacts has this research delivered
 - Time specific: Needs to capture the stage of the impact (formative, maturing, established).
 - Case study needs to focus on impact already created.
 - Significance of impact needs to be demonstrated with evidence.
+- Robust evidence to substantiate the health outcomes achieved.
 - Solution specific:  Needs to capture what burden in the health system its focussed on solving.
 - Impact specific: Needs to be clear on what impact is being measured (e.g. dissemination of resources vs making behavioural change).
 - Avoid duplicate or similar responses.
