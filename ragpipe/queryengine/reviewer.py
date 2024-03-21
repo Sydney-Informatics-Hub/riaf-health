@@ -7,7 +7,7 @@ from llama_index.llms.azure_openai import AzureOpenAI
 from llama_index.core.llms import ChatMessage
 
 
-LLMSERVICE = 'azure' # 'openai' or 'azure'
+LLMSERVICE = 'openai' # 'openai' or 'azure'
 AZURE_ENDPOINT = "https://techlab-copilots-aiservices.openai.azure.com/" 
 AZURE_API_VERSION = "2023-12-01-preview" 
 AZURE_ENGINE = "gpt-35-turbo"
@@ -21,12 +21,12 @@ class ReviewAgent:
         if LLMSERVICE == 'openai':
             self.llm = OpenAI(
                 temperature=0,
-                model='gpt-3.5-turbo',
-                max_tokens=1)
+                model='gpt-4-1106-preview',
+                max_tokens=600)
         elif LLMSERVICE == 'azure':
             self.llm = AzureOpenAI(
                 engine=AZURE_ENGINE,
-                model='gpt-3.5-turbo',
+                model='gpt-4-1106-preview', 
                 temperature=0,
                 azure_endpoint=AZURE_ENDPOINT,
                 api_key=os.environ["OPENAI_API_KEY"],

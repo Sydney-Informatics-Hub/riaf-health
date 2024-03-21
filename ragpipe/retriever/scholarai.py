@@ -234,7 +234,7 @@ class ScholarAI:
         persist_dir = os.path.join(base_dir, f"{paper_id}.pdf")
         # check if pdf exists
         if os.path.exists(persist_dir):
-            logging.info(f"PDF already downloaded: {persist_dir)}")
+            logging.info(f"PDF already downloaded: {persist_dir}")
             file_path = os.path.join(persist_dir, f"{paper_id}.pdf")
 
         if url and not os.path.exists(persist_dir):
