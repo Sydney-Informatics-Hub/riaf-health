@@ -68,7 +68,6 @@ class RAGscholar:
         
         self.path_index = path_index
         self.path_templates = path_templates
-        self.path_documents = path_documents
         self.path_openai_key = path_openai_key
         self.load_index_from_storage = load_index_from_storage
         self.fname_system_prompt = os.path.join(path_templates, fname_system_prompt)
@@ -79,6 +78,11 @@ class RAGscholar:
         self.research_topic = None
         self.author = None
         self.language_style = language_style
+        if path_documents is not None:
+            if len(path_documents) > 0:
+                self.path_documents = path_documents
+            else:
+                self.path_documents = None
 
         # setup log function
         logfile = os.path.join(outpath, 'ragscholar.log')
