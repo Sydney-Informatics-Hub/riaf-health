@@ -411,11 +411,13 @@ class RAGscholar:
 
         
         # Search web for content related to research topic
+        logging.info("Searching web for content ...")
         bing_results = bing_custom_search(self.research_topic, 
                                           count=3, 
                                           year_start = self.impact_start, 
                                           year_end= self.impact_end)
         if len(bing_results) > 0:
+            logging.info(f"Retrieving web content for {len(bing_results)} sources...")
             urls = get_urls_from_bing(bing_results)
             titles = get_titles_from_bing(bing_results)
             documents_web = web2docs_async(urls, titles)
