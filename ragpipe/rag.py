@@ -79,14 +79,10 @@ class RAGscholar:
         self.author = None
         self.language_style = language_style
         if path_documents is not None:
-            if len(path_documents) > 0:
+            if os.path.exists(path_documents):
                 self.path_documents = path_documents
             else:
                 self.path_documents = None
-
-        # setup log function
-        logfile = os.path.join(outpath, 'ragscholar.log')
-        logging.basicConfig(filename = logfile, filemode = 'w', level=logging.INFO, format='%(message)s')
 
         self.openai_init()
 
@@ -373,6 +369,10 @@ class RAGscholar:
         fname_out = fname_out.replace(" ", "_")
         self.outpath = os.path.join(self.outpath, fname_out)
         os.makedirs(self.outpath, exist_ok=True)
+
+        # setup log function
+        logfile = os.path.join(self.outpath, 'ragscholar.log')
+        logging.basicConfig(filename = logfile, filemode = 'w', level=logging.INFO, format='%(message)s')
 
         # Search, retrieve and read documents from Semantic Scholar
         if _use_scholarai:
