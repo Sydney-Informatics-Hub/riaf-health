@@ -17,6 +17,7 @@ from retriever.semanticscholar import read_semanticscholar
 from retriever.scholarai import ScholarAI
 from retriever.bingsearch import bing_custom_search, get_urls_from_bing, get_titles_from_bing
 from retriever.webcontent import web2docs_async, web2docs_simple
+from retriever.directoryreader import MyDirectoryReader
 from queryengine.queryprocess import QueryEngine
 from queryengine.reviewer import ReviewAgent
 from indexengine.process import (
@@ -43,9 +44,14 @@ class RAGscholar:
     """
     RAG model for scholar publications
 
+    :param path_templates: path to templates
     :param fname_system_prompt: path and filename to system prompt
+    :param fname_report_template: path and filename to report template
+    :param outpath: path to output
     :param path_index: path to index
+    :param path_documents: path name to directory from where to read documents for index
     :param path_openai_key: path to openai key
+    :param language_style: str, language style, default "analytical"
     :param load_index_from_storage: bool, load index from storage path, default False
     """
 
@@ -55,12 +61,14 @@ class RAGscholar:
                 fname_report_template,
                 outpath, 
                 path_index, 
+                path_documents = None,
                 path_openai_key = None, 
                 language_style = "analytical",
                 load_index_from_storage = False):
         
         self.path_index = path_index
         self.path_templates = path_templates
+        self.path_documents = path_documents
         self.path_openai_key = path_openai_key
         self.load_index_from_storage = load_index_from_storage
         self.fname_system_prompt = os.path.join(path_templates, fname_system_prompt)
@@ -387,6 +395,17 @@ class RAGscholar:
                                                 year_start=self.research_start,
                                                 year_end=self.research_end)
             
+        # Upload documents to index from directory
+        if self.path_documents is not None:
+            logging.info("Loading documents from directory ...")
+            reader = MyDirectoryReader(self.path_documents)
+            mydocuments = reader.load_data()
+            if len(self.documents) > 0:
+                self.documents = self.documents + mydocuments
+            else:
+                self.documents = mydocuments
+
+        
         # Search web for content related to research topic
         bing_results = bing_custom_search(self.research_topic, 
                                           count=3, 
