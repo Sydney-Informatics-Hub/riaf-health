@@ -387,8 +387,10 @@ class RAGscholar:
                                 year_start= self.research_start, 
                                 year_end = self.research_end,
                                 delete_pdfs = self.scholarai_delete_pdfs)
-            papers = scholar.get_papers_from_authors(max_papers = _scholar_limit)
+            papers, citations = scholar.get_papers_from_authors(max_papers = _scholar_limit)
             self.documents = scholar.load_data(papers)
+            self.papers_scholarai = papers
+            self.citations_scholarai = citations
 
         else:
             logging.info("Searching and reading documents from Semantic Scholar API ..")
