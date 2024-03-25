@@ -39,9 +39,6 @@ _llm_service = "openai" # "azure" or "openai" # , see
 _use_scholarai = True # use scholarai to retrieve documents. Much more accurate but slower than semanticscholar
 
 
-logging.basicConfig(level=logging.INFO, format='%(message)s')
-
-
 class RAGscholar:
     """
     RAG model for scholar publications
@@ -50,7 +47,6 @@ class RAGscholar:
     :param path_index: path to index
     :param path_openai_key: path to openai key
     :param load_index_from_storage: bool, load index from storage path, default False
-
     """
 
     def __init__(self, 
@@ -75,6 +71,10 @@ class RAGscholar:
         self.research_topic = None
         self.author = None
         self.language_style = language_style
+
+        # setup log function
+        logfile = os.path.join(outpath, 'ragscholar.log')
+        logging.basicConfig(filename = logfile, filemode = 'w', level=logging.INFO, format='%(message)s')
 
         self.openai_init()
 
