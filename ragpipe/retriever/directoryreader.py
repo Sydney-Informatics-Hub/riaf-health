@@ -32,5 +32,5 @@ class MyDirectoryReader():
                                                    filename_as_id = True).load_data()
         except Exception as e:
             raise ValueError(f"Error loading documents from {self.path}: {e}")
-        self.get_metadata()
+        #self.get_metadata()
         return self.documents
