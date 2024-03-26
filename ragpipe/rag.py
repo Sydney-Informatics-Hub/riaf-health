@@ -75,6 +75,7 @@ class RAGscholar:
         self.outpath = outpath
         self.index = None
         self.documents = None
+        self.context = '' # context scratchpad
         self.research_topic = None
         self.author = None
         self.language_style = language_style
@@ -178,7 +179,7 @@ class RAGscholar:
         # Condense Plus Context Chat Engine (WIP)
         system_prompt = self.generate_system_prompt()
 
-        memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
+        memory = ChatMemoryBuffer.from_defaults(token_limit=12000)
         self.chat_engine = self.index.as_chat_engine(
             chat_mode="context",
             memory=memory,
@@ -266,6 +267,31 @@ class RAGscholar:
                     logging.info("No review response. Continuing with original response.")
             self.list_answers.append(content)
             self.list_sources.append(sources)
+
+    def context_engine(self):
+        """
+        Analyse problem and context using chat engine.
+        Save results to self.context
+        """
+        prompt_text = ("Analyse the problem and context for the following topic:\n"
+                        f"{self.research_topic}\n\n"
+                        "Use the following questions to guide your analysis:\n"
+                        "1. What is the primary problem that this topic is aiming to address with regard to healthcare and medical sector? (max 100 words)\n"
+                        "2. What is the context of the problem in terms of healthcare sector and medicine? (max 100 words)\n"
+                        "3. What are the key challenges in addressing this problem? (max 100 words)\n"
+                        "4. Who is mainly impacted or effected by this problem? (max 50 words)\n"
+                        "5. How is this problem currently being addressed in the healthcare sector? (max 100 words)\n"
+                        f"6. What is the novelty or advantage of the new solution as proposed by {self.author} (max 100 words)\n"
+                        "7. How would the proposed solution to this problem help healthcare or save cost? (max 100 words)\n"
+            
+                        "Instructions:\n"
+                        "Do not repeat or rephrase the questions and only provide answers.\n"
+                        "Include references to relevant sources of evidence."
+                        )
+        content, sources = self.query_chatengine(prompt_text)
+
+        # add content to context string
+        self.context = content
     
 
     def generate_case_study(self, process_sources = False):
@@ -445,6 +471,9 @@ class RAGscholar:
         #self.generate_chatengine_openai()
         # mode: context. retrieve context and run LLM on context
         self.generate_chatengine_context()
+
+        # Analyse problem and context
+        self.context_engine()
 
         # Run through prompt questions
         logging.info("Processing questions ...")
