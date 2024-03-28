@@ -276,22 +276,96 @@ class RAGscholar:
         prompt_text = ("Analyse the problem and context for the following topic:\n"
                         f"{self.research_topic}\n\n"
                         "Use the following questions to guide your analysis:\n"
-                        "1. What is the primary problem that this topic is aiming to address with regard to healthcare and medical sector? (max 100 words)\n"
+                        "1. What is the primary problem that this topic is aiming to address with regard to the healthcare and medical sector? (max 100 words)\n"
                         "2. What is the context of the problem in terms of healthcare sector and medicine? (max 100 words)\n"
                         "3. What are the key challenges in addressing this problem? (max 100 words)\n"
                         "4. Who is mainly impacted or effected by this problem? (max 50 words)\n"
                         "5. How is this problem currently being addressed in the healthcare sector? (max 100 words)\n"
                         f"6. What is the novelty or advantage of the new solution as proposed by {self.author} (max 100 words)\n"
-                        "7. How would the proposed solution to this problem help healthcare or save cost? (max 100 words)\n"
+                        "7. How would the proposed solution to this problem improve healthcare? (max 100 words)\n"
+                        "8. What are the commercial or societal implications of the proposed solution? (max 100 words)\n"
             
                         "Instructions:\n"
-                        "Do not repeat or rephrase the questions and only provide answers.\n"
+                        "Do not repeat or rephrase the questions and only provide concise answers.\n"
                         "Include references to relevant sources of evidence."
                         )
         content, sources = self.query_chatengine(prompt_text)
 
         # add content to context string
         self.context = content
+        logging.info(f"Problem and context added: {content}")
+
+        ### TBD: generate search queries for facts and sources, execute web search, analyse results and add to context
+
+        prompt_text = ("Based on the answers above, identify missing information and quantitative data statements to back up the answers.\n"
+                        "Then formulate up to 5 short web search queries that will search for this missing information and data.\n"
+                        "Example missing information statements: \n"
+                        "[X] million people worldwide and [Y] million people in Australia are impacted by this problem.\n"
+                        "The commerical value of the proposed solution is [X] billion dollars. \n"
+                        "The proposed solution would save the Australian healthcare sector [X] million dollars yearly.\n"
+            
+                        "Instructions:\n"
+                        "Do not repeat or rephrase the questions and only provide concise answers.\n"
+                        "Provide missing information in one sentence per line, starting with 'MissingInfo:' and using '[X]' as blank.\n"
+                        "Start each web query with 'WebSearch_String:' and end with a question mark.\n"
+                        )
+        
+        content_missing, sources = self.query_chatengine(prompt_text)
+        
+        logging.info(f"Missing information: {content_missing}")
+
+        # Extract missing information and web search queries
+        missing_info = []
+        web_search_queries = []
+        for line in content_missing.splitlines():
+            if line.startswith("MissingInfo:"):
+                missing_info.append(line)
+            elif line.startswith("WebSearch_String:"):
+                web_search_queries.append(line)
+
+        # run web search queries
+        web_search_results = []
+        #create missing information index
+        for query in web_search_queries:
+            logging.info(f"Running web search query: {query}")
+            query = query.replace("WebSearch_String:", "").strip()
+            bing_results = bing_custom_search(query, count=2)
+            webcontext = []
+            if len(bing_results) > 0:
+                logging.info(f"Retrieving web content for {len(bing_results)} sources...")
+                urls = get_urls_from_bing(bing_results)
+                titles = get_titles_from_bing(bing_results)
+                webcontent = web2docs_async(urls, titles)
+                if len(webcontext) > 0:
+                    webcontext = webcontext + webcontent
+                else:
+                    webcontext = webcontent
+            else:
+                logging.info("No web search results found.")
+
+        if len(webcontext) > 0:
+            # generate index store and save data and metadata in database
+            logging.info("Generating index database for web context ...")
+            self.path_index_context = os.path.join(self.path_index, "webcontext")
+            self.index_context = create_index(webcontext,
+                                                self.path_index_context,
+                                                temperature=_temperature,
+                                                context_window=_context_window,
+                                                num_output=_num_output,
+                                                model_llm=_model_llm,
+                                                llm_service=_llm_service)
+            # Initialize chat engine with context prompt
+            logging.info("Initializing chat engine with web context ...")
+            self.generate_chatengine_context()
+            # Analyse problem and context
+            self.context_engine()
+        else:
+            logging.info("No web context found. Continuing with current context.")
+
+        content, sources = self.query_chatengine_context(prompt_text)
+
+        
+
     
 
     def generate_case_study(self, process_sources = False):
