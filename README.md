@@ -23,7 +23,7 @@ To install dependencies, ensure you have Mamba or Conda installed. Then install 
 ```shell
 conda create -n riaf python=3.11
 conda activate riaf
-pip install semanticscholar==0.7.0 arxiv==2.1.0 llama-index==0.9.30 llama-hub==0.0.71 llama-index-readers-web==0.1.2 pypdf2==3.0.1 pypdf==4.1.0
+pip install semanticscholar==0.7.0 arxiv==2.1.0 llama-index==0.9.30 llama-hub==0.0.71 llama-index-readers-web==0.1.2 pypdf2==3.0.1 pypdf==4.1.0 docxtpl==0.16.8
 pip install llama-index-core==0.10.3
 ```
 

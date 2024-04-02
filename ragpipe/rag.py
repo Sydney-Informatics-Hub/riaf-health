@@ -10,6 +10,7 @@ from llama_index.llms import ChatMessage, MessageRole
 from llama_index.chat_engine.condense_question import CondenseQuestionChatEngine
 from llama_index.chat_engine import CondensePlusContextChatEngine 
 from llama_index.memory import ChatMemoryBuffer
+from docxtpl import DocxTemplate
 
 # local package imports
 from utils.pubprocess import publications_to_markdown, clean_publications
@@ -37,7 +38,7 @@ _model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
-_llm_service = "openai" # "azure" or "openai" # , see 
+_llm_service = "azure" # "azure" or "openai" # , see 
 _use_scholarai = True # use scholarai to retrieve documents. Much more accurate but slower than semanticscholar
 
 
@@ -269,7 +270,7 @@ class RAGscholar:
             self.list_sources.append(sources)
     
 
-    def generate_case_study(self, process_sources = False):
+    def generate_case_study(self, process_sources = False, make_docx = False):
         
         with open(self.fname_report_template, "r") as file:
             report = file.read()
@@ -292,6 +293,24 @@ class RAGscholar:
             report += "\n\n"
             report += "## Sources of evidence\n"
             report += sources_text
+
+        if make_docx:
+            doc = DocxTemplate("./templates/RIAF_template.docx")
+            docx_content = { 
+                "ORG_NAME":self.organisation, 
+                "TITLE_NAME": self.research_topic,
+                "RESEARCH_PERIOD":self.research_period,
+                "AUTHOR":self.author,
+                "IMPACT_PERIOD":self.impact_period,
+                "RESEARCH_TOPIC":self.research_topic,
+                "q1":self.list_answers[0],
+                "q2":self.list_answers[1],
+                "q3":self.list_answers[2],
+                "q4":self.list_answers[3],
+                "refs":sources_text
+                }
+            doc.render(docx_content)
+            doc.save(self.outpath+"generated_doc.docx")
 
         # Save report
         with open(os.path.join(self.outpath, "Use_Case_Study.md"), "w") as file:
