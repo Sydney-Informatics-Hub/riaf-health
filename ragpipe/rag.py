@@ -223,13 +223,15 @@ class RAGscholar:
     def prompt_pipeline(self, 
                         list_prompt_filenames = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md'],
                         list_max_word = [250, 300, 500, 300],
-                        review = True):
+                        review = True,
+                        include_context_text = True):
         """
         Run through prompts from list of prompt filenames.
 
         :param list_prompt_filenames: list of prompt filenames
         :param list_max_word: list of max word count for each prompt
         :param review: bool (Default False). Use review agent to review content and improve response
+        :param include_context_text: bool (Default True). Add context text to prompt as saved in self.context
 
         :return: list_questions, list_answers, list_sources
         """
@@ -244,6 +246,8 @@ class RAGscholar:
             with open(os.path.join(self.path_templates, prompt_filename), "r") as file:
                 prompt_text = file.read()
             self.list_questions.append(prompt_text.splitlines()[0])
+            if include_context_text and (self.context != ''):
+                prompt_text = prompt_text + "\n\n Additional context info:\n" + self.context
             # query chat engine
             logging.info(f"Querying chat engine with prompt {i} ...")
             content, sources = self.query_chatengine(prompt_text)
@@ -268,7 +272,7 @@ class RAGscholar:
             self.list_answers.append(content)
             self.list_sources.append(sources)
 
-    def context_engine(self, max_tokens_context = 4000):
+    def context_engine(self, max_tokens_context = 2000):
         """
         Analyse problem and context using chat engine.
         Save results to self.context
