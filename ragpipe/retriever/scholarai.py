@@ -41,7 +41,7 @@ from PyPDF2 import PdfReader
 from retriever.pdfdownloader import download_pdf, download_pdf_from_arxiv
 
 
-LLMSERVICE = 'azure' # 'openai' or 'azure'
+LLMSERVICE = 'openai' # 'openai' or 'azure'
 AZURE_ENDPOINT = "https://techlab-copilots-aiservices.openai.azure.com/" 
 AZURE_API_VERSION = "2023-12-01-preview" 
 AZURE_ENGINE = "gpt-35-turbo"
@@ -117,6 +117,7 @@ class ScholarAI:
                 max_try += 1
                 # sleep for 5 seconds to avoid rate limit
                 time.sleep(5)
+        logging.info(f"LLM relevant response for paper {title}: {result}")
         if result == 'yes':
             return True
         elif result == 'no':
@@ -233,8 +234,8 @@ class ScholarAI:
         persist_dir = os.path.join(base_dir, f"{paper_id}.pdf")
         # check if pdf exists
         if os.path.exists(persist_dir):
-            file_path = persist_dir
-            logging.info(f"PDF already downloaded: {file_path}")
+            logging.info(f"PDF already downloaded: {persist_dir}")
+            file_path = os.path.join(persist_dir, f"{paper_id}.pdf")
 
         if url and not os.path.exists(persist_dir):
             # Download the document first

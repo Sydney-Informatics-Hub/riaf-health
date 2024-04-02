@@ -32,7 +32,7 @@ def init_bing():
     # SUBSCRIPTION_KEY = os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"]
     ENDPOINT = "https://api.bing.microsoft.com/v7.0"
     if "BING_SEARCH_V7_SUBSCRIPTION_KEY" not in os.environ:
-        fname_key = '../../azure_sih_bing_key.txt'
+        fname_key = '../azure_sih_bing_key.txt'
         with open(fname_key) as f:
             SUBSCRIPTION_KEY = f.read().strip()
             os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"] = SUBSCRIPTION_KEY

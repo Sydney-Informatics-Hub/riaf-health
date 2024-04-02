@@ -15,6 +15,7 @@ def main():
     parser.add_argument('--impact_period_end', type=str, help='Impact period end (year)')
     parser.add_argument('--organisation', type=str, help='Organisation')
     parser.add_argument('--language_style', type=str, help='Language style for report', default='analytical')
+    parser.add_argument('--path_documents', type=str, help='Path to directory with your documents', default=None)
     parser.add_argument('--path_templates', type=str, help='Path to templates', default='./templates/')
     parser.add_argument('--fname_system_prompt', type=str, help='Filename for system prompt', default='Prompt_system.md')
     parser.add_argument('--fname_report_template', type=str, help='Filename for report template', default='Report.md')
@@ -42,6 +43,8 @@ def main():
         args.impact_period_end = input("Enter impact period end (year):")
     if args.language_style is None:
         args.language_style = input("Enter language style for report (e.g., analytical, journalistic, academic, legal, medical): ")
+    if args.path_documents is None:
+        args.path_documents = input("Enter path to directory with your documents: ")
 
     
     
@@ -50,6 +53,7 @@ def main():
                     fname_report_template=args.fname_report_template,
                     outpath=args.outpath,
                     path_index=args.path_index, 
+                    path_documents=args.path_documents,
                     path_openai_key='../../openai_sih_key.txt'
                     language_style=args.language_style)
  

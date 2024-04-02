@@ -1,4 +1,4 @@
-name: azure_ai
+name: ragpipe
 channels:
   - conda-forge
 dependencies:
@@ -104,26 +104,6 @@ dependencies:
       - argcomplete==3.1.6
       - arxiv==2.1.0
       - asgiref==3.7.2
-      - azure-ai-generative==0.0.0b1
-      - azure-ai-ml==1.12.1
-      - azure-ai-resources==1.0.0b2
-      - azure-common==1.1.28
-      - azure-core==1.29.5
-      - azure-graphrbac==0.61.1
-      - azure-identity==1.15.0
-      - azure-mgmt-authorization==4.0.0
-      - azure-mgmt-containerregistry==10.3.0
-      - azure-mgmt-core==1.4.0
-      - azure-mgmt-keyvault==10.3.0
-      - azure-mgmt-network==25.1.0
-      - azure-mgmt-resource==23.0.1
-      - azure-mgmt-storage==21.1.0
-      - azure-storage-blob==12.13.0
-      - azure-storage-file-datalake==12.14.0
-      - azure-storage-file-share==12.15.0
-      - azureml-core==1.54.0
-      - azureml-mlflow==1.53.0
-      - azureml-telemetry==1.54.0
       - backoff==2.2.1
       - backports-tempfile==1.0
       - backports-weakref==1.0.post1

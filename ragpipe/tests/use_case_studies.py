@@ -13,8 +13,9 @@ def test_RAGscholar_run1():
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store', 
-                    #path_openai_key = '../../openai_sih_key.txt'
-                    path_openai_key = '../../azure_openai_techlab_key.txt')
+                    path_documents = '../test_data/documents_to_add',
+                    path_openai_key = '../../openai_sih_key.txt')
+                    #path_openai_key = '../../azure_openai_techlab_key.txt')
     query_author="Anthony Weiss"
     query_topic="Elastagen"
     keywords = "elastin, tissue engineering"
@@ -46,6 +47,7 @@ def test_RAGscholar_run2():
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store', 
+                    path_documents = '../test_data/documents_to_add',
                     path_openai_key = '../../openai_sih_key.txt')
     query_author="Kate Curtis"
     query_topic="Improving the safety and quality of emergency nursing care"
@@ -76,6 +78,7 @@ def test_RAGscholar_run3():
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store', 
+                    path_documents = '../test_data/documents_to_add',
                     path_openai_key = '../../openai_sih_key.txt')
     query_author="Cath Chapman, Steph Kershaw"
     query_topic="Online resources to reduce the impact of crystal methamphetamine harms in the community"

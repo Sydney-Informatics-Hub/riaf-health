@@ -18,22 +18,19 @@ git clone git@github.sydney.edu.au:informatics/PIPE-4668-RIAF_NSWHEALTH.git
 cd PIPE-4668-RIAF_NSWHEALTH/ragpipe
 ```
 
-To install dependencies, ensure you have Mamba or Conda installed. Then install dependencies:
+To install dependencies, ensure you have Mamba or Conda installed. Then install dependencies in the following order:
 
 ```shell
-conda env create -f environment.yaml
-```
-
-Activate environment:
-
-```shell
+conda create -n riaf python=3.11
 conda activate riaf
+pip install semanticscholar==0.7.0 arxiv==2.1.0 llama-index==0.9.30 llama-hub==0.0.71 llama-index-readers-web==0.1.2 pypdf2==3.0.1 pypdf==4.1.0
+pip install llama-index-core==0.10.3
 ```
 
 
 ## Use-case examples
 
-Example how to generate assessment report can be found in the file `tests/use_case_studies`.
+Examples how to generate an assessment report can be found in the file `tests/use_case_studies`.
 
 
 ## RAG Pipeline
@@ -61,13 +58,6 @@ The software pipeline `ragpipe` automatically generates a research impact use-ca
 9. Report generator: produce, format, and save the final use case study report (see 'ragpipe/rag.py')
 10. Report conversion (Optional): Converting the report into different formats (Markdown, HTML, PDF, DOCX).
 
-## Installation
-```
-conda create -n riaf python=3.11
-conda activate riaf
-pip install semanticscholar==0.7.0 arxiv==2.1.0 llama-index==0.9.30 llama-hub==0.0.71 llama-index-readers-web==0.1.2 pypdf2==3.0.1 pypdf
-pip install  llama-index-core==0.10.3
-```
 
 ## Project Partners
 

@@ -17,6 +17,7 @@ from retriever.semanticscholar import read_semanticscholar
 from retriever.scholarai import ScholarAI
 from retriever.bingsearch import bing_custom_search, get_urls_from_bing, get_titles_from_bing
 from retriever.webcontent import web2docs_async, web2docs_simple
+from retriever.directoryreader import MyDirectoryReader
 from queryengine.queryprocess import QueryEngine
 from queryengine.reviewer import ReviewAgent
 from indexengine.process import (
@@ -24,6 +25,7 @@ from indexengine.process import (
     add_docs_to_index, 
     load_index
     )
+
 
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
@@ -35,22 +37,23 @@ _model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
-_llm_service = "azure" # "azure" or "openai" # , see 
-_use_scholarai = False # use scholarai to retrieve documents. Much more accurate but slower than semanticscholar
-
-
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+_llm_service = "openai" # "azure" or "openai" # , see 
+_use_scholarai = True # use scholarai to retrieve documents. Much more accurate but slower than semanticscholar
 
 
 class RAGscholar:
     """
     RAG model for scholar publications
 
+    :param path_templates: path to templates
     :param fname_system_prompt: path and filename to system prompt
+    :param fname_report_template: path and filename to report template
+    :param outpath: path to output
     :param path_index: path to index
+    :param path_documents: path name to directory from where to read documents for index
     :param path_openai_key: path to openai key
+    :param language_style: str, language style, default "analytical"
     :param load_index_from_storage: bool, load index from storage path, default False
-
     """
 
     def __init__(self, 
@@ -59,6 +62,7 @@ class RAGscholar:
                 fname_report_template,
                 outpath, 
                 path_index, 
+                path_documents = None,
                 path_openai_key = None, 
                 language_style = "analytical",
                 load_index_from_storage = False):
@@ -75,6 +79,11 @@ class RAGscholar:
         self.research_topic = None
         self.author = None
         self.language_style = language_style
+        if path_documents is not None:
+            if os.path.exists(path_documents):
+                self.path_documents = path_documents
+            else:
+                self.path_documents = None
 
         self.openai_init()
 
@@ -214,7 +223,7 @@ class RAGscholar:
     def prompt_pipeline(self, 
                         list_prompt_filenames = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md'],
                         list_max_word = [250, 300, 500, 300],
-                        review = False):
+                        review = True):
         """
         Run through prompts from list of prompt filenames.
 
@@ -238,16 +247,24 @@ class RAGscholar:
             # query chat engine
             logging.info(f"Querying chat engine with prompt {i} ...")
             content, sources = self.query_chatengine(prompt_text)
+            logging.info(f"Response {i}: {content}")
             # Check content size
             #while len(content.split()) > list_max_word[i]:
             #    logging.info("Word count exceeds maximum word count. Content is run again though the model.")
             #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
             if review:
-                review_txt = review_agent.run(content)
+                review_txt = review_agent.run(content, i)
+                logging.info(f"Review response {i}: {review_txt}")
                 if review_txt is not None:
-                    review_prompt = (f"Improve the previous response given the following review: \n"
+                    logging.info("Reviewing response ...")
+                    review_prompt = (f"Improve the previous response given the review below: \n"
+                                        + "Do not deviate from the original instructions for this question. \n"
+                                        + "Review: \n"
                                         + f"{review_txt}")
                     content, sources = self.query_chatengine(review_prompt)
+                    logging.info(f"Response {i} after review: {content}")
+                else:
+                    logging.info("No review response. Continuing with original response.")
             self.list_answers.append(content)
             self.list_sources.append(sources)
     
@@ -291,7 +308,8 @@ class RAGscholar:
             research_end = None,
             impact_start = None,
             impact_end = None,
-            scholarai_delete_pdfs = False):
+            scholarai_delete_pdfs = False,
+            local_document_path = None):
         """
         Run RAG pipeline.
 
@@ -304,6 +322,7 @@ class RAGscholar:
         :param impact_start: int, impact period start
         :param impact_end: int, impact period end
         :param scholarai_delete_pdfs: bool, delete pdfs after processing
+        :param local_document_path: str, path to the optional user-defined folder of documents  
 
         The pipeline includes the following key steps:
         - Search and process documents from Semantic Scholar
@@ -354,6 +373,10 @@ class RAGscholar:
         self.outpath = os.path.join(self.outpath, fname_out)
         os.makedirs(self.outpath, exist_ok=True)
 
+        # setup log function
+        logfile = os.path.join(self.outpath, 'ragscholar.log')
+        logging.basicConfig(filename = logfile, filemode = 'w', level=logging.INFO, format='%(message)s')
+
         # Search, retrieve and read documents from Semantic Scholar
         if _use_scholarai:
             logging.info("Searching and reading documents with AI-assisted Semantic Scholar...")
@@ -379,17 +402,31 @@ class RAGscholar:
                                                 year_start=self.research_start,
                                                 year_end=self.research_end)
             
+        # Upload documents to index from directory
+        if self.path_documents is not None:
+            logging.info("Loading documents from directory ...")
+            reader = MyDirectoryReader(self.path_documents)
+            mydocuments = reader.load_data()
+            if len(self.documents) > 0:
+                self.documents = self.documents + mydocuments
+            else:
+                self.documents = mydocuments
+
+        
         # Search web for content related to research topic
+        logging.info("Searching web for content ...")
         bing_results = bing_custom_search(self.research_topic, 
                                           count=3, 
                                           year_start = self.impact_start, 
                                           year_end= self.impact_end)
         if len(bing_results) > 0:
+            logging.info(f"Retrieving web content for {len(bing_results)} sources...")
             urls = get_urls_from_bing(bing_results)
             titles = get_titles_from_bing(bing_results)
             documents_web = web2docs_async(urls, titles)
             if len(self.documents) > 0:
                 self.documents = self.documents + documents_web
+
 
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
@@ -401,6 +438,10 @@ class RAGscholar:
                                   num_output=_num_output, 
                                   model_llm=_model_llm,
                                   llm_service=_llm_service)
+        
+        # Add documents from the additional folder to the aggregated documents
+        if local_document_path: 
+            self.index = add_docs_to_index(local_document_path, self.index)  
 
         # Initialize chat engine with context prompt
         #self.generate_chatengine_condensecontext()
