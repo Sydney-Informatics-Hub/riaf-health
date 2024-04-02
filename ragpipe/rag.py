@@ -180,7 +180,7 @@ class RAGscholar:
         system_prompt = self.generate_system_prompt()
 
         memory = ChatMemoryBuffer.from_defaults(token_limit=12000)
-        self.chat_engine = self.index.as_chat_engine(
+        self.chat_engine_context = self.index.as_chat_engine(
             chat_mode="context",
             memory=memory,
             system_prompt=system_prompt,
@@ -272,6 +272,15 @@ class RAGscholar:
         """
         Analyse problem and context using chat engine.
         Save results to self.context
+
+        Steps:
+        1. Generate context prompt
+        2. Query chat engine
+        3. Extract missing information and web search queries
+        4. Run web search queries
+        5. Generate index store and save data and metadata in database
+        6. Answer missing questions by querying chat engine with index_context as context
+        7. Save context to self.context
         """
         prompt_text = ("Analyse the problem and context for the following topic:\n"
                         f"{self.research_topic}\n\n"
@@ -356,15 +365,39 @@ class RAGscholar:
                                                 llm_service=_llm_service)
             # Initialize chat engine with context prompt
             logging.info("Initializing chat engine with web context ...")
-            self.generate_chatengine_context()
-            # Analyse problem and context
-            self.context_engine()
+            system_prompt = ("You are an LLM agent that acts as a assistant to find missing information from data.\n"
+                             "You must use only the database to answer missing questions.\n"
+                             "If you cannot find the answer, you must provide as output only '[X]'.\n"
+                             "Do not repeat the question, only provide concise answers.\n"
+            )
+
+            memory = ChatMemoryBuffer.from_defaults(token_limit=12000)
+            chat_engine_context2 = self.index_context.as_chat_engine(
+                chat_mode="context",
+                memory=memory,
+                system_prompt=system_prompt,
+                verbose=True,
+                )
+            # Answer missing questions by querying chat engine with index_context as context
+            logging.info("Answering missing questions with web context ...")
+            for info in missing_info:
+                info = info.replace("MissingInfo:", "")
+                query = ("Answer the following missing information (max 50 words): \n"
+                        f"{info}"
+                        )
+                response = chat_engine_context2.chat(query)
+                content = response.response
+                logging.info(f"Missing question: {query}")
+                logging.info(f"Answer: {content}")
+                self.context += info + "\n" + content + "\n\n"
         else:
             logging.info("No web context found. Continuing with current context.")
 
-        content, sources = self.query_chatengine_context(prompt_text)
+        # check token limit of self.context
+        if len(self.context.split()) > 4000:
+            logging.info("Token limit exceeded. Context is too long. Context is truncated.")
+            self.context = " ".join(self.context.split()[:12000])
 
-        
 
     
 
