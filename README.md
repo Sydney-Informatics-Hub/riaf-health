@@ -43,6 +43,7 @@ The software pipeline `ragpipe` automatically generates a research impact use-ca
     - Author
     - Keywords
     - Organisation
+    - Directory name for files to index
     - Research period
     - Research impact period.
 3. Data search engines (see folder ragpipe/retriever): Retrieving relevant publications (arXiv, SemanticScholar, GoogleScholar).
@@ -57,6 +58,100 @@ The software pipeline `ragpipe` automatically generates a research impact use-ca
 8. Reference engine: retrieve corresponding publication references and convert to readable format  (see 'ragpipe/utils/pubprocess.py')
 9. Report generator: produce, format, and save the final use case study report (see 'ragpipe/rag.py')
 10. Report conversion (Optional): Converting the report into different formats (Markdown, HTML, PDF, DOCX).
+
+## Functionality
+
+```mermaid
+
+graph TD;
+    subgraph One[User Input]
+    A[User Input: Topic, Author, Keywords, Organisation, Research Period, Research Impact Period]
+    end
+    subgraph Two[Data Source Agents]
+    B[Search Web Data Sources];
+    C[Search Publication Databases]
+    D[Filter and Retrieve Web Content and Metadata];
+    E[Filter and Retrieve Publication Content and Metadata];
+    F[Index Web, Publication, and Local Content];
+    X[Local Data Sources];
+    Y[Retrieve Local Data Source Content and Metadata]
+    end
+    G[Vector Database]
+    subgraph Three[Context Agent]
+    H[Define Problem and Context];
+    I[Generate Contextual Questions];
+    J[Find and Retrieve Missing Information Online]
+    K[Add to Context Memory];
+    end
+    subgraph Four[Query Agent]
+    L[Query Research Questions];
+    M[Retrieve Answers with References];
+    end
+    subgraph Five[Review Agent]
+    N[Review and Analyse Answers];
+    O[Provide Suggestions for Improvement];
+    end
+    P[Generate Final Report and References in PDF or DOCX];
+
+    A --> B;
+    A --> C;
+    B --> D;
+    C --> E;
+    D --> F;
+    E --> F;
+    F --> G;
+    A --> H;
+    G --> H;
+    H --> I;
+    I --> J; 
+    J --> K;
+    L --> M;
+    G --> M;
+    K --> M;
+    M --> N;
+    N --> O;
+    O --> M;
+    M --> P;
+    X --> Y;
+    Y --> F;
+ 
+```
+
+
+### Search Engines and Data Sources
+
+The following AI-powered data search engines are implemented:
+- publication search and advanced relation filters
+- citationsearch
+- websearch engine (Bing)
+- metadata generators
+- filters for impact and research time period, author list, topic
+
+Supported data source integrations:
+- scholar publications (e.g., Pubmed, ArXiv)
+- web content (html)
+- upload from local document folder (pdf, docx, ...)
+
+
+### Analytic Capabilities
+- autonomous problem and contextual analysis
+- citation analysis
+- publication analysis
+- data indexing and vector embedding databases generator
+
+
+### AI agents
+- query agent for generating report answers and references
+- context agent for defining general problem
+- review agent for evaluation of answers and proposing suggestions for improvement
+
+### Other features
+- language style options for report
+- optional: chat-engine
+
+
+
+
 
 
 ## Project Partners
