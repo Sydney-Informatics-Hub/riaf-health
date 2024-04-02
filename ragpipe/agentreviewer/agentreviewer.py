@@ -87,23 +87,64 @@ class AgentReviewer:
 
         return result
 
-# Example usage:
-if __name__ == "__main__":
-    # Marking criteria example (should be replaced with actual criteria)
-    marking_criteria = {
-        "Relevance": "The text should be strictly relevant to the topic of discussion.",
-        "Clarity": "The text should be clear and understandable without ambiguity.",
-        "Accuracy": "All factual information should be accurate and verifiable."
-    }
+def review_report(self, report_output, example_reports, example_reviews):  
+        if self.llm is None:  
+            logging.error("LLM not initialized")  
+            return None  
+  
+        # Start the prompt with example reports and corresponding reviews  
+        prompt = "The following are examples of reports with reviews assessing their quality:\n\n"  
+        for report, review in zip(example_reports, example_reviews):  
+            prompt += f"Report:\n{report}\n\nReview:\n{review}\n\n"  
+  
+        # Now instruct the model to review the new report in a similar fashion  
+        prompt += (  
+            "Based on the above examples, review the following new report:\n\n"  
+            f"Report:\n{report_output}\n\n"  
+            "Provide a detailed, objective review of the report's quality."  
+        )  
+  
+        # Send the prompt to the LLM  
+        response = self.llm.query(prompt)  
+  
+        # Process the response and return the review  
+        return response.text  
 
-    # Example output text from another LLM query
-    output_text = "The research is important."
 
-    # Initialize the LLMAgentReviewer
-    reviewer = AgentReviewer(llm=None)
+# Usage example  
+if __name__ == "__main__":  
+    agent_reviewer = AgentReviewer()  
+    example_reports = [  
+        "Example report 1 text...",  
+        "Example report 2 text...",  
+        # More example reports...  
+    ]  
+    example_reviews = [  
+        "Example review 1 text...",  
+        "Example review 2 text...",  
+        # More example reviews...  
+    ]  
+    new_report = "Example of a new report text here..."  
+    review = agent_reviewer.review_output(new_report, example_reports, example_reviews)  
+    print("Generated Review:", review)  
 
-    # Review the output text
-    review_result = reviewer.review_output(output_text, marking_criteria)
+# # Example usage:
+# if __name__ == "__main__":
+#     # Marking criteria example (should be replaced with actual criteria)
+#     marking_criteria = {
+#         "Relevance": "The text should be strictly relevant to the topic of discussion.",
+#         "Clarity": "The text should be clear and understandable without ambiguity.",
+#         "Accuracy": "All factual information should be accurate and verifiable."
+#     }
 
-    print("Review Result:")
-    print(review_result)
+#     # Example output text from another LLM query
+#     output_text = "The research is important."
+
+#     # Initialize the LLMAgentReviewer
+#     reviewer = AgentReviewer(llm=None)
+
+#     # Review the output text
+#     review_result = reviewer.review_output(output_text, marking_criteria)
+
+#     print("Review Result:")
+#     print(review_result)

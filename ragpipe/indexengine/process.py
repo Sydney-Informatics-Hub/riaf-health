@@ -18,7 +18,8 @@ from llama_index import (
                          SimpleDirectoryReader,
                          StorageContext,
                          StorageContext, 
-                        load_index_from_storage)
+                        load_index_from_storage,
+                        )
 from llama_index.embeddings import AzureOpenAIEmbedding
 
 def create_index(docstore, 
@@ -92,8 +93,12 @@ def add_docs_to_index(path_docs, index):
 
     :return: index
     """
-    docs = SimpleDirectoryReader(path_docs)
-    index.add_documents(docs)
+    print("Loading new documents...")
+    new_documents = SimpleDirectoryReader(path_docs).load_data()
+
+    for doc in new_documents:
+        index.insert(doc)
+
     return index
 
 def load_index(path_index):
