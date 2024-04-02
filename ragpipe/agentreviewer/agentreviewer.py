@@ -1,5 +1,5 @@
 """
-AgentReviewer class reviews text and modifies based on criteria.
+AgentReviewer class reviews text and gives it a score.
 
 How to use:
 
@@ -87,28 +87,29 @@ class AgentReviewer:
 
         return result
 
-def review_report(self, report_output, example_reports, example_reviews):  
-        if self.llm is None:  
-            logging.error("LLM not initialized")  
-            return None  
-  
-        # Start the prompt with example reports and corresponding reviews  
-        prompt = "The following are examples of reports with reviews assessing their quality:\n\n"  
-        for report, review in zip(example_reports, example_reviews):  
-            prompt += f"Report:\n{report}\n\nReview:\n{review}\n\n"  
-  
-        # Now instruct the model to review the new report in a similar fashion  
-        prompt += (  
-            "Based on the above examples, review the following new report:\n\n"  
-            f"Report:\n{report_output}\n\n"  
-            "Provide a detailed, objective review of the report's quality."  
-        )  
-  
-        # Send the prompt to the LLM  
-        response = self.llm.query(prompt)  
-  
-        # Process the response and return the review  
-        return response.text  
+    def review_report(self, report_output, example_reports, example_reviews):  
+            if self.llm is None:  
+                logging.error("LLM not initialized")  
+                return None  
+    
+            # Start the prompt with example reports and corresponding reviews  
+            prompt = "The following are examples of reports with reviews assessing their adherence to the RIAF:\n\n"  
+            for report, review in zip(example_reports, example_reviews):  
+                prompt += f"Report:\n{report}\n\nReview:\n{review}\n\n"  
+    
+            # Now instruct the model to review the new report in a similar fashion  
+            prompt += (  
+                "Based on the above examples, review the following new report:\n\n"  
+                f"Report:\n{report_output}\n\n"  
+                "Give a score out of 3 for each catorgy: Alignment, Reach, Significance"  
+            )  
+    
+            # Send the prompt to the LLM  
+            response = self.llm.query(prompt)  
+    
+            # Process the response and return the review  
+            return response.text  
+
 
 
 # Usage example  
