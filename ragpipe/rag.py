@@ -268,10 +268,13 @@ class RAGscholar:
             self.list_answers.append(content)
             self.list_sources.append(sources)
 
-    def context_engine(self):
+    def context_engine(self, max_tokens_context = 4000):
         """
         Analyse problem and context using chat engine.
         Save results to self.context
+
+        Args:
+        max_tokens_context: int, maximum tokens for context
 
         Steps:
         1. Generate context prompt
@@ -394,9 +397,9 @@ class RAGscholar:
             logging.info("No web context found. Continuing with current context.")
 
         # check token limit of self.context
-        if len(self.context.split()) > 4000:
+        if len(self.context.split()) > max_tokens_context:
             logging.info("Token limit exceeded. Context is too long. Context is truncated.")
-            self.context = " ".join(self.context.split()[:12000])
+            self.context = " ".join(self.context.split()[:max_tokens_context])
 
 
     
