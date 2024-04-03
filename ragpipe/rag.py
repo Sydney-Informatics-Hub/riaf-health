@@ -26,6 +26,7 @@ from indexengine.process import (
     load_index
     )
 
+
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
 _list_max_word =  [250, 300, 500, 300]
@@ -450,7 +451,8 @@ class RAGscholar:
             research_end = None,
             impact_start = None,
             impact_end = None,
-            scholarai_delete_pdfs = False):
+            scholarai_delete_pdfs = False,
+            local_document_path = None):
         """
         Run RAG pipeline.
 
@@ -463,6 +465,7 @@ class RAGscholar:
         :param impact_start: int, impact period start
         :param impact_end: int, impact period end
         :param scholarai_delete_pdfs: bool, delete pdfs after processing
+        :param local_document_path: str, path to the optional user-defined folder of documents  
 
         The pipeline includes the following key steps:
         - Search and process documents from Semantic Scholar
@@ -569,6 +572,7 @@ class RAGscholar:
             if len(self.documents) > 0:
                 self.documents = self.documents + documents_web
 
+
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
         self.path_index = os.path.join(self.path_index, path_index_name)
@@ -579,6 +583,10 @@ class RAGscholar:
                                   num_output=_num_output, 
                                   model_llm=_model_llm,
                                   llm_service=_llm_service)
+        
+        # Add documents from the additional folder to the aggregated documents
+        if local_document_path: 
+            self.index = add_docs_to_index(local_document_path, self.index)  
 
         # Initialize chat engine with context prompt
         #self.generate_chatengine_condensecontext()
