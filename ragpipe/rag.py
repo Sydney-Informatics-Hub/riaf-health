@@ -522,6 +522,7 @@ class RAGscholar:
 
         # Search, retrieve and read documents from Semantic Scholar
         if _use_scholarai:
+            print("Searching and reading documents with AI-assisted Semantic Scholar...")
             logging.info("Searching and reading documents with AI-assisted Semantic Scholar...")
             # check if author is a list
             if isinstance(self.author, list):
@@ -539,6 +540,7 @@ class RAGscholar:
             self.citations_scholarai = citations
 
         else:
+            print("Searching and reading documents from Semantic Scholar API ..")
             logging.info("Searching and reading documents from Semantic Scholar API ..")
             self.documents = read_semanticscholar(self.research_topic, 
                                                 self.author, 
@@ -559,12 +561,14 @@ class RAGscholar:
 
         
         # Search web for content related to research topic
+        print("Searching web for content ...")
         logging.info("Searching web for content ...")
         bing_results = bing_custom_search(self.research_topic, 
                                           count=3, 
                                           year_start = self.impact_start, 
                                           year_end= self.impact_end)
         if len(bing_results) > 0:
+            print(f"Retrieving web content for {len(bing_results)} sources...")
             logging.info(f"Retrieving web content for {len(bing_results)} sources...")
             urls = get_urls_from_bing(bing_results)
             titles = get_titles_from_bing(bing_results)
@@ -574,6 +578,7 @@ class RAGscholar:
 
 
         # generate index store and save index in self.path_index
+        print(f"Retrieving web content for {len(bing_results)} sources...")
         logging.info("Generating index database ...")
         self.path_index = os.path.join(self.path_index, path_index_name)
         self.index = create_index(self.documents, 
@@ -586,6 +591,7 @@ class RAGscholar:
         
         # Add documents from the additional folder to the aggregated documents
         if local_document_path: 
+            print("Adding documents from local folder ...")
             self.index = add_docs_to_index(local_document_path, self.index)  
 
         # Initialize chat engine with context prompt
@@ -598,14 +604,18 @@ class RAGscholar:
         self.generate_chatengine_context()
 
         # Analyse problem and context
+        print("Analyse problem and context...")
         self.context_engine()
 
         # Run through prompt questions
-        logging.info("Processing questions ...")
+        print("Processing assessment questions ...")
+        logging.info("Processing assessment questions ...")
         self.prompt_pipeline(
             list_prompt_filenames = _fnames_question_prompt,
             list_max_word = _list_max_word
         )
+        print("Generating case study ...")
         logging.info("Generating case study ...")
         self.generate_case_study()
+        print("Finished.")
         logging.info("FINISHED.")
