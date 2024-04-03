@@ -27,7 +27,6 @@ pip install semanticscholar==0.7.0 arxiv==2.1.0 llama-index==0.9.30 llama-hub==0
 pip install llama-index-core==0.10.3
 ```
 
-
 ## How-to and examples
 
 To generate a research report run
@@ -36,8 +35,8 @@ To generate a research report run
 cd ragpipe
 python main.py
 ```
-
 The following command line arguments are available:
+
 - `--query_author`: Author name to search for
 - `--query_topic`: Topic for Use-case Study
 - `--query_keywords`: Keywords for query
@@ -54,7 +53,6 @@ The following command line arguments are available:
 - `--outpath`: Output path, default='../../results/'
 - `--path_index`: Path to index, default='../../index_store'
 
-
 To integrate RAGscholar in your code, add the following lines and add arguments to RAGscholar() and rag.run()
 ```python
 from rag import RAGscholar
@@ -70,83 +68,77 @@ rag.run(query_topic = '...',
         )
 ```
 
-For more details about the class arguments, see code documentation.
-
-Three examples how to generate an assessment report can be found in the file `tests/use_case_studies`.
-
+For more details about the class arguments, see code documentation. Three examples how to generate an assessment report can be found in the file `tests/use_case_studies`.
 
 ## RAG Pipeline
 
-A graph overview of the RAG pipeline is shown [here](ragpipe/codegraph.md).
+A graph overview of the RAG pipeline is shown [here](./ragpipe/codegraph.md).
 
-The software pipeline `ragpipe` automatically generates a research impact use-case study for a given topic and author. The pipeline includes the following steps:
+The software pipeline `RAGscholar` (see ragpipe/rag.py) automatically generates a research impact use-case study for a given topic and author. 
+The pipeline includes the following steps:
 
-1. Templates: context instructions and question prompts (see folder 'ragpipe/templates')
-2. User input: via CLI or config file (see main.py)
-    - Topic
-    - Author
+1. User input: via CLI or functional arguments (see main.py)
+    - Topic name
+    - Author(s)
     - Keywords
     - Organisation
-    - Directory name for files to index
+    - Output Directory name to store files for index database (optional)
+    - Directory name that contains local files to include for analysis (optional)
     - Research period
-    - Research impact period.
-3. Data search engines (see folder ragpipe/retriever): Retrieving relevant publications (arXiv, SemanticScholar, GoogleScholar).
-4. Data reader: Reading data from these sources and text conversion
-5. Data index generator: Index data, extract metadata and store content as vector database (see 'ragpipe/indexengine/process.py')
+    - Research impact period
+2. Data search engines (see folder ragpipe/retriever): Retrieving relevant publications (arXiv, SemanticScholar, GoogleScholar).
+3. Data reader: Reading data from these sources and text conversion
+4. Data index generator: Index data, extract metadata and store content as vector database (see 'ragpipe/indexengine/process.py')
+5. General context generation: define problem and context, find missing information online, add to context memory.
 6. RAG engine (see 'ragpipe/rag.py'): Retrieving context based on:
     - query
     - instructions
-    - publication content vector embeddings
-    - publication metadata
-7. LLM multi-stage prompt engine: Iterate over questions and check answers
-8. Reference engine: retrieve corresponding publication references and convert to readable format  (see 'ragpipe/utils/pubprocess.py')
-9. Report generator: produce, format, and save the final use case study report (see 'ragpipe/rag.py')
-10. Report conversion (Optional): Converting the report into different formats (Markdown, HTML, PDF, DOCX).
+    - data content and vector embeddings
+    - metadata
+    - context memory
+7. LLM multi-stage prompt engine: Iterate over questions (see Prompt files in folder 'ragpipe/templates').
+8. Multi-stage review. Check each answer and suggest improvements (for review criteria see Review files in folder 'ragpipe/templates').
+9. Reference engine: retrieve corresponding publication references and convert to readable format  (see 'ragpipe/utils/pubprocess.py').
+10. Report generator: produce, format, and save the final use case study report (see 'ragpipe/rag.py'), convert report into different formats (Markdown, HTML, PDF, DOCX).
 
-## Functionality
-
-
-### Search Engines and Data Sources
-
-The following AI-powered data search engines are implemented:
-- publication search and advanced relation filters
-- citationsearch
-- websearch engine (Bing)
-- metadata generators
-- filters for impact and research time period, author list, topic
-
-Supported data source integrations:
-- scholar publications (e.g., Pubmed, ArXiv)
-- web content (html)
-- upload from local document folder (pdf, docx, ...)
-
-
-### Analytic Capabilities
-- autonomous problem and contextual analysis
-- citation analysis
-- publication analysis
-- data indexing and vector embedding databases generator
-
+## Features
 
 ### AI agents
-- query agent for generating report answers and references
-- context agent for defining general problem
-- review agent for evaluation of answers and proposing suggestions for improvement
+
+- Writer agent: generating impact assessment report including references
+- Context agent: 
+    - defining general problem and context information
+    - find missing information online
+    - generate context memory
+- Review agent:
+    - analyse output from writer agent
+    - suggest improvements
+- Data-source search and retrieval agents:
+    1. Publications: search, filter, relevance ranking, content extraction, metadata generation
+    2. Web Content: online search (via Bing API), filter, content retrieval, metadata generation
+    3. Directory Reader: read all documents from a local directory, add to LLM database
+- Database agent: index content and metadata, generate vector embeddings, query database with LLM
+
+### Supported data source integrations:
+
+- Scholar publications (e.g., Pubmed, ArXiv)
+- Web content (html)
+- Documents in local document folder (pdf, docx, ...)
 
 ### Other features
+
+- citation analysis
 - language style options for report
-- optional: chat-engine
 
+## Main Software Contributors
 
-
-
-
+- Sebastian Haan
+- Nathanial Butterworth
 
 ## Project Partners
 
 - Janine Richards <janine.richards@sydney.edu.au>
 - Mona Shamshiri <mona.shamshiri@sydney.edu.au>
-
 
 ## Attribution and Acknowledgement
 
