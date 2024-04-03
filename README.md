@@ -28,12 +28,56 @@ pip install llama-index-core==0.10.3
 ```
 
 
-## Use-case examples
+## How-to and examples
 
-Examples how to generate an assessment report can be found in the file `tests/use_case_studies`.
+To generate a research report run
+
+```shell
+cd ragpipe
+python main.py
+```
+
+The following command line arguments are available:
+- `--query_author`: Author name to search for
+- `--query_topic`: Topic for Use-case Study
+- `--query_keywords`: Keywords for query
+- `--research_period_start`: Research period start (year)
+- `--research_period_end`: Research period end (year)
+- `--impact_period_start`: Impact period start (year)
+- `--impact_period_end`: Impact period end (year)
+- `--organisation`: Organisation
+- `--language_style`: Language style for report, default='analytical'
+- `--path_documents`: Path to directory with your documents, default=None
+- `--path_templates`: Path to templates, default='./templates/'
+- `--fname_system_prompt`: Filename for system prompt, default='Prompt_system.md'
+- `--fname_report_template`: Filename for report template, default='Report.md'
+- `--outpath`: Output path, default='../../results/'
+- `--path_index`: Path to index, default='../../index_store'
+
+
+To integrate RAGscholar in your code, add the following lines and add arguments to RAGscholar() and rag.run()
+```python
+from rag import RAGscholar
+rag = RAGscholar(outpath = '...')
+rag.run(query_topic = '...', 
+        query_author = [...,],
+        keywords =[...,],
+        organisation = '...',
+        research_period_start = YEAR,
+        research_period_end = YEAR,
+        impact_period_start = YEAR,
+        impact_period_end = YEAR
+        )
+```
+
+For more details about the class arguments, see code documentation.
+
+Three examples how to generate an assessment report can be found in the file `tests/use_case_studies`.
 
 
 ## RAG Pipeline
+
+A graph overview of the RAG pipeline is shown [here](ragpipe/codegraph.md).
 
 The software pipeline `ragpipe` automatically generates a research impact use-case study for a given topic and author. The pipeline includes the following steps:
 
@@ -60,62 +104,6 @@ The software pipeline `ragpipe` automatically generates a research impact use-ca
 10. Report conversion (Optional): Converting the report into different formats (Markdown, HTML, PDF, DOCX).
 
 ## Functionality
-
-```mermaid
-
-graph TD;
-    subgraph One[User Input]
-    A[User Input: Topic, Author, Keywords, Organisation, Research Period, Research Impact Period]
-    end
-    subgraph Two[Data Source Agents]
-    B[Search Web Data Sources];
-    C[Search Publication Databases]
-    D[Filter and Retrieve Web Content and Metadata];
-    E[Filter and Retrieve Publication Content and Metadata];
-    F[Index Web, Publication, and Local Content];
-    X[Local Data Sources];
-    Y[Retrieve Local Data Source Content and Metadata]
-    end
-    G[Vector Database]
-    subgraph Three[Context Agent]
-    H[Define Problem and Context];
-    I[Generate Contextual Questions];
-    J[Find and Retrieve Missing Information Online]
-    K[Add to Context Memory];
-    end
-    subgraph Four[Query Agent]
-    L[Query Research Questions];
-    M[Retrieve Answers with References];
-    end
-    subgraph Five[Review Agent]
-    N[Review and Analyse Answers];
-    O[Provide Suggestions for Improvement];
-    end
-    P[Generate Final Report and References in PDF or DOCX];
-
-    A --> B;
-    A --> C;
-    B --> D;
-    C --> E;
-    D --> F;
-    E --> F;
-    F --> G;
-    A --> H;
-    G --> H;
-    H --> I;
-    I --> J; 
-    J --> K;
-    L --> M;
-    G --> M;
-    K --> M;
-    M --> N;
-    N --> O;
-    O --> M;
-    M --> P;
-    X --> Y;
-    Y --> F;
- 
-```
 
 
 ### Search Engines and Data Sources
