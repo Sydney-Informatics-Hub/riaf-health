@@ -2,7 +2,7 @@
 
 from retriever.bingsearch import bing_custom_search, get_urls_from_bing, get_titles_from_bing
 from retriever.webcontent import web2docs_async, web2docs_simple
-from llama_index import VectorStoreIndex
+from llama_index.core import VectorStoreIndex
 import os
 import logging
 import time

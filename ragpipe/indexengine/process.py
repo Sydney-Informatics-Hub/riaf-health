@@ -11,16 +11,11 @@ _azure_engine_name_embeddings = "text-embedding-ada-002"
 
 import os
 import logging
-from llama_index.llms import OpenAI, AzureOpenAI
-from llama_index import (
-                        ServiceContext,
-                         VectorStoreIndex,
-                         SimpleDirectoryReader,
-                         StorageContext,
-                         StorageContext, 
-                        load_index_from_storage,
-                        )
-from llama_index.embeddings import AzureOpenAIEmbedding
+from llama_index.llms.openai import OpenAI
+from llama_index.embeddings.azure_openai import AzureOpenAI
+from llama_index.core import VectorStoreIndex
+from llama_index.core import ServiceContext, SimpleDirectoryReader, StorageContext, StorageContext, load_index_from_storage
+from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
 
 def create_index(docstore, 
                  outpath_index = None, 
