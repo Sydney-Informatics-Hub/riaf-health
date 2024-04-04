@@ -1,9 +1,17 @@
+"""
+This module contains test examples for the RAGscholar class using the use case studies.
+
+To run the tests, setup your environment with the following keys:
+os.environ["OPENAI_API_KEY"] = "xxx"
+os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"] = "xxx"
+
+Alternatively the path to the keys is needed (by default in the tests the keys are read from the files):
+"""
+
 from rag import RAGscholar
 import time
 import os
 
-#os.environ["OPENAI_API_KEY"] = ""
-#os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"] = ""
 
 def test_RAGscholar_run1():
     
