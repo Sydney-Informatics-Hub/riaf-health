@@ -13,6 +13,7 @@ Author: Sebastian Haan
 """
 
 import requests
+import logging
 from bs4 import BeautifulSoup
 from llama_index import download_loader, VectorStoreIndex
 from llama_index import Document
@@ -28,13 +29,13 @@ async def fetch(session, url):
                 content = await response.text()
                 return BeautifulSoup(content, 'html.parser').get_text().encode('utf-8')
             else:
-                print(f"Error fetching {url}: Status {response.status}")
+                logging.info(f"Error fetching {url}: Status {response.status}")
                 return None
     except aiohttp.ClientError as e:
-        print(f"Request failed for {url}: {e}")
+        logging.info(f"Request failed for {url}: {e}")
         return None
     except Exception as e:
-        print(f"Unexpected error for {url}: {e}")
+        logging.info(f"Unexpected error for {url}: {e}")
         return None
     
 
@@ -65,9 +66,9 @@ def custom_webextract(url):
         return content, links
 
     except requests.exceptions.HTTPError as e:
-        print(f"HTTP Error fetching content from {url}: {e}")
+        logging.info(f"HTTP Error fetching content from {url}: {e}")
     except requests.exceptions.ConnectionError as e:
-        print(f"Connection Error fetching content from {url}: {e}")
+        logging.info(f"Connection Error fetching content from {url}: {e}")
         return None
     
 def web2docs_simple(urls):

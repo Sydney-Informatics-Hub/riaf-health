@@ -181,7 +181,7 @@ class RAGscholar:
         system_prompt = self.generate_system_prompt()
 
         memory = ChatMemoryBuffer.from_defaults(token_limit=12000)
-        self.chat_engine_context = self.index.as_chat_engine(
+        self.chat_engine = self.index.as_chat_engine(
             chat_mode="context",
             memory=memory,
             system_prompt=system_prompt,
@@ -575,6 +575,8 @@ class RAGscholar:
             documents_web = web2docs_async(urls, titles)
             if len(self.documents) > 0:
                 self.documents = self.documents + documents_web
+            else:
+                self.documents = documents_web
 
 
         # generate index store and save index in self.path_index
