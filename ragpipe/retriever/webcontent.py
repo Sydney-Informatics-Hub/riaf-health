@@ -82,7 +82,7 @@ def web2docs_simple(urls):
     Returns:
         documents: List of documents with main text content of the webpages.
     """
-from llama_index.readers.web import SimpleWebPageReader
+    from llama_index.readers.web import SimpleWebPageReader
     loader = SimpleWebPageReader(html_to_text=True)
     documents = loader.load_data(urls=urls)
     return documents
