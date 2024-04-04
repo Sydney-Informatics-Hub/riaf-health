@@ -1,3 +1,5 @@
+# RAGscholar Pipeline Overview
+
 ```mermaid
 
 graph TD;
@@ -78,7 +80,8 @@ graph TD;
     X --> Y;
     Y --> Z;
     Z --> F;
-
-    classDef default stroke-width:3px;
-
 ```
+
+<center>Overview of the processes between LLM agents for the RAGscholar class (see rag.py).</center>
+
+<sub>Created by: Sebastian Haan, Sydney Informatics Hub, The University of Sydney</sub>
