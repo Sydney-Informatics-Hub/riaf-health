@@ -32,10 +32,10 @@ from semanticscholar import SemanticScholar
 import arxiv
 import shutil
 from llama_index.llms.openai import OpenAI
-from llama_index.llms.azure_openai import AzureOpenAI
+from llama_index.embeddings.azure_openai import AzureOpenAI
 from llama_index.core.llms import ChatMessage
-from llama_index.readers.base import BaseReader
-from llama_index.readers.schema.base import Document
+from llama_index.core.readers.base import BaseReader
+from llama_index.core import Document
 from PyPDF2 import PdfReader
 # local imports
 from retriever.pdfdownloader import download_pdf, download_pdf_from_arxiv

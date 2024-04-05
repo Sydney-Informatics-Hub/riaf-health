@@ -3,7 +3,7 @@
 
 import logging
 import requests
-from llama_hub.semanticscholar import SemanticScholarReader
+from llama_index.readers.semanticscholar import SemanticScholarReader
 
 
 def read_semanticscholar(query_space, author, keywords, limit =20, full_text = False, year_start = None, year_end = None):

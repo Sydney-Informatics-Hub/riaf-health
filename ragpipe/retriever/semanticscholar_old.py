@@ -24,7 +24,7 @@ metadata example:
 import os
 import requests
 import logging
-from llama_hub.semanticscholar import SemanticScholarReader
+from llama_index.readers.semanticscholar import SemanticScholarReader
 # https://github.com/run-llama/llama-hub/tree/main/llama_hub/semanticscholar
 # https://github.com/run-llama/llama_index/tree/main/llama-index-integrations/readers/llama-index-readers-semanticscholar
 #from semanticscholar import SemanticScholar

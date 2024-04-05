@@ -15,8 +15,9 @@ Author: Sebastian Haan
 import requests
 import logging
 from bs4 import BeautifulSoup
-from llama_index import download_loader, VectorStoreIndex
-from llama_index import Document
+from llama_index.core import download_loader
+from llama_index.core import VectorStoreIndex
+from llama_index.core import Document
 import logging
 import aiohttp
 import asyncio
@@ -81,7 +82,7 @@ def web2docs_simple(urls):
     Returns:
         documents: List of documents with main text content of the webpages.
     """
-    SimpleWebPageReader = download_loader('SimpleWebPageReader')
+    from llama_index.readers.web import SimpleWebPageReader
     loader = SimpleWebPageReader(html_to_text=True)
     documents = loader.load_data(urls=urls)
     return documents

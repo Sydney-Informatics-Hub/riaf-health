@@ -1,7 +1,7 @@
 # Load documents from a directory and get metadata
 
 import os
-from llama_index import SimpleDirectoryReader
+from llama_index.core import SimpleDirectoryReader
 from llama_index.core.extractors import TitleExtractor
 
 

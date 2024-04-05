@@ -1,11 +1,11 @@
 # Query engine functions
 
 import logging
-from llama_index.retrievers import VectorIndexRetriever
-from llama_index.postprocessor import SimilarityPostprocessor
-from llama_index.query_engine import RetrieverQueryEngine
-from llama_index import get_response_synthesizer
-from llama_index.query_engine import CitationQueryEngine
+from llama_index.core.retrievers import VectorIndexRetriever
+from llama_index.core.postprocessor import SimilarityPostprocessor
+from llama_index.core.query_engine import RetrieverQueryEngine
+from llama_index.core import get_response_synthesizer
+from llama_index.core.query_engine import CitationQueryEngine
 
 class QueryEngine:
     """

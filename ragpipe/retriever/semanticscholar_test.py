@@ -1,16 +1,12 @@
 import os
 
 import openai
-from llama_index import (
-    ServiceContext,
-    StorageContext,
-    VectorStoreIndex,
-    load_index_from_storage,
-)
-from llama_index.llms import OpenAI
-from llama_index.query_engine import CitationQueryEngine
+from llama_index.core import VectorStoreIndex
+from llama_index.core import ServiceContext, StorageContext, load_index_from_storage
+from llama_index.llms.openai import OpenAI
+from llama_index.core.query_engine import CitationQueryEngine
 
-from llama_hub.semanticscholar.base import SemanticScholarReader
+from llama_index.readers.semanticscholar import SemanticScholarReader
 
 # initialize the SemanticScholarReader
 s2reader = SemanticScholarReader()
