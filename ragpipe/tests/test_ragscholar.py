@@ -10,7 +10,7 @@ def test_RAGscholar():
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store', 
-                    path_openai_key = '../openai_sih_key.txt')
+                    path_openai_key = '../openai_techlab_key.txt')
     query_author="Kate Curtis"
     query_topic="Improving the safety and quality of emergency nursing care"
     keywords = "HIRAID, emergency nursing care"

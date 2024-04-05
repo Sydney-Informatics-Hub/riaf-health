@@ -7,6 +7,11 @@ _azure_engine_name = "gpt-4-1106-preview" #"gpt-4-1106-preview" # 'gpt-4-32k'""
 
 _azure_api_version = "2023-12-01-preview" 
 _azure_engine_name_embeddings = "text-embedding-ada-002"
+
+techlab_endpoint = 'https://apim-techlab-usydtechlabgenai.azure-api.net/'
+techlab_deployment = 'text-embedding-ada-002'
+techlab_api_version = '2023-12-01-preview'
+
 # see for latest https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation
 
 import os
@@ -23,7 +28,7 @@ def create_index(docstore,
                  temperature = 0.1, 
                  context_window = 4096, 
                  num_output = 600,
-                 llm_service = 'openai'):
+                 llm_service = 'techlab'):
     """
     Create index from docstore and store index in outpath_index
 
@@ -58,6 +63,22 @@ def create_index(docstore,
             api_key=os.environ["OPENAI_API_KEY"],
             azure_endpoint=_azure_endpoint,
             api_version=_azure_api_version,
+        )
+    elif llm_service == 'techlab':
+        llm = AzureOpenAI(
+            engine=_azure_engine_name,
+            model=model_llm,
+            temperature=temperature,
+            azure_endpoint=techlab_endpoint,
+            api_key=os.environ["OPENAI_API_KEY"],
+            api_version=_azure_api_version,
+        )
+        embed_model = AzureOpenAIEmbedding(
+            model="text-embedding-ada-002",
+            deployment_name=techlab_deployment,
+            api_key=os.environ["OPENAI_TECHLAB_API_KEY"],
+            azure_endpoint=techlab_endpoint,
+            api_version=techlab_api_version,
         )
     else:
         logging.error(f"LLM service {llm_service} not supported")

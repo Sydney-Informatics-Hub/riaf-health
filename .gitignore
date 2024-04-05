@@ -22,3 +22,5 @@ renv/
 
 # ignore freeze cache
 _freeze
+
+*/**/_pycache__

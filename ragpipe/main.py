@@ -54,7 +54,7 @@ def main():
                     outpath=args.outpath,
                     path_index=args.path_index, 
                     path_documents=args.path_documents,
-                    path_openai_key='../../openai_sih_key.txt',
+                    path_openai_key='../../openai_techlab_key.txt',
                     language_style=args.language_style
                     )
  

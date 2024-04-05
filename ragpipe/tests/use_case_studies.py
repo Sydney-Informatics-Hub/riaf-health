@@ -13,6 +13,8 @@ from rag import RAGscholar
 import time
 import os,sys
 
+with open("../../openai_techlab_key.txt", "r") as file:
+    os.environ["OPENAI_API_KEY"]  = file.read().strip()
 
 def test_RAGscholar_run1():
     
@@ -23,8 +25,7 @@ def test_RAGscholar_run1():
                     outpath = '../../results/',
                     path_index = '../../index_store', 
                     path_documents = '../test_data/documents_to_add',
-                    path_openai_key = '../../openai_sih_key.txt')
-                    #path_openai_key = '../../azure_openai_techlab_key.txt')
+                    path_openai_key = '../../openai_techlab_key.txt')
     query_author="Anthony Weiss"
     query_topic="Elastagen"
     keywords = "elastin, tissue engineering"
@@ -57,7 +58,7 @@ def test_RAGscholar_run2():
                     outpath = '../../results/',
                     path_index = '../../index_store', 
                     path_documents = '../test_data/documents_to_add',
-                    path_openai_key = '../../openai_sih_key.txt')
+                    path_openai_key = '../../openai_techlab_key.txt')
     query_author="Kate Curtis"
     query_topic="Improving the safety and quality of emergency nursing care"
     keywords = "HIRAID, emergency nursing care"
@@ -88,7 +89,7 @@ def test_RAGscholar_run3():
                     outpath = '../../results/',
                     path_index = '../../index_store', 
                     path_documents = '../test_data/documents_to_add',
-                    path_openai_key = '../../openai_sih_key.txt')
+                    path_openai_key = '../../openai_techlab_key.txt')
     query_author="Cath Chapman, Steph Kershaw"
     query_topic="Online resources to reduce the impact of crystal methamphetamine harms in the community"
     keywords = "methamphetamine, ice"

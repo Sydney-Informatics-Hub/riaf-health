@@ -22,17 +22,27 @@ import logging
 from llama_index.embeddings.azure_openai import AzureOpenAI
 from llama_index.core.llms import ChatMessage
 
-LLMSERVICE = 'azure'  # 'openai' or 'azure'
+LLMSERVICE = 'techlab'  # 'openai' or 'azure' or 'techlab'
+
 AZURE_ENDPOINT = "https://techlab-copilots-aiservices.openai.azure.com/"
 AZURE_API_VERSION = "2023-12-01-preview"
 AZURE_ENGINE = "gpt-35-turbo"
+
+techlab_endpoint = 'https://apim-techlab-usydtechlabgenai.azure-api.net/'
+techlab_deployment = 'GPT35shopfront'
+techlab_api_version = '2023-12-01-preview'
 
 class AgentReviewer:
     def __init__(self, llm):
         self.llm = None
 
     def init_llm(self):
-        if LLMSERVICE == 'azure':
+        if LLMSERVICE == 'openai':
+            self.llm = OpenAI(
+                temperature=0,
+                model='gpt-4-1106-preview',
+                max_tokens=600) 
+        elif LLMSERVICE == 'azure':
             llm = AzureOpenAI(
                 engine=AZURE_ENGINE,
                 model='gpt-3.5-turbo',
@@ -40,6 +50,15 @@ class AgentReviewer:
                 azure_endpoint=AZURE_ENDPOINT,
                 api_key=os.environ["OPENAI_API_KEY"],
                 api_version=AZURE_API_VERSION,
+            )
+        elif LLMSERVICE == 'techlab':
+            self.llm = AzureOpenAI(
+                engine=techlab_deployment,
+                model='gpt-4-1106-preview', 
+                temperature=0,
+                azure_endpoint=techlab_endpoint,
+                api_key=os.environ["OPENAI_TECHLAB_API_KEY"],
+                api_version=techlab_api_version,
             )
         else:
             logging.error(f"LLM service {LLMSERVICE} not supported")
