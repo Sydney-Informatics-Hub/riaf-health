@@ -3,13 +3,13 @@
 import os
 import json
 import logging
-from llama_index import load_index_from_storage
-from llama_index.retrievers import VectorIndexRetriever
-from llama_index.prompts import PromptTemplate
-from llama_index.llms import ChatMessage, MessageRole
-from llama_index.chat_engine.condense_question import CondenseQuestionChatEngine
-from llama_index.chat_engine import CondensePlusContextChatEngine 
-from llama_index.memory import ChatMemoryBuffer
+from llama_index.core import load_index_from_storage
+from llama_index.core.retrievers import VectorIndexRetriever
+from llama_index.core import PromptTemplate
+from llama_index.core.llms import ChatMessage, MessageRole
+from llama_index.core.chat_engine import CondenseQuestionChatEngine
+from llama_index.core.chat_engine import CondensePlusContextChatEngine
+from llama_index.core.memory import ChatMemoryBuffer
 
 # local package imports
 from utils.pubprocess import publications_to_markdown, clean_publications

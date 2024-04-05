@@ -1,7 +1,7 @@
 # Functions for creating, loading and adding documents to index
 
 import logging
-from llama_index import download_loader
+from llama_index.core import download_loader
 
 def read_arxivscholar(author, topic = None, limit =20, full_text = False):
     """
@@ -13,7 +13,7 @@ def read_arxivscholar(author, topic = None, limit =20, full_text = False):
 
     :return: documents
     """
-    ArxivReader = download_loader("ArxivReader")
+from llama_index.readers.papers import ArxivReader
 
     loader = ArxivReader()
     #query = f"ti:{topic} AND au:{author}"

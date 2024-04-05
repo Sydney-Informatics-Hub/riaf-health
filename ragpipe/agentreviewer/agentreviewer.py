@@ -19,7 +19,7 @@ Author: Nathaniel Butterworth
 import os
 import time
 import logging
-from llama_index.llms.azure_openai import AzureOpenAI
+from llama_index.embeddings.azure_openai import AzureOpenAI
 from llama_index.core.llms import ChatMessage
 
 LLMSERVICE = 'azure'  # 'openai' or 'azure'
