@@ -21,10 +21,12 @@ cd PIPE-4668-RIAF_NSWHEALTH/ragpipe
 To install dependencies, ensure you have Mamba or Conda installed. Then install dependencies in the following order:
 
 ```shell
-conda create -n riaf python=3.11
-conda activate riaf
-pip install semanticscholar==0.7.0 arxiv==2.1.0 llama-index==0.9.30 llama-hub==0.0.71 llama-index-readers-web==0.1.2 pypdf2==3.0.1 pypdf==4.1.0
-pip install llama-index-core==0.10.3
+conda create -n fmh python=3.11
+conda activate fmh
+pip install semanticscholar arxiv llama-index==0.10.27 pypdf2 pypdf
+pip install llama-index-readers-web==0.1.8
+pip install llama-index-readers-semanticscholar==0.1.3 
+pip install llama-index-embeddings-azure-openai==0.1.5
 ```
 
 ## How-to and examples
@@ -72,7 +74,7 @@ For more details about the class arguments, see code documentation. Three exampl
 
 ## RAG Pipeline
 
-A graph overview of the RAG pipeline is shown [here](./ragpipe/codegraph.md).
+A graph overview of the RAG pipeline is shown [here](./ragpipe/pipeline_overview.png).
 
 The software pipeline `RAGscholar` (see ragpipe/rag.py) automatically generates a research impact use-case study for a given topic and author. 
 The pipeline includes the following steps:
