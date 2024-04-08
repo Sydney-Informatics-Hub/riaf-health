@@ -144,3 +144,34 @@ def search_docs_by_author(authorname):
     return doc_ids, titles
 
 
+
+def get_scopus_paper_by_eid(eid, scopus_key):
+    """
+    Fetches a paper from Scopus by its EID using the Scopus Abstract Retrieval API.
+
+    Parameters:
+    eid (str): The EID of the paper.
+    scopus_key (str): Your Scopus API key.
+
+    Returns:
+    dict: The paper details in JSON format or an error message.
+
+    """
+    # Scopus Abstract Retrieval API endpoint, replace {eid} with the actual EID
+    url = f"https://api.elsevier.com/content/article/eid/{eid}"
+
+    # Headers including the API key
+    headers = {
+        "X-ELS-APIKey": scopus_key,
+        "Accept": "application/json"
+    }
+
+    # Make the GET request
+    response = requests.get(url, headers=headers)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return {"error": "Failed to retrieve paper", "status_code": response.status_code, "message": response.text}
+    return None
