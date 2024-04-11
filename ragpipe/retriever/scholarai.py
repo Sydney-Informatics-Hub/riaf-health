@@ -52,11 +52,6 @@ techlab_endpoint = 'https://apim-techlab-usydtechlabgenai.azure-api.net/'
 techlab_deployment = 'GPT35shopfront'
 techlab_api_version = '2023-12-01-preview'
 
-#LLMSERVICE = 'azure' # 'openai' or 'azure'
-#AZURE_ENDPOINT = "https://apim-techlab-usydtechlabgenai.azure-api.net/" 
-#AZURE_API_VERSION = "2023-12-01-preview'" 
-#AZURE_ENGINE = "GPT35shopfront"
-
 class ScholarAI:
     def __init__(self, 
                  topic, 
@@ -96,6 +91,7 @@ class ScholarAI:
                 azure_endpoint=techlab_endpoint,
                 api_key=os.environ["OPENAI_API_KEY"],
                 api_version=techlab_api_version,
+                api_base=os.getenv("OPENAI_API_BASE", ""),
             )
         else:
             logging.error(f"LLM service {LLMSERVICE} not supported")
