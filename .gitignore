@@ -22,3 +22,6 @@ renv/
 
 # ignore freeze cache
 _freeze
+
+# ignore cached pyc files
+*.pyc

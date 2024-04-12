@@ -15,7 +15,7 @@ Python:
 ------ 
 from retriever.scholarai import ScholarAI
 scholar = ScholarAI(topic = ..., authors = [..., ...], year_start=..., year_end = ...)
-papers = scholar.get_papers_from_authors(max_papers = 20)
+papers, citations = scholar.get_papers_from_authors(max_papers = 20)
 documents = scholar.load_data(papers)
 ------
 
@@ -32,10 +32,10 @@ from semanticscholar import SemanticScholar
 import arxiv
 import shutil
 from llama_index.llms.openai import OpenAI
-from llama_index.llms.azure_openai import AzureOpenAI
+from llama_index.embeddings.azure_openai import AzureOpenAI
 from llama_index.core.llms import ChatMessage
-from llama_index.readers.base import BaseReader
-from llama_index.readers.schema.base import Document
+from llama_index.core.readers.base import BaseReader
+from llama_index.core import Document
 from PyPDF2 import PdfReader
 # local imports
 from retriever.pdfdownloader import download_pdf, download_pdf_from_arxiv
@@ -132,6 +132,8 @@ class ScholarAI:
 
         :param max_authors: int, maximum number of top author names to consider that are retrieved from Semantic Scholar for each author
         :param max_papers: int, maximum number of papers to retrieve
+
+        :return: list of papers, list of citation counts
         """
         sch = SemanticScholar()
         paper_list = []
@@ -151,7 +153,8 @@ class ScholarAI:
         paper_list = [paper_list[i] for i in idx_sorted]
         if max_papers:
             paper_list = paper_list[0:max_papers]
-        return paper_list
+        self.citations = citations
+        return paper_list, citations
 
         
     def filter_papers(self, papers, filter_with_llm = True, open_access_only = True):
@@ -204,7 +207,8 @@ class ScholarAI:
         :param limit: int, maximum number of papers to retrieve
         :param open_access_only: bool, if True, only open access papers are returned
 
-        :return: list of papers
+        :return: list of papers, list of citation counts
+
         """
         sch = SemanticScholar()
         papers = sch.search_paper(self.topic, 
@@ -214,8 +218,8 @@ class ScholarAI:
                                   open_access_pdf = open_access_only)
         papers = papers.items
         if filter_with_llm:
-            papers = self.filter_papers(papers)
-        return papers 
+            papers, citationcount = self.filter_papers(papers)
+        return papers, citationcount 
     
 
     def get_full_text_docs(self, metadata, base_dir = 'pdfs'):
@@ -346,7 +350,7 @@ class ScholarAI:
         :param open_access_only: bool, if True, only open access papers are returned
         """
         logging.info("Searching and processing papers...")
-        papers = self.get_papers_from_authors()
+        papers, citations = self.get_papers_from_authors()
         if papers:
             logging.info(f"Number of papers found from authors: {len(papers)}")
             logging.info("Extracting content and metadata from papers...")

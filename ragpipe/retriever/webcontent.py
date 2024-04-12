@@ -13,9 +13,11 @@ Author: Sebastian Haan
 """
 
 import requests
+import logging
 from bs4 import BeautifulSoup
-from llama_index import download_loader, VectorStoreIndex
-from llama_index import Document
+from llama_index.core import download_loader
+from llama_index.core import VectorStoreIndex
+from llama_index.core import Document
 import logging
 import aiohttp
 import asyncio
@@ -28,13 +30,13 @@ async def fetch(session, url):
                 content = await response.text()
                 return BeautifulSoup(content, 'html.parser').get_text().encode('utf-8')
             else:
-                print(f"Error fetching {url}: Status {response.status}")
+                logging.info(f"Error fetching {url}: Status {response.status}")
                 return None
     except aiohttp.ClientError as e:
-        print(f"Request failed for {url}: {e}")
+        logging.info(f"Request failed for {url}: {e}")
         return None
     except Exception as e:
-        print(f"Unexpected error for {url}: {e}")
+        logging.info(f"Unexpected error for {url}: {e}")
         return None
     
 
@@ -65,9 +67,9 @@ def custom_webextract(url):
         return content, links
 
     except requests.exceptions.HTTPError as e:
-        print(f"HTTP Error fetching content from {url}: {e}")
+        logging.info(f"HTTP Error fetching content from {url}: {e}")
     except requests.exceptions.ConnectionError as e:
-        print(f"Connection Error fetching content from {url}: {e}")
+        logging.info(f"Connection Error fetching content from {url}: {e}")
         return None
     
 def web2docs_simple(urls):
@@ -80,7 +82,7 @@ def web2docs_simple(urls):
     Returns:
         documents: List of documents with main text content of the webpages.
     """
-    SimpleWebPageReader = download_loader('SimpleWebPageReader')
+    from llama_index.readers.web import SimpleWebPageReader
     loader = SimpleWebPageReader(html_to_text=True)
     documents = loader.load_data(urls=urls)
     return documents
