@@ -180,7 +180,7 @@ class RAGscholar:
         # Condense Plus Context Chat Engine (WIP)
         system_prompt = self.generate_system_prompt()
 
-        memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
+        memory = ChatMemoryBuffer.from_defaults(token_limit=10000)
         self.chat_engine = self.index.as_chat_engine(
             chat_mode="context",
             memory=memory,
@@ -392,7 +392,7 @@ class RAGscholar:
             
             # Step 8. Answer missing questions by querying chat engine with index_context as context
             logging.info("Answering missing questions with web context ...")
-            for info in web_search_queries
+            for info in web_search_queries:
                 info = info.replace("MissingInfo:", "")
                 query = ("Answer the following question (max 50 words): \n"
                         f"{info}"
