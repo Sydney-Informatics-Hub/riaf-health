@@ -180,7 +180,7 @@ class RAGscholar:
         # Condense Plus Context Chat Engine (WIP)
         system_prompt = self.generate_system_prompt()
 
-        memory = ChatMemoryBuffer.from_defaults(token_limit=12000)
+        memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
         self.chat_engine = self.index.as_chat_engine(
             chat_mode="context",
             memory=memory,
@@ -296,12 +296,12 @@ class RAGscholar:
                         "Use the following questions to guide your analysis:\n"
                         "1. What is the primary problem that this topic is aiming to address with regard to the healthcare and medical sector? (max 100 words)\n"
                         "2. What is the context of the problem in terms of healthcare sector and medicine? (max 100 words)\n"
-                        "3. What are the key challenges in addressing this problem? (max 50 words)\n"
-                        "4. Who is mainly impacted or effected by this problem? (max 50 words)\n"
-                        "5. How is this problem currently being addressed in the healthcare sector? (max 100 words)\n"
+                        "3. Who is mainly impacted or effected by this problem or its consequences? (max 50 words)\n"
+                        "4. How many people are impacted by health issues that are related to this problem? (max 50 words)\n"
+                        "5. What are the economic costs in $ related to this problem? (max 50 words)\n"
                         f"6. What is the novelty or advantage of the new solution as proposed by {self.author} (max 100 words)\n"
                         "7. How would the proposed solution to this problem improve healthcare? (max 100 words)\n"
-                        "8. What are the commercial or societal implications of the proposed solution? (max 100 words)\n"
+                        "8. What are the commercial (in $) or societal implications of the proposed solution? (max 100 words)\n"
             
                         "Instructions:\n"
                         "Do not repeat or rephrase the questions and only provide concise answers within the word limit.\n"
@@ -318,7 +318,7 @@ class RAGscholar:
         prompt_text = ("Based on the answers above, identify missing information and quantitative data statements to back up the answers.\n"
                         "Then formulate up to 5 short web search queries that will search for this missing information and data.\n"
                         "Example missing information statements: \n"
-                        "[X] million people worldwide and [Y] million people in Australia are impacted by this problem.\n"
+                        "[X] million people worldwide and [Y] million people in Australia are impacted by health issues related this problem.\n"
                         "The commercial value of the proposed solution is [X] billion dollars. \n"
                         "The proposed solution would save the Australian healthcare sector [X] million dollars yearly.\n"
             
@@ -345,6 +345,7 @@ class RAGscholar:
         #create missing information index
         for query in web_search_queries:
             logging.info(f"Running web search query: {query}")
+            print(f"Running web search query: {query}")
             query = query.replace("WebSearch_String:", "").strip()
             bing_results = bing_custom_search(query, count=2)
             webcontext = []
@@ -376,12 +377,12 @@ class RAGscholar:
             # Initialize chat engine with context prompt
             logging.info("Initializing chat engine with web context ...")
             system_prompt = ("You are an LLM agent that acts as a assistant to find missing information from data.\n"
-                             "You must use only the database to answer missing questions.\n"
-                             "If you cannot find the answer, you must provide as output only '[X]'.\n"
-                             "Do not repeat the question, only provide concise answers.\n"
+                             "You must provide concise and quantitative answers.\n"
+                             "If you can not find the answer, respond with 'No data found'.\n"
+                             "You must provide references for each answer.\n"
             )
 
-            memory = ChatMemoryBuffer.from_defaults(token_limit=12000)
+            memory = ChatMemoryBuffer.from_defaults(token_limit=4000)
             chat_engine_context2 = self.index_context.as_chat_engine(
                 chat_mode="context",
                 memory=memory,
@@ -391,9 +392,9 @@ class RAGscholar:
             
             # Step 8. Answer missing questions by querying chat engine with index_context as context
             logging.info("Answering missing questions with web context ...")
-            for info in missing_info:
+            for info in web_search_queries
                 info = info.replace("MissingInfo:", "")
-                query = ("Answer the following missing information (max 50 words): \n"
+                query = ("Answer the following question (max 50 words): \n"
                         f"{info}"
                         )
                 response = chat_engine_context2.chat(query)
@@ -409,6 +410,10 @@ class RAGscholar:
         if len(self.context.split()) > max_tokens_context:
             logging.info("Token limit exceeded. Context is too long. Context is truncated.")
             self.context = " ".join(self.context.split()[:max_tokens_context])
+
+        # Save context to file
+        with open(os.path.join(self.outpath, "context.txt"), "w") as file:
+            file.write(self.context)
 
     
 
