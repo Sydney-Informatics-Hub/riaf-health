@@ -4,7 +4,7 @@
 
 To measure health and medical research impact, a new Research Impact Assessment Framework (RIAF) has been developed. The RIAF evaluates the research environment and the alignment and influence of research, with the goal of providing funders a holistic analysis of NSW’s health and medical research ecosystem for making informed investment decisions.
 
-To improve the scalability of this framework, an AI powered software has been developed that allows researchers and funding organisations to generate assessment reports about the research impact for a given research group and topic. Research impact is evaluated along distinct criteria such as overall problem addressed, research impact-to-date, and potential future applications. The current design of the case study template includes four assessment criteria and provides researchers the freedom to use a set of indicators that are relevant to their research program (e.g. research/impact period). 
+To improve the scalability of this framework, an AI powered software has been developed that allows researchers and funding organisations to generate assessment reports about the research impact for a given research group and topic. Research impact is evaluated along distinct criteria such as overall problem addressed, research impact-to-date, and potential future applications. The current design of the case study template includes four assessment criteria and provides researchers the freedom to use a set of indicators that are relevant to their research program (e.g. research/impact period).
 
 The AI generator combines Large Language Models (LLM) with factual knowledge retrievers such as scholar publications and web content. For a complete overview of retrievers see modules in directory ragpipe/retrievers.
 
@@ -23,10 +23,7 @@ To install dependencies, ensure you have Mamba or Conda installed. Then install 
 ```shell
 conda create -n riaf python=3.11
 conda activate riaf
-pip install semanticscholar arxiv==1.4.8 llama-index==0.10.27 pypdf2==3.0.1 pypdf==4.1.0
-pip install llama-index-readers-web==0.1.8
-pip install llama-index-readers-semanticscholar==0.1.3
-pip install llama-index-embeddings-azure-openai==0.1.6
+pip install semanticscholar arxiv==1.4.8 llama-index==0.10.27 pypdf2==3.0.1 pypdf==4.1.0 llama-index-readers-web==0.1.8 llama-index-readers-semanticscholar==0.1.3 llama-index-embeddings-azure-openai==0.1.6
 ```
 
 ## How-to and examples
@@ -59,7 +56,7 @@ To integrate RAGscholar in your code, add the following lines and add arguments 
 ```python
 from rag import RAGscholar
 rag = RAGscholar(outpath = '...')
-rag.run(query_topic = '...', 
+rag.run(query_topic = '...',
         query_author = [...,],
         keywords =[...,],
         organisation = '...',
@@ -76,7 +73,7 @@ For more details about the class arguments, see code documentation. Three exampl
 
 A graph overview of the RAG pipeline is shown [here](./ragpipe/codegraph.md).
 
-The software pipeline `RAGscholar` (see ragpipe/rag.py) automatically generates a research impact use-case study for a given topic and author. 
+The software pipeline `RAGscholar` (see ragpipe/rag.py) automatically generates a research impact use-case study for a given topic and author.
 The pipeline includes the following steps:
 
 1. User input: via CLI or functional arguments (see main.py)
@@ -108,7 +105,7 @@ The pipeline includes the following steps:
 ### AI agents
 
 - Writer agent: generating impact assessment report including references
-- Context agent: 
+- Context agent:
     - defining general problem and context information
     - find missing information online
     - generate context memory
