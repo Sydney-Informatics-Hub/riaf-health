@@ -272,6 +272,7 @@ class RAGscholar:
                     logging.info("No review response. Continuing with original response.")
             self.list_answers.append(content)
             self.list_sources.append(sources)
+            print(f'Finished processing question {i}.')
 
     def context_engine(self, max_tokens_context = 2000):
         """
@@ -413,10 +414,6 @@ class RAGscholar:
             logging.info("Token limit exceeded. Context is too long. Context is truncated.")
             self.context = " ".join(self.context.split()[:max_tokens_context])
 
-        # Save context to file
-        with open(os.path.join(self.outpath, "context.txt"), "w") as file:
-            file.write(self.context)
-
     
 
     def generate_case_study(self, process_sources = False, make_docx = False):
@@ -554,11 +551,17 @@ class RAGscholar:
                 authors = self.author
             else:
                 authors = [self.author]
+            # convert keywords to list
+            if isinstance(self.keywords, str):
+                keywords = self.keywords.split(",")
+            else:
+                keywords = self.keywords
             scholar = ScholarAI(self.research_topic,
                                 authors, 
                                 year_start= self.research_start, 
                                 year_end = self.research_end,
-                                delete_pdfs = self.scholarai_delete_pdfs)
+                                delete_pdfs = self.scholarai_delete_pdfs,
+                                keywords = keywords)
             papers, citations = scholar.get_papers_from_authors(max_papers = _scholar_limit)
             self.documents = scholar.load_data(papers)
             self.papers_scholarai = papers
@@ -569,7 +572,7 @@ class RAGscholar:
             ncitations = sum([int(c) for c in self.citations_scholarai])
             # three papers with most citations
             if len(self.papers_scholarai) > 2:
-                top_cited_papers = [self.papers_scholarai[i] for i in range(3)]
+                top_cited_papers = [self.papers_scholarai[i]['title'] + ', citations: ' + str(self.citations_scholarai[i]) for i in range(3)]
             else:
                 top_cited_papers = []
                 
@@ -644,6 +647,7 @@ class RAGscholar:
         print("Analyse problem and context...")
         self.context_engine()
 
+
         # Add publications and citations to context
         if npublications is not None:
             self.context += "\n\n"
@@ -653,6 +657,10 @@ class RAGscholar:
                 self.context += "Top cited papers:\n"
                 for i, paper in enumerate(top_cited_papers):
                     self.context += f"{i+1}. {paper}\n"
+
+        # Save context to file
+        with open(os.path.join(self.outpath, "context.txt"), "w") as file:
+            file.write(self.context)
 
         # Run through prompt questions
         print("Processing assessment questions ...")
