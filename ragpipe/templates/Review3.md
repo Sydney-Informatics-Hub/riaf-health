@@ -9,4 +9,8 @@ Evaluate the response to the question: "What impacts has this research delivered
 - Robust evidence to substantiate the health outcomes achieved.
 - Solution specific:  Needs to capture what burden in the health system its focussed on solving.
 - Impact specific: Needs to be clear on what impact is being measured (e.g. dissemination of resources vs making behavioural change).
-- Avoid duplicate or similar responses.
+- A citable references for each statement must be given.
+- Avoid duplication of points that have been already mentioned in previous answers.
+
+Instructions:
+Only provide in response suggestions that need improvement.

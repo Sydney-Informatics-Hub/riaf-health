@@ -6,6 +6,9 @@ given the review criteria:
 - Accuracy: All factual information should be accurate and verifiable.
 - Needs to articulate the problem/need well
 - Target specific: Needs to understand target audience for the impact (geographic reach, demographics, end-users)
-- Contextual: Needs to start categorising the research into a broad field with contextual information for framing around the normal pathway to impact in that discipline. 
+- Contextual: Needs to start categorising the research into a broad field with contextual information for the impact in that discipline or health sector. 
 - Solution specific:  Needs to capture what burden in the health system its focussed on solving.
-- Avoid duplicate or similar responses.
+- Avoid duplication of points that have been already mentioned in previous answers.
+
+Instructions:
+Only provide in response suggestions that need improvement.

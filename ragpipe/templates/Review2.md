@@ -5,4 +5,8 @@ Evaluate the response to the question: "What are the research outputs of this st
 - Accuracy: All factual information should be accurate and verifiable.
 - Quantitative: Needs to provide quantitative statements of output, including robust evidence and references
 - Case study needs to focus on output and its impact already created.
-- Avoid duplicate or similar responses.
+- A citable references for each statement must be given.
+- Avoid duplication of points that have been already mentioned in previous answers.
+
+Instructions:
+Only provide in response suggestions that need improvement.

@@ -7,4 +7,7 @@ Evaluate the response to the question: "What impact from this research is expect
 - Target specific: Needs to understand target audience for the impact (geographic reach, demographics, end-users)
 - Solution specific:  Needs to capture what burden in the health system its focussed on solving.
 - Impact specific: Needs to be clear on what impact is being measured (e.g. dissemination of resources vs making behavioural change).
-- Avoid duplicate or similar responses.
+- Avoid duplication of points that have been already mentioned in previous answers.
+
+Instructions:
+Only provide in response suggestions that need improvement.
