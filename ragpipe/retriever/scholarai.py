@@ -159,6 +159,8 @@ class ScholarAI:
                 papers, citationcounts = self.filter_papers(papers)
                 paper_list.extend(papers)
                 citations.extend(citationcounts)
+            # add delay to avoid rate limit
+            time.sleep(1)
         # sort lists by citations (descending) and select top max
         idx_sorted = sorted(range(len(citations)), key=lambda k: citations[k], reverse=True)
         paper_list = [paper_list[i] for i in idx_sorted]
