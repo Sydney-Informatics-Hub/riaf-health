@@ -19,7 +19,7 @@ Author: Nathaniel Butterworth
 import os
 import time
 import logging
-from llama_index.embeddings.azure_openai import AzureOpenAI
+# from llama_index.embeddings.azure_openai import AzureOpenAI
 from llama_index.core.llms import ChatMessage
 from llama_index.llms.openai import OpenAI
 # from llama_index.embeddings.azure_openai import AzureOpenAI
@@ -110,18 +110,6 @@ class AgentReviewer:
         return result
 
     def review_response(self, question_text, response_text, example_response):
-
-        # # Start the prompt with example reports and corresponding reviews
-        # prompt = "The following are examples of reports with reviews assessing their adherence to the RIAF:\n\n"
-        # for report, review in zip(example_reports, example_reviews):
-        #     prompt += f"Report:\n{report}\n\nReview:\n{review}\n\n"
-        #
-        # # Now instruct the model to review the new report in a similar fashion
-        # prompt += (
-        #     "Based on the above examples, review the following new report:\n\n"
-        #     f"Report:\n{report_output}\n\n"
-        #     "Give a score out of 3 for each catorgy: Alignment, Reach, Significance"
-        # )
 
         system_prompt = ("You are an LLM agent that acts as a reviewer. You will review responses to specific questions based on gold-standard provided examples and review criteria. You will only give a score between 1 and 5.")
 
