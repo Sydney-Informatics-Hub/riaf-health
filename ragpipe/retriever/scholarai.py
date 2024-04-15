@@ -32,7 +32,9 @@ from semanticscholar import SemanticScholar
 import arxiv
 import shutil
 from llama_index.llms.openai import OpenAI
-from llama_index.embeddings.azure_openai import AzureOpenAI
+# from llama_index.embeddings.azure_openai import AzureOpenAI
+
+from llama_index.llms.azure_openai import AzureOpenAI
 from llama_index.core.llms import ChatMessage
 from llama_index.core.readers.base import BaseReader
 from llama_index.core import Document
@@ -40,16 +42,15 @@ from PyPDF2 import PdfReader
 # local imports
 from retriever.pdfdownloader import download_pdf, download_pdf_from_arxiv
 
+LLMSERVICE = 'techlab' # 'openai' or 'azure' or 'techlab'
 
-LLMSERVICE = 'openai' # 'openai' or 'azure'
 AZURE_ENDPOINT = "https://techlab-copilots-aiservices.openai.azure.com/" 
 AZURE_API_VERSION = "2023-12-01-preview" 
 AZURE_ENGINE = "gpt-35-turbo"
 
-#LLMSERVICE = 'azure' # 'openai' or 'azure'
-#AZURE_ENDPOINT = "https://apim-techlab-usydtechlabgenai.azure-api.net/" 
-#AZURE_API_VERSION = "2023-12-01-preview'" 
-#AZURE_ENGINE = "GPT35shopfront"
+techlab_endpoint = 'https://apim-techlab-usydtechlabgenai.azure-api.net/'
+techlab_deployment = 'GPT35shopfront'
+techlab_api_version = '2023-12-01-preview'
 
 class ScholarAI:
     def __init__(self, 
@@ -81,6 +82,16 @@ class ScholarAI:
                 azure_endpoint=AZURE_ENDPOINT,
                 api_key=os.environ["OPENAI_API_KEY"],
                 api_version=AZURE_API_VERSION,
+            )
+        elif LLMSERVICE == 'techlab':
+            llm = AzureOpenAI(
+                engine=techlab_deployment,
+                model='gpt-3.5-turbo', 
+                temperature=0,
+                azure_endpoint=techlab_endpoint,
+                api_key=os.environ["OPENAI_API_KEY"],
+                api_version=techlab_api_version,
+                api_base=os.getenv("OPENAI_API_BASE", ""),
             )
         else:
             logging.error(f"LLM service {LLMSERVICE} not supported")

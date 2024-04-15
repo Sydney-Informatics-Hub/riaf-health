@@ -11,7 +11,7 @@ import time
 def test_openai_key():
     if "OPENAI_API_KEY" not in os.environ:
         try:
-            with open("../../openai_sih_key.txt", "r") as f:
+            with open("../../openai_techlab_key.txt", "r") as f:
                 os.environ["OPENAI_API_KEY"] = f.read().strip()
         except:
             logging.error("OpenAI key not found in environment or file")
