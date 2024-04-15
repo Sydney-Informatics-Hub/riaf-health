@@ -563,7 +563,16 @@ class RAGscholar:
             self.documents = scholar.load_data(papers)
             self.papers_scholarai = papers
             self.citations_scholarai = citations
-
+            # publication count
+            npublications = len(self.papers_scholarai)
+            # add all counts in list self.citations_scholarai
+            ncitations = sum([int(c) for c in self.citations_scholarai])
+            # three papers with most citations
+            if len(self.papers_scholarai) > 2:
+                top_cited_papers = [self.papers_scholarai[i] for i in range(3)]
+            else:
+                top_cited_papers = []
+                
         else:
             print("Searching and reading documents from Semantic Scholar API ..")
             logging.info("Searching and reading documents from Semantic Scholar API ..")
@@ -573,6 +582,7 @@ class RAGscholar:
                                                 limit = _scholar_limit,
                                                 year_start=self.research_start,
                                                 year_end=self.research_end)
+            npublications = None
             
         # Upload documents to index from directory
         if self.path_documents is not None:
@@ -633,6 +643,16 @@ class RAGscholar:
         # Analyse problem and context
         print("Analyse problem and context...")
         self.context_engine()
+
+        # Add publications and citations to context
+        if npublications is not None:
+            self.context += "\n\n"
+            self.context += f"Number of related publications by {self.author}: {npublications}\n"
+            self.context += f"Number of citations: {ncitations}\n"
+            if len(top_cited_papers) > 0:
+                self.context += "Top cited papers:\n"
+                for i, paper in enumerate(top_cited_papers):
+                    self.context += f"{i+1}. {paper}\n"
 
         # Run through prompt questions
         print("Processing assessment questions ...")
