@@ -39,7 +39,7 @@ _model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
-_llm_service = "azure" # "azure" or "openai" # , see 
+_llm_service = "openai" # "azure" or "openai" # , see 
 _use_scholarai = True # use scholarai to retrieve documents. Much more accurate but slower than semanticscholar
 
 
