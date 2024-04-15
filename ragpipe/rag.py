@@ -33,7 +33,7 @@ from indexengine.process import (
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
 _list_max_word =  [250, 300, 500, 300]
 _context_window = 4096
-_num_output = 600
+_num_output = 1000
 _scholar_limit = 50
 _model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
