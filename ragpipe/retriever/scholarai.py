@@ -205,6 +205,10 @@ class ScholarAI:
                 papers_ok.append(paper)
                 citationcount.append(paper.citationCount)
         print(f"Number of relevant papers found for author: {len(papers)}")
+        # order by citation count
+        idx_sorted = sorted(range(len(citationcount)), key=lambda k: citationcount[k], reverse=True)
+        papers_ok = [papers_ok[i] for i in idx_sorted]
+        citationcount = [citationcount[i] for i in idx_sorted]
         return papers_ok, citationcount
 
     def get_papers_from_topic(self, 
