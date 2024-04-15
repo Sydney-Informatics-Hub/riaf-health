@@ -183,7 +183,7 @@ class ScholarAI:
         return paper_list, citations
 
         
-    def filter_papers(self, papers, filter_with_llm = True, open_access_only = True):
+    def filter_papers(self, papers, filter_with_llm = True, open_access_only = False):
         """
         process papers and filter by topic and year.
 
