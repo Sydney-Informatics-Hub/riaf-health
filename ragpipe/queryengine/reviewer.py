@@ -7,7 +7,7 @@ from llama_index.embeddings.azure_openai import AzureOpenAI
 from llama_index.core.llms import ChatMessage
 
 
-LLMSERVICE = 'techlab' # 'openai' or 'azure'  or 'techlab'
+LLMSERVICE = 'openai' # 'openai' or 'azure'  or 'techlab'
 
 AZURE_ENDPOINT = "https://techlab-copilots-aiservices.openai.azure.com/" 
 AZURE_API_VERSION = "2023-12-01-preview" 
