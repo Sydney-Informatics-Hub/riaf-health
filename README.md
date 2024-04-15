@@ -27,6 +27,7 @@ pip install semanticscholar arxiv llama-index==0.10.27 pypdf2 pypdf
 pip install llama-index-readers-web==0.1.8
 pip install llama-index-readers-semanticscholar==0.1.3 
 pip install llama-index-embeddings-azure-openai==0.1.5
+pip install ragas
 ```
 
 ## How-to and examples
