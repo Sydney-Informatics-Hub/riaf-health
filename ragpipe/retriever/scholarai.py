@@ -42,7 +42,7 @@ from PyPDF2 import PdfReader
 # local imports
 from retriever.pdfdownloader import download_pdf, download_pdf_from_arxiv
 
-LLMSERVICE = 'techlab' # 'openai' or 'azure' or 'techlab'
+LLMSERVICE = 'openai' # 'openai' or 'azure' or 'techlab'
 
 AZURE_ENDPOINT = "https://techlab-copilots-aiservices.openai.azure.com/" 
 AZURE_API_VERSION = "2023-12-01-preview" 
