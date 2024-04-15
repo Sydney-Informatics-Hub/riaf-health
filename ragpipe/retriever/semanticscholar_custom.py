@@ -29,7 +29,7 @@ from semanticscholar import SemanticScholar
 from openai import OpenAI
 
 
-def openai_init(path_openai_key =  '../../openai_sih_key.txt'):
+def openai_init(path_openai_key =  '../../openai_techlab_key.txt'):
     # Authenticate and read file from file
     #check if "OPENAI_API_KEY" parameter in os.environ:
     if "OPENAI_API_KEY" not in os.environ:

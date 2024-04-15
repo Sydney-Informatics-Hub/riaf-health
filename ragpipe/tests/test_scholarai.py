@@ -6,10 +6,15 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logging.debug("test")
 
-if "OPENAI_API_KEY" not in os.environ:
-    #os.environ["OPENAI_API_KEY"] = "SET AZURE API KEY HERE"
-    print("OPENAI_API_KEY not set, skipping test")
-    exit()
+# if "OPENAI_API_KEY" not in os.environ:
+#     #os.environ["OPENAI_API_KEY"] = "SET AZURE API KEY HERE"
+#     print("OPENAI_API_KEY not set, skipping test")
+#     exit()
+
+# Setup environment variables required for Azure OpenAI  
+with open("../../openai_techlab_key.txt", "r") as file:
+    os.environ["OPENAI_API_KEY"]  = file.read().strip()
+    os.environ["OPENAI_TECHLAB_API_KEY"]  = file.read().strip()
 
 def test_scholarai():
     topic = 'Elastin'
@@ -21,3 +26,4 @@ def test_scholarai():
     assert len(documents) > 0
 
 
+test_scholarai()
