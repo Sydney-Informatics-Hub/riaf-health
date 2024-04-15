@@ -53,13 +53,25 @@ techlab_deployment = 'GPT35shopfront'
 techlab_api_version = '2023-12-01-preview'
 
 class ScholarAI:
+    """
+    ScholarAI class to retrieve papers from authors and topic and filter by publication period and topic.
+
+    :param topic: str, topic to search for
+    :param authors: list of authors
+    :param year_start: int, start year of publication period
+    :param year_end: int, end year of publication period
+    :param outpath_pdfs: str, directory to store pdfs
+    :param delete_pdfs: bool, if True, delete pdfs after processing
+    :param keywords: list of keywords to filter papers
+    """
     def __init__(self, 
                  topic, 
                  authors, 
                  year_start = None, 
                  year_end = None, 
                  outpath_pdfs = 'pdfs', 
-                 delete_pdfs = False):
+                 delete_pdfs = False,
+                 keywords = []):
         self.topic = topic
         self.authors = authors
         self.year_start = year_start
@@ -67,6 +79,7 @@ class ScholarAI:
         self.llm = None
         self.outpath_pdfs = outpath_pdfs
         self.delete_pdfs = delete_pdfs
+        self.keywords = keywords
 
     def init_llm(self):
         if LLMSERVICE == 'openai':
@@ -107,9 +120,9 @@ class ScholarAI:
         :param abstract: str, paper abstract
         :param topic: str, topic to match
         """
-        system_prompt = ("You are given a paper summary and a topic. Your task is to determine if the paper is related to the topic."
-                        + "If the paper is related to the topic, say 'yes'. Otherwise say 'no'. You must only output 'yes' or 'no'.")
-        prompt = (f"Is the following paper related to the topic {self.topic}, please say 'yes'. Otherwise say 'no'."
+        system_prompt = ("You are given a paper summary and a topic. Your task is to determine if the paper is related to the topic and keywords."
+                        + "If the paper is related to the topic or one of the keywords, say 'yes'. Otherwise say 'no'. You must only output 'yes' or 'no'.")
+        prompt = (f"Is the following paper related to the topic {self.topic} or at least one keyword in the list {self.keywords}. Please say 'yes'. Otherwise say 'no'."
                 + f"\n\nPaper title: {title}\nabstract: {abstract}\n\n")
         messages = [
                 ChatMessage(role="system", content=system_prompt),
