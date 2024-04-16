@@ -7,7 +7,7 @@ def main():
     parser = argparse.ArgumentParser(description='RAG Scholar generating use-case studies for NSW Health Research Impact Assessment Framework')
     parser.add_argument('--query_author', type=str,
                         help='Author name to search for')
-    parser.add_argument('--query_topic', type=str, help='Topic for Uue-case Study')
+    parser.add_argument('--query_topic', type=str, help='Topic for Use-case Study')
     parser.add_argument('--query_keywords', type=str, help='Keywords for query')
     parser.add_argument('--research_period_start', type=str, help='Research period start (year)')
     parser.add_argument('--research_period_end', type=str, help='Research period end (year)')
@@ -54,7 +54,7 @@ def main():
                     outpath=args.outpath,
                     path_index=args.path_index, 
                     path_documents=args.path_documents,
-                    path_openai_key='../../openai_techlab_key.txt',
+                    path_openai_key='../../openai_sih_key.txt',
                     language_style=args.language_style
                     )
  
