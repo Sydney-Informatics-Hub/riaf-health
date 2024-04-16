@@ -53,13 +53,25 @@ techlab_deployment = 'GPT35shopfront'
 techlab_api_version = '2023-12-01-preview'
 
 class ScholarAI:
+    """
+    ScholarAI class to retrieve papers from authors and topic and filter by publication period and topic.
+
+    :param topic: str, topic to search for
+    :param authors: list of authors
+    :param year_start: int, start year of publication period
+    :param year_end: int, end year of publication period
+    :param outpath_pdfs: str, directory to store pdfs
+    :param delete_pdfs: bool, if True, delete pdfs after processing
+    :param keywords: list of keywords to filter papers
+    """
     def __init__(self, 
                  topic, 
                  authors, 
                  year_start = None, 
                  year_end = None, 
                  outpath_pdfs = 'pdfs', 
-                 delete_pdfs = False):
+                 delete_pdfs = False,
+                 keywords = []):
         self.topic = topic
         self.authors = authors
         self.year_start = year_start
@@ -67,6 +79,7 @@ class ScholarAI:
         self.llm = None
         self.outpath_pdfs = outpath_pdfs
         self.delete_pdfs = delete_pdfs
+        self.keywords = keywords
 
     def init_llm(self):
         if LLMSERVICE == 'openai':
@@ -107,9 +120,9 @@ class ScholarAI:
         :param abstract: str, paper abstract
         :param topic: str, topic to match
         """
-        system_prompt = ("You are given a paper summary and a topic. Your task is to determine if the paper is related to the topic."
-                        + "If the paper is related to the topic, say 'yes'. Otherwise say 'no'. You must only output 'yes' or 'no'.")
-        prompt = (f"Is the following paper related to the topic {self.topic}, please say 'yes'. Otherwise say 'no'."
+        system_prompt = ("You are given a paper summary and a topic. Your task is to determine if the paper is related to the topic and keywords."
+                        + "If the paper is related to the topic or one of the keywords, say 'yes'. Otherwise say 'no'. You must only output 'yes' or 'no'.")
+        prompt = (f"Is the following paper related to the topic {self.topic} or at least one keyword in the list {self.keywords}. Please say 'yes'. Otherwise say 'no'."
                 + f"\n\nPaper title: {title}\nabstract: {abstract}\n\n")
         messages = [
                 ChatMessage(role="system", content=system_prompt),
@@ -159,6 +172,8 @@ class ScholarAI:
                 papers, citationcounts = self.filter_papers(papers)
                 paper_list.extend(papers)
                 citations.extend(citationcounts)
+            # add delay to avoid rate limit
+            time.sleep(1)
         # sort lists by citations (descending) and select top max
         idx_sorted = sorted(range(len(citations)), key=lambda k: citations[k], reverse=True)
         paper_list = [paper_list[i] for i in idx_sorted]
@@ -168,7 +183,7 @@ class ScholarAI:
         return paper_list, citations
 
         
-    def filter_papers(self, papers, filter_with_llm = True, open_access_only = True):
+    def filter_papers(self, papers, filter_with_llm = True, open_access_only = False):
         """
         process papers and filter by topic and year.
 
@@ -203,6 +218,10 @@ class ScholarAI:
                 papers_ok.append(paper)
                 citationcount.append(paper.citationCount)
         print(f"Number of relevant papers found for author: {len(papers)}")
+        # order by citation count
+        idx_sorted = sorted(range(len(citationcount)), key=lambda k: citationcount[k], reverse=True)
+        papers_ok = [papers_ok[i] for i in idx_sorted]
+        citationcount = [citationcount[i] for i in idx_sorted]
         return papers_ok, citationcount
 
     def get_papers_from_topic(self, 
