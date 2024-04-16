@@ -29,7 +29,7 @@ def create_index(docstore,
                  temperature = 0.1, 
                  context_window = 4096, 
                  num_output = 600,
-                 llm_service = 'techlab'):
+                 llm_service = 'openai'):
     """
     Create index from docstore and store index in outpath_index
 
