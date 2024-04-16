@@ -414,7 +414,7 @@ class RAGscholar:
 
     
 
-    def generate_case_study(self, process_sources = False, make_docx = False):
+    def generate_case_study(self, process_sources = False, make_docx = True):
         
         with open(self.fname_report_template, "r") as file:
             report = file.read()

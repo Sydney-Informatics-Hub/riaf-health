@@ -125,7 +125,7 @@ class AgentReviewer:
 
         system_prompt = ("You are an LLM agent that acts as a reviewer. You will review responses to specific questions based on gold-standard provided examples and review criteria. You will only give a score between 1 and 5.")
 
-        user_prompt = (f"This is a response to the question {question_text}:\n\n")
+        user_prompt = (f"This is a response to the question '{question_text}':\n\n")
         user_prompt += f"{response_text}\n\n"
         user_prompt += "Compare the question response to the provided example (score of 5) and give it a score based on the example and the marking criteria. "
 
