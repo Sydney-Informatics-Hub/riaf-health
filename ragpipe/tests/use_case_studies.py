@@ -24,7 +24,7 @@ def test_RAGscholar_run1():
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store',
-                    path_documents = '../test_data/documents_to_add',
+                    path_documents = '../test_data/Weiss_docs',
                     path_openai_key = '../../openai_sih_key.txt')
     query_author="Anthony Weiss"
     query_topic="Elastagen"
