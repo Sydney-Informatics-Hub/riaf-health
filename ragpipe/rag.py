@@ -395,19 +395,35 @@ class RAGscholar:
             
             # Step 8. Answer missing questions by querying chat engine with index_context as context
             logging.info("Answering missing questions with web context ...")
+            missing_info_remaining = []
             for info in web_search_queries:
-                info = info.replace("MissingInfo:", "")
-                query = ("Answer the following question (max 50 words): \n"
-                        f"{info}"
+                info = info.replace("MissingInfo", "")
+                query = ("Fill in the blanks (e.g. [X]) in the following sentence: \n"
+                        f"{info} \n\n"
+                        "Instructions: Return the original sentence with information replacing the blank.\n"
+                        "If you can't find the answer to fill in the blank, you must respond with only 'None'.\n"
                         )
                 response = chat_engine_context2.chat(query)
                 content = response.response
                 logging.info(f"Missing question: {query}")
                 logging.info(f"Answer: {content}")
                 # Step 9: add to self.context
-                self.context += info + "\n" + content + "\n\n"
+                if content == "None":
+                    missing_info_remaining.append(info)
+                else:
+                    self.context += info + "\n" + content + "\n\n"
+            if len(missing_info_remaining) > 0:
+                logging.info("Some missing information could not be found.")
+                print("saving missing info in missing_info.txt")
+                with open(os.path.join(self.outpath, "missing_info.txt"), "w") as file:
+                    for info in missing_info_remaining:
+                        file.write(info + "\n")
         else:
             logging.info("No web context found. Continuing with current context.")
+            print("saving missing info in missing_info.txt")
+            with open(os.path.join(self.outpath, "missing_info.txt"), "w") as file:
+                for info in missing_info:
+                    file.write(info + "\n")
 
         # check token limit and truncate context if necessary
         if len(self.context.split()) > max_tokens_context:
