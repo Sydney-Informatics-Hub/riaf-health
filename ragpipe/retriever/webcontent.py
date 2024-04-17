@@ -15,20 +15,33 @@ Author: Sebastian Haan
 import requests
 import logging
 from bs4 import BeautifulSoup
-from llama_index.core import download_loader
-from llama_index.core import VectorStoreIndex
-from llama_index.core import Document
+from llama_index import download_loader, VectorStoreIndex
+from llama_index import Document
 import logging
 import aiohttp
 import asyncio
+import io
+from PyPDF2 import PdfReader
 
 
 async def fetch(session, url):
     try:
         async with session.get(url) as response:
             if response.status == 200:
-                content = await response.text()
-                return BeautifulSoup(content, 'html.parser').get_text().encode('utf-8')
+                content_type = response.headers.get('Content-Type', '')
+                # Check if the response is likely a PDF
+                if 'application/pdf' in content_type or url.lower().endswith('.pdf'):
+                    # Read the PDF content
+                    pdf_data = await response.read()
+                    reader = PdfReader(io.BytesIO(pdf_data))
+                    text = ''
+                    for page in reader.pages:
+                        text += page.extract_text() if page.extract_text() else ''
+                    return text.encode('utf-8')
+                else:
+                    # Handle as HTML or other text-based formats
+                    content = await response.text()
+                    return BeautifulSoup(content, 'html.parser').get_text().encode('utf-8')
             else:
                 logging.info(f"Error fetching {url}: Status {response.status}")
                 return None
@@ -82,7 +95,7 @@ def web2docs_simple(urls):
     Returns:
         documents: List of documents with main text content of the webpages.
     """
-    from llama_index.readers.web import SimpleWebPageReader
+    SimpleWebPageReader = download_loader('SimpleWebPageReader')
     loader = SimpleWebPageReader(html_to_text=True)
     documents = loader.load_data(urls=urls)
     return documents
