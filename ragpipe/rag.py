@@ -27,6 +27,8 @@ from indexengine.process import (
     add_docs_to_index, 
     load_index
     )
+from agentreviewer.agentreviewer import AgentReviewer
+from utils.mdconvert import markdown_to_question
 
 
 # Config parameters (TBD: move to config file)
@@ -623,10 +625,10 @@ class RAGscholar:
             logging.info("Loading documents from directory ...")
             reader = MyDirectoryReader(self.path_documents)
             mydocuments = reader.load_data()
-            if len(self.documents) > 0:
-                self.documents = self.documents + mydocuments
-            else:
-                self.documents = mydocuments
+            # if len(self.documents) > 0:
+            #     self.documents = self.documents + mydocuments
+            # else:
+            self.documents = mydocuments
 
         
         # Search web for content related to research topic
@@ -651,16 +653,15 @@ class RAGscholar:
                 self.documents_missing.extend(documents_missing)
 
         # generate index store and save index in self.path_index
-        print(f"Retrieving web content for {len(bing_results)} sources...")
         logging.info("Generating index database ...")
         self.path_index = os.path.join(self.path_index, path_index_name)
         self.index = create_index(self.documents, 
-                                  self.path_index, 
-                                  temperature=_temperature, 
-                                  context_window=_context_window, 
-                                  num_output=_num_output, 
-                                  model_llm=_model_llm,
-                                  llm_service=_llm_service)
+                                self.path_index, 
+                                temperature=_temperature, 
+                                context_window=_context_window, 
+                                num_output=_num_output, 
+                                model_llm=_model_llm,
+                                llm_service=_llm_service)
         
         # Add documents from the additional folder to the aggregated documents
         if local_document_path: 
@@ -682,6 +683,7 @@ class RAGscholar:
 
 
         # Add publications and citations to context
+        # npublications = None
         if npublications is not None:
             self.context += "\n\n"
             self.context += f"Publication analysis for {self.author}:\n"
@@ -714,3 +716,34 @@ class RAGscholar:
         self.generate_case_study(make_docx=True)
         print("Finished.")
         logging.info("FINISHED.")
+
+        agent_reviewer = AgentReviewer(llm=None,LLMSERVICE='openai')
+        # Set gold standard response paths. These are broken up by indivdual question.
+        example_repsonse_file_q1 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q1.md'
+        example_repsonse_file_q2 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q2.md'
+        example_repsonse_file_q3 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q3.md'
+        example_repsonse_file_q4 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q4.md'
+
+        question1 = "What is the problem this research seeks to address and why is it significant?"
+        question2 = "What are the research outputs of this study?"
+        question3 = "What impacts has this research delivered to date?"
+        question4 = "What impact from this research is expected in the future?"
+
+        questions_and_files = [  
+            (question1, example_repsonse_file_q1, self.list_answers[0]),  
+            (question2, example_repsonse_file_q2, self.list_answers[1]),  
+            (question3, example_repsonse_file_q3, self.list_answers[2]),  
+            (question4, example_repsonse_file_q4, self.list_answers[3])   
+        ]  
+
+        logging.info("Reviewing.")
+        for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
+            with open(example_response_file, 'r', encoding='utf-8') as file:  
+                example_response = file.readline().strip()  
+            response = agent_reviewer.review_response(question_text, response_text, example_response)  
+            print(f"Q{i}", response)  
+            logging.info(f"Q{i}")
+            logging.info(response) 
+
+        print("Fully Done. Results in "+ self.outpath)
+        logging.info("Fully Done.")

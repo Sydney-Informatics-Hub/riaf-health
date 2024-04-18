@@ -22,4 +22,4 @@ Period when the underpinning research was undertaken: RESEARCH_PERIOD
 Details of staff conducting the underpinning research: AUTHOR
 Period when the impact occurred: IMPACT_PERIOD
 
-Your task is to assist in writing an impact assessment report on RESEARCH_TOPIC by AUTHOR. 
+Your task is to assist in writing an impact assessment report on RESEARCH_TOPIC. 

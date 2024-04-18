@@ -15,7 +15,7 @@ example_repsonse_file_q3 = '../use_case_studies/Elastagen_by_Anthony_Weiss/RIAF_
 example_repsonse_file_q4 = '../use_case_studies/Elastagen_by_Anthony_Weiss/RIAF_Case_Study_Weiss_q4.md'
 
 # Set the Final output file from the pipeline, this is in the full markdown format
-markdown_file_path = '../../results/Elastagen_by_Anthony_Weiss_withoutlocal/Use_Case_Study.md'
+markdown_file_path = '../../results/Elastagen_by_Anthony_Weiss/Use_Case_Study.md'
 
 # The markdown file needs to be broken up into approriate chunks (i.e. each question), which
 # can be captured between the question and the references tage.
@@ -23,7 +23,7 @@ question1 = "## What is the problem this research seeks to address and why is it
 question2 = "## What are the research outputs of this study?​ (Max 300 words)"
 question3 = "## What impacts has this research delivered to date? (Max 500 words)"
 question4 = "## What impact from this research is expected in the future? (Max 300 words)"
-end_text = "**References**"
+end_text = "References"
 
 # Inititalise the Reviwer Agent.
 agent_reviewer = AgentReviewer(llm=None,LLMSERVICE='openai')

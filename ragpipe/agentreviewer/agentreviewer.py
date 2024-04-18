@@ -19,10 +19,9 @@ Author: Nathaniel Butterworth
 import os
 import time
 import logging
-# from llama_index.embeddings.azure_openai import AzureOpenAI
+
 from llama_index.core.llms import ChatMessage
 from llama_index.llms.openai import OpenAI
-# from llama_index.embeddings.azure_openai import AzureOpenAI
 from llama_index.llms.azure_openai import AzureOpenAI
 
 
@@ -64,7 +63,7 @@ class AgentReviewer:
                 api_version=techlab_api_version,
             )
         else:
-            logging.error(f"LLM service {LLMSERVICE} not supported")
+            logging.error(f"LLM service {self.LLMSERVICE} not supported")
             return None
         return self.llm
 
@@ -75,10 +74,10 @@ class AgentReviewer:
         :param output_text: str, the text output from an LLM query to be reviewed
         :param marking_criteria: dict, the marking criteria to be used for the review
         """
-        system_prompt = ("You are an LLM agent that acts as a reviewer. You will review the output from another LLM query. "
-                         "Follow the marking criteria strictly and suggest changes to the text if necessary.")
+        system_prompt = ("You are an LLM agent that reviews text. "
+                         "You will review text following a marking criteria strictly and suggest changes to the text if necessary.")
 
-        user_prompt = ("Here is the output from an LLM query:\n\n"
+        user_prompt = ("Here is text:\n\n"
                        f"{output_text}\n\n"
                        "Review this output according to the following marking criteria:\n")
 
@@ -115,9 +114,9 @@ class AgentReviewer:
 
         user_prompt = (f"This is a response to the question '{question_text}':\n\n")
         user_prompt += f"{response_text}\n\n"
-        user_prompt += "Compare the question response to the provided example (score of 5) and give it a score based on the example and the marking criteria. "
+        user_prompt += "Compare the question response to the provided example (which represents a score of 5) and give it a score based on the example and the marking criteria."
 
-        user_prompt += "The example response that deserves a score of 5 is as follows:\n"
+        user_prompt += "The example response that represents a score of 5 is as follows:\n"
         user_prompt += f"{example_response}\n\n"
 
         user_prompt += "Compare this response to the gold-standard example provided and give it a Score of 5, 4, 3, 2, or 1 based on the following marking criteria:\n"
@@ -126,7 +125,7 @@ class AgentReviewer:
         marking_criteria = {
             'Score 5' : "Research is highly relevant and congruent with the needs and interests of its users and/or beneficiaries. It is fully focused on addressing their challenges or priorities. Research that has achieved exceptional dissemination, understanding and application. Research findings have reached beyond the target audience and relevant stakeholders. Research outcomes have a transformational impact on advancing policy and practice, health and wellbeing, the economy, and/or the organisation’s reputation and brand. ",
             'Score 3': "Research shows a reasonable level of relevance and congruence with the needs and interests of its users and/or beneficiaries. It is moderately focused on addressing their challenges or priorities. Research has achieved moderate dissemination, understanding and application. Research findings have reached a considerable proportion of the target audience and relevant stakeholders. Research outcomes have a notable influence on advancing policy and practice, health and wellbeing, the economy, and/or the organization's reputation and brand.",
-            'Score 1': "Research lacks relevance and congruence with the needs and interest of its users and/or beneficiaries. It is not focused on addressing their challenges or priorities. Research has a minimal dissemination, understanding and application. The research findings have not reached the target audience and relevnt stakeholders. The research outcomes have a minimal or negligible contribution to advancing policy and practice, health and wellbeing, the economy, and/or the organisation's reputation and brand."
+            'Score 1': "Research lacks relevance and congruence with the needs and interest of its users and/or beneficiaries. It is not focused on addressing their challenges or priorities. Research has a minimal dissemination, understanding and application. The research findings have not reached the target audience and relevent stakeholders. The research outcomes have a minimal or negligible contribution to advancing policy and practice, health and wellbeing, the economy, and/or the organisation's reputation and brand."
         }
 
         # Add marking criteria to the prompt
