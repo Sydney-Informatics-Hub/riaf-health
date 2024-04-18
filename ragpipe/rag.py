@@ -460,6 +460,8 @@ class RAGscholar:
             report += "\n\n"
             report += "## Sources of evidence\n"
             report += sources_text
+        else:
+            sources_text = ""
 
         if make_docx:
             doc = DocxTemplate("./templates/RIAF_template.docx")
@@ -477,7 +479,7 @@ class RAGscholar:
                 "refs":sources_text
                 }
             doc.render(docx_content)
-            doc.save(self.outpath+"generated_doc.docx")
+            doc.save(os.path.join(self.outpath,"generated_doc.docx"))
 
         # Save report
         with open(os.path.join(self.outpath, "Use_Case_Study.md"), "w") as file:
@@ -674,7 +676,7 @@ class RAGscholar:
         # Add publications and citations to context
         if npublications is not None:
             self.context += "\n\n"
-            self.context += "Publication analysis for {self.author}:\n"
+            self.context += f"Publication analysis for {self.author}:\n"
             self.context += f"Number of topic-related publications for period {self.research_start} - {self.research_end}: {npublications}\n"
             self.context += f"Number of citations: {ncitations}\n"
             if len(top_cited_papers) > 0:
