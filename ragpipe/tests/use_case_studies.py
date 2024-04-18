@@ -20,12 +20,14 @@ def test_RAGscholar_run1():
 
     time_now = time.time()
     rag = RAGscholar(path_templates = './templates/',
-                    fname_system_prompt = 'Prompt_context.md',
+                    fname_system_prompt = 'Prompt_system.md',
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store',
                     path_documents = '../test_data/Weiss_docs',
-                    path_openai_key = '../../openai_sih_key.txt')
+                    path_openai_key = '../../openai_sih_key.txt',
+                    language_style = "analytical",
+                    load_index_from_storage = False)
     query_author="Anthony Weiss"
     query_topic="Elastagen"
     keywords = "elastin, tissue engineering, elastagen"
@@ -41,7 +43,8 @@ def test_RAGscholar_run1():
             research_period_start,
             research_period_end,
             impact_period_start,
-            impact_period_end
+            impact_period_end,
+            scholarai_delete_pdfs = False
             )
     print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
     # typical time with OpenAI API call (gpt-4-1106-preview)): 107.51 seconds
@@ -53,12 +56,14 @@ def test_RAGscholar_run2():
 
     time_now = time.time()
     rag = RAGscholar(path_templates = './templates/',
-                    fname_system_prompt = 'Prompt_context.md',
+                    fname_system_prompt = 'Prompt_system.md',
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store',
-                    path_documents = '../test_data/documents_to_add',
-                    path_openai_key = '../../openai_techlab_key.txt')
+                    path_documents = '../test_data/Nursing_docs',
+                    path_openai_key = '../../openai_techlab_key.txt',
+                    language_style = "analytical",
+                    load_index_from_storage = False)
     query_author="Kate Curtis"
     query_topic="Improving the safety and quality of emergency nursing care"
     keywords = "HIRAID, emergency nursing care"
@@ -74,7 +79,8 @@ def test_RAGscholar_run2():
             research_period_start,
             research_period_end,
             impact_period_start,
-            impact_period_end
+            impact_period_end,
+            scholarai_delete_pdfs = False
             )
     print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
     # typical time with OpenAI API call: 102.06 seconds
@@ -84,11 +90,11 @@ def test_RAGscholar_run3():
 
     time_now = time.time()
     rag = RAGscholar(path_templates = './templates/',
-                    fname_system_prompt = 'Prompt_context.md',
+                    fname_system_prompt = 'Prompt_system.md',
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store',
-                    path_documents = '../test_data/documents_to_add',
+                    path_documents = '../test_data/Ice_docs',
                     path_openai_key = '../../openai_techlab_key.txt')
     query_author="Cath Chapman, Steph Kershaw"
     query_topic="Online resources to reduce the impact of crystal methamphetamine harms in the community"
