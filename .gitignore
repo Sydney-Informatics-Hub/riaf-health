@@ -26,3 +26,5 @@ _freeze
 # ignore cached pyc files
 */**/_pycache__
 *.pyc
+
+ragpipe/pdfs
