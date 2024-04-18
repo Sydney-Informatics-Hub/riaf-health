@@ -586,7 +586,7 @@ class RAGscholar:
                                 delete_pdfs = self.scholarai_delete_pdfs,
                                 keywords = keywords)
             papers, citations = scholar.get_papers_from_authors(max_papers = _scholar_limit)
-            self.documents = scholar.load_data(papers)
+            self.documents, documents_missing = scholar.load_data(papers)
             self.papers_scholarai = papers
             self.citations_scholarai = citations
             # publication count
@@ -598,6 +598,8 @@ class RAGscholar:
                 top_cited_papers = [self.papers_scholarai[i]['title'] + ', citations: ' + str(self.citations_scholarai[i]) for i in range(3)]
             else:
                 top_cited_papers = []
+            if len(documents_missing) > 0:
+                self.documents_missing.extend(documents_missing)
                 
         else:
             print("Searching and reading documents from Semantic Scholar API ..")
