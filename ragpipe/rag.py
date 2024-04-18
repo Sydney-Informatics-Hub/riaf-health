@@ -82,6 +82,7 @@ class RAGscholar:
         self.research_topic = None
         self.author = None
         self.language_style = language_style
+        self.documents_missing = []
         if path_documents is not None:
             if os.path.exists(path_documents):
                 self.path_documents = path_documents
@@ -357,11 +358,14 @@ class RAGscholar:
                 logging.info(f"Retrieving web content for {len(bing_results)} sources...")
                 urls = get_urls_from_bing(bing_results)
                 titles = get_titles_from_bing(bing_results)
-                webcontent = web2docs_async(urls, titles)
+                webcontent, documents_missing = web2docs_async(urls, titles)
                 if len(webcontext) > 0:
                     webcontext = webcontext + webcontent
                 else:
                     webcontext = webcontent
+                if len(documents_missing) > 0:
+                    # add list of a urls and titles to missing documents
+                    self.documents_missing.extend(documents_missing)
             else:
                 logging.info("No web search results found.")
 
@@ -396,8 +400,8 @@ class RAGscholar:
             # Step 8. Answer missing questions by querying chat engine with index_context as context
             logging.info("Answering missing questions with web context ...")
             missing_info_remaining = []
-            for info in web_search_queries:
-                info = info.replace("MissingInfo", "")
+            for info in missing_info:
+                info = info.replace("MissingInfo:", "")
                 query = ("Fill in the blanks (e.g. [X]) in the following sentence: \n"
                         f"{info} \n\n"
                         "Instructions: Return the original sentence with information replacing the blank.\n"
@@ -411,7 +415,7 @@ class RAGscholar:
                 if content == "None":
                     missing_info_remaining.append(info)
                 else:
-                    self.context += info + "\n" + content + "\n\n"
+                    self.context += content + "\n\n"
             if len(missing_info_remaining) > 0:
                 logging.info("Some missing information could not be found.")
                 print("saving missing info in missing_info.txt")
@@ -626,12 +630,14 @@ class RAGscholar:
             logging.info(f"Retrieving web content for {len(bing_results)} sources...")
             urls = get_urls_from_bing(bing_results)
             titles = get_titles_from_bing(bing_results)
-            documents_web = web2docs_async(urls, titles)
+            documents_web, documents_missing = web2docs_async(urls, titles)
             if len(self.documents) > 0:
                 self.documents = self.documents + documents_web
             else:
                 self.documents = documents_web
-
+            if len(documents_missing) > 0:
+                # add list of a urls and titles to missing documents
+                self.documents_missing.extend(documents_missing)
 
         # generate index store and save index in self.path_index
         print(f"Retrieving web content for {len(bing_results)} sources...")
@@ -678,6 +684,12 @@ class RAGscholar:
         with open(os.path.join(self.outpath, "context.txt"), "w") as file:
             file.write(self.context)
 
+        # Save missing documents to file
+        if len(self.documents_missing) > 0:
+            with open(os.path.join(self.outpath, "missing_documents.txt"), "w") as file:
+                for doc in self.documents_missing:
+                    file.write(doc['title'] + ": " + doc['url'] + "\n")
+
         # Run through prompt questions
         print("Processing assessment questions ...")
         logging.info("Processing assessment questions ...")
@@ -687,6 +699,6 @@ class RAGscholar:
         )
         print("Generating case study ...")
         logging.info("Generating case study ...")
-        self.generate_case_study()
+        self.generate_case_study(make_docx=True)
         print("Finished.")
         logging.info("FINISHED.")
