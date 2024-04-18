@@ -673,7 +673,8 @@ class RAGscholar:
         # Add publications and citations to context
         if npublications is not None:
             self.context += "\n\n"
-            self.context += f"Number of related publications by {self.author}: {npublications}\n"
+            self.context += "Publication analysis for {self.author}:\n"
+            self.context += f"Number of topic-related publications for period {self.research_start} - {self.research_end}: {npublications}\n"
             self.context += f"Number of citations: {ncitations}\n"
             if len(top_cited_papers) > 0:
                 self.context += "Top cited papers:\n"
@@ -681,7 +682,7 @@ class RAGscholar:
                     self.context += f"{i+1}. {paper}\n"
 
         # Save context to file
-        with open(os.path.join(self.outpath, "context.txt"), "w") as file:
+        with open(os.path.join(self.outpath, "context_analysis.txt"), "w") as file:
             file.write(self.context)
 
         # Save missing documents to file
