@@ -371,7 +371,9 @@ class ScholarAI:
                     else:
                         documents_missing.append({'title': title, 'url': url_openAccessPdf})
                 else:
-                    documents_missing.append({'title': title + ' [No Open Access]', 'url': url_openAccessPdf})
+                    if url_semanticscholar is None:
+                        url_semanticscholar = "No URL available"
+                    documents_missing.append({'title': title + ' [No Open Access]', 'url': url_semanticscholar})
      
                 documents.append(Document(text=text, extra_info=metadata))
 
