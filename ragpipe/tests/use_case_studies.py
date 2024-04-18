@@ -6,7 +6,10 @@ os.environ["OPENAI_API_KEY"] = "xxx"
 os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"] = "xxx"
 
 add export PYTHONPATH="/Users/nbut3013/PROJECTS/PIPE-4668-RIAF/PIPE-4668-RIAF_NSWHEALTH/ragpipe:$PYTHONPATH"
-Alternatively the path to the keys is needed (by default in the tests the keys are read from the files):
+Alternatively the path to the keys is needed (by default in the tests the keys are read from the files).
+
+cd ragpipe
+python tests/use_case_studies.py run1
 """
 
 from rag import RAGscholar
@@ -20,7 +23,7 @@ def test_RAGscholar_run1():
 
     time_now = time.time()
     rag = RAGscholar(path_templates = './templates/',
-                    fname_system_prompt = 'Prompt_system.md',
+                    fname_system_prompt = 'Prompt_context.md',
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store',
@@ -56,7 +59,7 @@ def test_RAGscholar_run2():
 
     time_now = time.time()
     rag = RAGscholar(path_templates = './templates/',
-                    fname_system_prompt = 'Prompt_system.md',
+                    fname_system_prompt = 'Prompt_context.md',
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store',
@@ -90,7 +93,7 @@ def test_RAGscholar_run3():
 
     time_now = time.time()
     rag = RAGscholar(path_templates = './templates/',
-                    fname_system_prompt = 'Prompt_system.md',
+                    fname_system_prompt = 'Prompt_context.md',
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store',
