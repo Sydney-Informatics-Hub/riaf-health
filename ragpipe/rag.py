@@ -504,7 +504,8 @@ class RAGscholar:
             impact_start = None,
             impact_end = None,
             scholarai_delete_pdfs = False,
-            local_document_path = None):
+            local_document_path = None,
+            benchmark_review = True):
         """
         Run RAG pipeline.
 
@@ -717,33 +718,34 @@ class RAGscholar:
         print("Finished.")
         logging.info("FINISHED.")
 
-        agent_reviewer = AgentReviewer(llm=None,LLMSERVICE='openai')
-        # Set gold standard response paths. These are broken up by indivdual question.
-        example_repsonse_file_q1 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q1.md'
-        example_repsonse_file_q2 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q2.md'
-        example_repsonse_file_q3 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q3.md'
-        example_repsonse_file_q4 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q4.md'
+        if benchmark_review:
+            agent_reviewer = AgentReviewer(llm=None,LLMSERVICE='openai')
+            # Set gold standard response paths. These are broken up by indivdual question.
+            example_repsonse_file_q1 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q1.md'
+            example_repsonse_file_q2 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q2.md'
+            example_repsonse_file_q3 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q3.md'
+            example_repsonse_file_q4 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q4.md'
 
-        question1 = "What is the problem this research seeks to address and why is it significant?"
-        question2 = "What are the research outputs of this study?"
-        question3 = "What impacts has this research delivered to date?"
-        question4 = "What impact from this research is expected in the future?"
+            question1 = "What is the problem this research seeks to address and why is it significant?"
+            question2 = "What are the research outputs of this study?"
+            question3 = "What impacts has this research delivered to date?"
+            question4 = "What impact from this research is expected in the future?"
 
-        questions_and_files = [  
-            (question1, example_repsonse_file_q1, self.list_answers[0]),  
-            (question2, example_repsonse_file_q2, self.list_answers[1]),  
-            (question3, example_repsonse_file_q3, self.list_answers[2]),  
-            (question4, example_repsonse_file_q4, self.list_answers[3])   
-        ]  
+            questions_and_files = [  
+                (question1, example_repsonse_file_q1, self.list_answers[0]),  
+                (question2, example_repsonse_file_q2, self.list_answers[1]),  
+                (question3, example_repsonse_file_q3, self.list_answers[2]),  
+                (question4, example_repsonse_file_q4, self.list_answers[3])   
+            ]  
 
-        logging.info("Reviewing.")
-        for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
-            with open(example_response_file, 'r', encoding='utf-8') as file:  
-                example_response = file.readline().strip()  
-            response = agent_reviewer.review_response(question_text, response_text, example_response)  
-            print(f"Q{i}", response)  
-            logging.info(f"Q{i}")
-            logging.info(response) 
+            logging.info("Reviewing.")
+            for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
+                with open(example_response_file, 'r', encoding='utf-8') as file:  
+                    example_response = file.readline().strip()  
+                response = agent_reviewer.review_response(question_text, response_text, example_response)  
+                print(f"Q{i}", response)  
+                logging.info(f"Q{i}")
+                logging.info(response) 
 
-        print("Fully Done. Results in "+ self.outpath)
-        logging.info("Fully Done.")
+            print("Fully Done. Results in "+ self.outpath)
+            logging.info("Fully Done.")
