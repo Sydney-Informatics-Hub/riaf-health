@@ -471,7 +471,6 @@ class RAGscholar:
         # Save report
         with open(os.path.join(self.outpath, "Use_Case_Study.md"), "w") as file:
             file.write(report)
-        logging.info(f"Use case study saved to {self.outpath}")
 
         print(sources_text)
         if make_docx:
@@ -487,14 +486,11 @@ class RAGscholar:
                 "q2":self.list_answers[1],
                 "q3":self.list_answers[2],
                 "q4":self.list_answers[3],
-                "refs":'sources_text'
+                "refs":sources_text
                 }
             doc.render(docx_content)
-            doc.save(os.path.join(self.outpath,"generated_doc.docx"))
             doc.save(os.path.join(self.outpath, "Use_Case_Study.docx"))
-
-
-
+        logging.info(f"Use case study saved to {self.outpath}")
         
     def run(self, 
             research_topic, 
