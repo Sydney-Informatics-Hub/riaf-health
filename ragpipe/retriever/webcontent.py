@@ -15,8 +15,8 @@ Author: Sebastian Haan
 import requests
 import logging
 from bs4 import BeautifulSoup
-from llama_index import download_loader, VectorStoreIndex
-from llama_index import Document
+from llama_index.core import download_loader, VectorStoreIndex
+from llama_index.core import Document
 import logging
 import aiohttp
 import asyncio
@@ -110,21 +110,25 @@ def web2docs_async(urls, titles):
         
     Returns:
         documents: List of documents with main text content of the webpages.
+        documents_missing: List of dict of title and URLs for which no content could be extracted.
     """
     contents = asyncio.run(fetch_all(urls))
     # filter for contents that are not None
     contents_ok = []
     urls_ok = []
     titles_ok = []
+    documents_missing = []
     for i in range(len(contents)):
         if contents[i]:
             contents_ok.append(contents[i])
             urls_ok.append(urls[i])
             titles_ok.append(titles[i])
+        else:
+            documents_missing.append({'title': titles[i],'url': urls[i]})
 
     metadata = [{'href': url, 'title': title} for url, title in zip(urls_ok,titles_ok)]
     documents = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(contents_ok, urls_ok, metadata)]
-    return documents
+    return documents, documents_missing
 
 def docs2index(documents):
     """
