@@ -682,8 +682,8 @@ class RAGscholar:
         if npublications is not None:
             self.context += "\n\n"
             self.context += f"Publication analysis for {self.author}:\n"
-            self.context += f"Number of topic-related publications for period {self.research_start} - {self.research_end}: {npublications}\n"
-            self.context += f"Number of citations: {ncitations}\n"
+            self.context += f"Number of topic-related publications for period {self.research_start} - {self.research_end}: At least {npublications}\n"
+            self.context += f"Number of citations: At least {ncitations}\n"
             if len(top_cited_papers) > 0:
                 self.context += "Top cited papers:\n"
                 for i, paper in enumerate(top_cited_papers):
