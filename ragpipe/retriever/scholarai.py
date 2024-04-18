@@ -318,8 +318,11 @@ class ScholarAI:
             -------
             list
                 The list of Document object that contains the search results
+            list
+                The list of missing documents
             """
             documents = []
+            documents_missing = []
             if full_text:
                 sch = SemanticScholar()
 
@@ -342,7 +345,7 @@ class ScholarAI:
                 text = None
                 # concat title and abstract
                 if abstract and title:
-                    text = title + " " + abstract
+                    text = title + "\n abstract:" + abstract
                 elif not abstract:
                     text = title
 
@@ -360,17 +363,24 @@ class ScholarAI:
                     "externalIds": getattr(item, "externalIds", None),
                     "fieldsOfStudy": getattr(item, "fieldsOfStudy", None),
                 }
+                # if full text and open access pdf, try to retrieve full text, otherwise title/abstract text is used
                 if full_text and url_openAccessPdf:
                     text_content = self.get_full_text_docs(metadata, base_dir = self.outpath_pdfs)
                     if text_content:
                         text = text_content
-                    
+                    else:
+                        documents_missing.append({'title': title, 'url': url_openAccessPdf})
+                else:
+                    if url_semanticscholar is None:
+                        url_semanticscholar = "No URL available"
+                    documents_missing.append({'title': title + ' [No Open Access]', 'url': url_semanticscholar})
+     
                 documents.append(Document(text=text, extra_info=metadata))
 
             if self.delete_pdfs:
                 shutil.rmtree(self.outpath_pdfs)
 
-            return documents
+            return documents, documents_missing
     
     def get_documents(self, filter_with_llm = True, open_access_only = True):
         """

@@ -84,6 +84,7 @@ class RAGscholar:
         self.research_topic = None
         self.author = None
         self.language_style = language_style
+        self.documents_missing = []
         if path_documents is not None:
             if os.path.exists(path_documents):
                 self.path_documents = path_documents
@@ -264,8 +265,12 @@ class RAGscholar:
                 logging.info(f"Review response {i}: {review_txt}")
                 if review_txt is not None:
                     logging.info("Reviewing response ...")
-                    review_prompt = (f"Improve the previous response given the review below: \n"
+                    review_prompt = (f"Improve the previous response given the suggestions in the review below: \n"
+                                        + "Instructions: \n"
                                         + "Do not deviate from the original instructions for this question. \n"
+                                        + "Stay close to original response and references, only improve the parts of response that need to be fixed. \n"
+                                        + "If you can not find an improvement, keep the original response. \n"
+                                        + "You must include all references and update reference footnote numbers if necessary. \n\n"
                                         + "Review: \n"
                                         + f"{review_txt}")
                     content, sources = self.query_chatengine(review_prompt)
@@ -359,11 +364,14 @@ class RAGscholar:
                 logging.info(f"Retrieving web content for {len(bing_results)} sources...")
                 urls = get_urls_from_bing(bing_results)
                 titles = get_titles_from_bing(bing_results)
-                webcontent = web2docs_async(urls, titles)
+                webcontent, documents_missing = web2docs_async(urls, titles)
                 if len(webcontext) > 0:
                     webcontext = webcontext + webcontent
                 else:
                     webcontext = webcontent
+                if len(documents_missing) > 0:
+                    # add list of a urls and titles to missing documents
+                    self.documents_missing.extend(documents_missing)
             else:
                 logging.info("No web search results found.")
 
@@ -397,19 +405,35 @@ class RAGscholar:
             
             # Step 8. Answer missing questions by querying chat engine with index_context as context
             logging.info("Answering missing questions with web context ...")
-            for info in web_search_queries:
+            missing_info_remaining = []
+            for info in missing_info:
                 info = info.replace("MissingInfo:", "")
-                query = ("Answer the following question (max 50 words): \n"
-                        f"{info}"
+                query = ("Fill in the blanks (e.g. [X]) in the following sentence: \n"
+                        f"{info} \n\n"
+                        "Instructions: Return the original sentence with information replacing the blank.\n"
+                        "If you can't find the answer to fill in the blank, you must respond with only 'None'.\n"
                         )
                 response = chat_engine_context2.chat(query)
                 content = response.response
                 logging.info(f"Missing question: {query}")
                 logging.info(f"Answer: {content}")
                 # Step 9: add to self.context
-                self.context += info + "\n" + content + "\n\n"
+                if content == "None":
+                    missing_info_remaining.append(info)
+                else:
+                    self.context += content + "\n\n"
+            if len(missing_info_remaining) > 0:
+                logging.info("Some missing information could not be found.")
+                print("saving missing info in missing_info.txt")
+                with open(os.path.join(self.outpath, "missing_info.txt"), "w") as file:
+                    for info in missing_info_remaining:
+                        file.write(info + "\n")
         else:
             logging.info("No web context found. Continuing with current context.")
+            print("saving missing info in missing_info.txt")
+            with open(os.path.join(self.outpath, "missing_info.txt"), "w") as file:
+                for info in missing_info:
+                    file.write(info + "\n")
 
         # check token limit and truncate context if necessary
         if len(self.context.split()) > max_tokens_context:
@@ -443,11 +467,12 @@ class RAGscholar:
             report += "\n\n"
             report += "## Sources of evidence\n"
             report += sources_text
+        else:
+            sources_text = ""
 
         # Save report
         with open(os.path.join(self.outpath, "Use_Case_Study.md"), "w") as file:
             file.write(report)
-        logging.info(f"Use case study saved to {self.outpath}")
 
         print(sources_text)
         if make_docx:
@@ -463,13 +488,11 @@ class RAGscholar:
                 "q2":self.list_answers[1],
                 "q3":self.list_answers[2],
                 "q4":self.list_answers[3],
-                "refs":'sources_text'
+                "refs":sources_text
                 }
             doc.render(docx_content)
             doc.save(os.path.join(self.outpath, "Use_Case_Study.docx"))
-
-
-
+        logging.info(f"Use case study saved to {self.outpath}")
         
     def run(self, 
             research_topic, 
@@ -550,50 +573,51 @@ class RAGscholar:
         logging.basicConfig(filename = logfile, filemode = 'w', level=logging.INFO, format='%(message)s')
 
         # Search, retrieve and read documents from Semantic Scholar
-        if True:
-            if _use_scholarai:
-                print("Searching and reading documents with AI-assisted Semantic Scholar...")
-                logging.info("Searching and reading documents with AI-assisted Semantic Scholar...")
-                # check if author is a list
-                if isinstance(self.author, list):
-                    authors = self.author
-                else:
-                    authors = [self.author]
-                # convert keywords to list
-                if isinstance(self.keywords, str):
-                    keywords = self.keywords.split(",")
-                else:
-                    keywords = self.keywords
-                scholar = ScholarAI(self.research_topic,
-                                    authors, 
-                                    year_start= self.research_start, 
-                                    year_end = self.research_end,
-                                    delete_pdfs = self.scholarai_delete_pdfs,
-                                    keywords = keywords)
-                papers, citations = scholar.get_papers_from_authors(max_papers = _scholar_limit)
-                self.documents = scholar.load_data(papers)
-                self.papers_scholarai = papers
-                self.citations_scholarai = citations
-                # publication count
-                npublications = len(self.papers_scholarai)
-                # add all counts in list self.citations_scholarai
-                ncitations = sum([int(c) for c in self.citations_scholarai])
-                # three papers with most citations
-                if len(self.papers_scholarai) > 2:
-                    top_cited_papers = [self.papers_scholarai[i]['title'] + ', citations: ' + str(self.citations_scholarai[i]) for i in range(3)]
-                else:
-                    top_cited_papers = []
-                    
+        if _use_scholarai:
+            print("Searching and reading documents with AI-assisted Semantic Scholar...")
+            logging.info("Searching and reading documents with AI-assisted Semantic Scholar...")
+            # check if author is a list
+            if isinstance(self.author, list):
+                authors = self.author
             else:
-                print("Searching and reading documents from Semantic Scholar API ..")
-                logging.info("Searching and reading documents from Semantic Scholar API ..")
-                self.documents = read_semanticscholar(self.research_topic, 
-                                                    self.author, 
-                                                    self.keywords, 
-                                                    limit = _scholar_limit,
-                                                    year_start=self.research_start,
-                                                    year_end=self.research_end)
-                npublications = None
+                authors = [self.author]
+            # convert keywords to list
+            if isinstance(self.keywords, str):
+                keywords = self.keywords.split(",")
+            else:
+                keywords = self.keywords
+            scholar = ScholarAI(self.research_topic,
+                                authors, 
+                                year_start= self.research_start, 
+                                year_end = self.research_end,
+                                delete_pdfs = self.scholarai_delete_pdfs,
+                                keywords = keywords)
+            papers, citations = scholar.get_papers_from_authors(max_papers = _scholar_limit)
+            self.documents, documents_missing = scholar.load_data(papers)
+            self.papers_scholarai = papers
+            self.citations_scholarai = citations
+            # publication count
+            npublications = len(self.papers_scholarai)
+            # add all counts in list self.citations_scholarai
+            ncitations = sum([int(c) for c in self.citations_scholarai])
+            # three papers with most citations
+            if len(self.papers_scholarai) > 2:
+                top_cited_papers = [self.papers_scholarai[i]['title'] + ', citations: ' + str(self.citations_scholarai[i]) for i in range(3)]
+            else:
+                top_cited_papers = []
+            if len(documents_missing) > 0:
+                self.documents_missing.extend(documents_missing)
+                
+        else:
+            print("Searching and reading documents from Semantic Scholar API ..")
+            logging.info("Searching and reading documents from Semantic Scholar API ..")
+            self.documents = read_semanticscholar(self.research_topic, 
+                                                self.author, 
+                                                self.keywords, 
+                                                limit = _scholar_limit,
+                                                year_start=self.research_start,
+                                                year_end=self.research_end)
+            npublications = None
             
         # Upload documents to index from directory
         if self.path_documents is not None:
@@ -608,24 +632,25 @@ class RAGscholar:
 
         
         # Search web for content related to research topic
-        if True:
-            print("Searching web for content ...")
-            logging.info("Searching web for content ...")
-            bing_results = bing_custom_search(self.research_topic, 
-                                            count=3, 
-                                            year_start = self.impact_start, 
-                                            year_end= self.impact_end)
-            if len(bing_results) > 0:
-                print(f"Retrieving web content for {len(bing_results)} sources...")
-                logging.info(f"Retrieving web content for {len(bing_results)} sources...")
-                urls = get_urls_from_bing(bing_results)
-                titles = get_titles_from_bing(bing_results)
-                documents_web = web2docs_async(urls, titles)
-                if len(self.documents) > 0:
-                    self.documents = self.documents + documents_web
-                else:
-                    self.documents = documents_web
-
+        print("Searching web for content ...")
+        logging.info("Searching web for content ...")
+        bing_results = bing_custom_search(self.research_topic, 
+                                          count=3, 
+                                          year_start = self.impact_start, 
+                                          year_end= self.impact_end)
+        if len(bing_results) > 0:
+            print(f"Retrieving web content for {len(bing_results)} sources...")
+            logging.info(f"Retrieving web content for {len(bing_results)} sources...")
+            urls = get_urls_from_bing(bing_results)
+            titles = get_titles_from_bing(bing_results)
+            documents_web, documents_missing = web2docs_async(urls, titles)
+            if len(self.documents) > 0:
+                self.documents = self.documents + documents_web
+            else:
+                self.documents = documents_web
+            if len(documents_missing) > 0:
+                # add list of a urls and titles to missing documents
+                self.documents_missing.extend(documents_missing)
 
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
@@ -661,16 +686,23 @@ class RAGscholar:
         # npublications = None
         if npublications is not None:
             self.context += "\n\n"
-            self.context += f"Number of related publications by {self.author}: {npublications}\n"
-            self.context += f"Number of citations: {ncitations}\n"
+            self.context += f"Publication analysis for {self.author}:\n"
+            self.context += f"Number of topic-related publications for period {self.research_start} - {self.research_end}: At least {npublications}\n"
+            self.context += f"Number of citations: At least {ncitations}\n"
             if len(top_cited_papers) > 0:
                 self.context += "Top cited papers:\n"
                 for i, paper in enumerate(top_cited_papers):
                     self.context += f"{i+1}. {paper}\n"
 
         # Save context to file
-        with open(os.path.join(self.outpath, "context.txt"), "w") as file:
+        with open(os.path.join(self.outpath, "context_analysis.txt"), "w") as file:
             file.write(self.context)
+
+        # Save missing documents to file
+        if len(self.documents_missing) > 0:
+            with open(os.path.join(self.outpath, "missing_documents.txt"), "w") as file:
+                for doc in self.documents_missing:
+                    file.write(doc['title'] + ": " + doc['url'] + "\n")
 
         # Run through prompt questions
         print("Processing assessment questions ...")
@@ -681,7 +713,7 @@ class RAGscholar:
         )
         print("Generating case study ...")
         logging.info("Generating case study ...")
-        self.generate_case_study()
+        self.generate_case_study(make_docx=True)
         print("Finished.")
         logging.info("FINISHED.")
 
