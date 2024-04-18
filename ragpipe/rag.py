@@ -264,8 +264,11 @@ class RAGscholar:
                 if review_txt is not None:
                     logging.info("Reviewing response ...")
                     review_prompt = (f"Improve the previous response given the suggestions in the review below: \n"
+                                        + "Instructions: \n"
                                         + "Do not deviate from the original instructions for this question. \n"
-                                        + "You must include all references and update reference footnote numbers if necessary. \n"
+                                        + "Stay close to original response and references, only improve the parts of response that need to be fixed. \n"
+                                        + "If you can not find an improvement, keep the original response. \n"
+                                        + "You must include all references and update reference footnote numbers if necessary. \n\n"
                                         + "Review: \n"
                                         + f"{review_txt}")
                     content, sources = self.query_chatengine(review_prompt)
