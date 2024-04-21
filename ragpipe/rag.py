@@ -6,7 +6,7 @@ import logging
 
 from llama_index.core import load_index_from_storage
 from llama_index.core.retrievers import VectorIndexRetriever
-from llama_index.core import PromptTemplate
+from llama_index.core import PromptTemplate, Document
 from llama_index.core.llms import ChatMessage, MessageRole
 from llama_index.core.chat_engine import CondenseQuestionChatEngine
 from llama_index.core.chat_engine import CondensePlusContextChatEngine
@@ -17,7 +17,11 @@ from docxtpl import DocxTemplate
 from utils.pubprocess import publications_to_markdown, clean_publications
 from retriever.semanticscholar import read_semanticscholar 
 from retriever.scholarai import ScholarAI
-from retriever.bingsearch import bing_custom_search, get_urls_from_bing, get_titles_from_bing
+from retriever.bingsearch import (
+    bing_custom_search, 
+    get_urls_from_bing, 
+    get_titles_from_bing,
+    get_snippets_from_bing)
 from retriever.webcontent import web2docs_async, web2docs_simple
 from retriever.directoryreader import MyDirectoryReader
 from queryengine.queryprocess import QueryEngine
@@ -364,14 +368,24 @@ class RAGscholar:
                 logging.info(f"Retrieving web content for {len(bing_results)} sources...")
                 urls = get_urls_from_bing(bing_results)
                 titles = get_titles_from_bing(bing_results)
+                snippets = get_snippets_from_bing(bing_results)
                 webcontent, documents_missing = web2docs_async(urls, titles)
-                if len(webcontext) > 0:
-                    webcontext = webcontext + webcontent
-                else:
-                    webcontext = webcontent
+                if len(webcontent) > 0:
+                    webcontext += webcontent
                 if len(documents_missing) > 0:
-                    # add list of a urls and titles to missing documents
                     self.documents_missing.extend(documents_missing)
+                    # add web snippets to documents instead of full content
+                    urls_missing = [doc['url'] for doc in documents_missing]
+                    titles_missing = [doc['title'] for doc in documents_missing]
+                    # find snippets missing by finding indices matching urls_missing with urls
+                    snippets_missing = []
+                    for url in urls_missing:
+                        index = urls.index(url)
+                        snippets_missing.append(snippets[index])
+                    metadata = [{'href': url, 'title': title} for url, title in zip(urls_missing, titles_missing)]
+                    documents = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(snippets_missing, urls_missing, metadata)]
+                    webcontext += documents
+                
             else:
                 logging.info("No web search results found.")
 
@@ -644,6 +658,7 @@ class RAGscholar:
             logging.info(f"Retrieving web content for {len(bing_results)} sources...")
             urls = get_urls_from_bing(bing_results)
             titles = get_titles_from_bing(bing_results)
+            snippets = get_snippets_from_bing(bing_results)
             documents_web, documents_missing = web2docs_async(urls, titles)
             if len(self.documents) > 0:
                 self.documents = self.documents + documents_web
@@ -652,6 +667,17 @@ class RAGscholar:
             if len(documents_missing) > 0:
                 # add list of a urls and titles to missing documents
                 self.documents_missing.extend(documents_missing)
+                # add web snippets to documents instead of full content
+                urls_missing = [doc['url'] for doc in documents_missing]
+                titles_missing = [doc['title'] for doc in documents_missing]
+                # find snippets missing by finding indices matching urls_missing with urls
+                snippets_missing = []
+                for url in urls_missing:
+                    index = urls.index(url)
+                    snippets_missing.append(snippets[index])
+                metadata = [{'href': url, 'title': title} for url, title in zip(urls_missing, titles_missing)]
+                documents_web = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(snippets_missing, urls_missing, metadata)]
+                self.documents = self.documents + documents_web
 
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
