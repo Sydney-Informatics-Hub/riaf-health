@@ -73,7 +73,8 @@ class RAGscholar:
                 path_documents = None,
                 path_openai_key = None, 
                 language_style = "analytical",
-                load_index_from_storage = False):
+                load_index_from_storage = False,
+                output_stream=None):
         
         self.path_index = path_index
         self.path_templates = path_templates
