@@ -26,7 +26,7 @@ class ReviewAgent:
         if LLMSERVICE == 'openai':
             self.llm = OpenAI(
                 temperature=0,
-                model='gpt-4-1106-preview',
+                model='gpt-4o',
                 max_tokens=600)
         elif LLMSERVICE == 'azure':
             self.llm = AzureOpenAI(

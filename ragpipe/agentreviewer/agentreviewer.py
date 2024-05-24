@@ -42,7 +42,7 @@ class AgentReviewer:
         if self.LLMSERVICE == 'openai':
             self.llm = OpenAI(
                 temperature=0,
-                model='gpt-4-1106-preview',
+                model='gpt-4o',
                 max_tokens=600)
         elif self.LLMSERVICE == 'azure':
             self.llm = AzureOpenAI(
@@ -110,16 +110,19 @@ class AgentReviewer:
 
     def review_response(self, question_text, response_text, example_response):
 
-        system_prompt = ("You are an LLM agent that acts as a reviewer. You will review responses to specific questions based on gold-standard provided examples and review criteria. You will only give a score between 1 and 5.")
+        system_prompt = ("You are teacher reviewing a student response. You will only give a score between 1 and 5.")
 
         user_prompt = (f"This is a response to the question '{question_text}':\n\n")
         user_prompt += f"{response_text}\n\n"
-        user_prompt += "Compare the question response to the provided example (which represents a score of 5) and give it a score based on the example and the marking criteria."
 
-        user_prompt += "The example response that represents a score of 5 is as follows:\n"
-        user_prompt += f"{example_response}\n\n"
-
-        user_prompt += "Compare this response to the gold-standard example provided and give it a Score of 5, 4, 3, 2, or 1 based on the following marking criteria:\n"
+        if example_response is not None:
+            user_prompt += "Compare the question response to the provided example (which represents a score of 3) and give it a score based on the example and the marking criteria."
+            user_prompt += "The example response that represents a score of 3 is as follows:\n"
+            user_prompt += f"{example_response}\n\n"
+            user_prompt += "Compare this response to the baseline example provided and give it a Score of 5, 4, 3, 2, or 1 based on the following marking criteria:\n"
+        
+        else:
+            user_prompt += "Give this response a Score of 5, 4, 3, 2, or 1 based on the following marking criteria:\n"
 
         # Define the marking criteria based on the assessment criteria provided
         marking_criteria = {

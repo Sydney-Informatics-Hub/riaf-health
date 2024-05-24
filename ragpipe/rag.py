@@ -41,7 +41,7 @@ _list_max_word =  [250, 300, 500, 300]
 _context_window = 4096
 _num_output = 1000
 _scholar_limit = 50
-_model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
+_model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
@@ -73,7 +73,8 @@ class RAGscholar:
                 path_documents = None,
                 path_openai_key = None, 
                 language_style = "analytical",
-                load_index_from_storage = False):
+                load_index_from_storage = False,
+                output_stream=None):
         
         self.path_index = path_index
         self.path_templates = path_templates

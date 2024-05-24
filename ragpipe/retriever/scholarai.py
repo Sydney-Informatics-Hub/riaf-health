@@ -201,9 +201,12 @@ class ScholarAI:
         if filter_with_llm:
             print(f"Checking {len(papers)} abstracts with LLM for relevance...")
         for paper in papers:
-            if paper.year < self.year_start:
-                continue
-            if paper.year > self.year_end:
+            try:
+                if paper.year < self.year_start:
+                    continue
+                if paper.year > self.year_end:
+                    continue
+            except:
                 continue
             if open_access_only and not paper.isOpenAccess:
                 continue

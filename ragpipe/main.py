@@ -65,7 +65,8 @@ def main():
             args.research_period_start,
             args.research_period_end,
             args.impact_period_start,
-            args.impact_period_end)
+            args.impact_period_end,
+            benchmark_review = False)
     
 
 if __name__ == "__main__":
