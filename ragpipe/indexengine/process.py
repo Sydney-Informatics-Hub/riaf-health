@@ -25,7 +25,7 @@ from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
 
 def create_index(docstore, 
                  outpath_index = None, 
-                 model_llm = "gpt-4-1106-preview",
+                 model_llm = "gpt-4o",
                  temperature = 0.0, 
                  context_window = 4096, 
                  num_output = 600,

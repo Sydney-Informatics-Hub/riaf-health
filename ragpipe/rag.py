@@ -41,7 +41,7 @@ _list_max_word =  [250, 300, 500, 300]
 _context_window = 4096
 _num_output = 1000
 _scholar_limit = 50
-_model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
+_model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
@@ -767,8 +767,12 @@ class RAGscholar:
 
             logging.info("Reviewing.")
             for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
-                with open(example_response_file, 'r', encoding='utf-8') as file:  
-                    example_response = file.readline().strip()  
+                if os.path.isfile(example_response_file):
+                    with open(example_response_file, 'r', encoding='utf-8') as file:  
+                        example_response = file.readline().strip()  
+                else:
+                     example_response = None 
+
                 response = agent_reviewer.review_response(question_text, response_text, example_response)  
                 print(f"Q{i}", response)  
                 logging.info(f"Q{i}")

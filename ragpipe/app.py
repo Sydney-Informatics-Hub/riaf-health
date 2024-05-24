@@ -2,24 +2,33 @@ import streamlit as st
 from rag import RAGscholar
 
 def main():  
-    st.title('Research Impact Assessment Framework\nUse-Case-Study Generator')  
+    st.title(r"$\textsf{\tiny Research Impact Assessment Framework}$" + "\n" + r"Use-Case-Study Generator")
       
     # Create input fields for each argument  
-    query_author = st.text_input('Author name to search for', value="Anthony Weiss")  
-    query_topic = st.text_input('Topic for Use-case Study', value = "Elastagen")  
-    query_keywords = st.text_input('Keywords for query (separated by commas)', value = "elastin, tissue engineering, elastagen")  
-    research_period_start = st.text_input('Research period start (year)', value = 2013)  
-    research_period_end = st.text_input('Research period end (year)', value = 2023)  
-    impact_period_start = st.text_input('Impact period start (year)', value = 2013)  
-    impact_period_end = st.text_input('Impact period end (year)', value = 2023)  
-    organisation = st.text_input('Organisation', value = "The University of Sydney")  
-    language_style = st.selectbox('Language style for report', options=['analytical', 'journalistic', 'academic', 'legal', 'medical'], index=0)  
+    query_author = st.text_input(r"$\textsf{\tiny Author name to search for}$", value="Anthony Weiss")  
+    query_topic = st.text_input(r"$\textsf{\tiny Topic for Use-case Study}$", value = "Elastagen")  
+    query_keywords = st.text_input(r"$\textsf{\tiny Keywords for query (separated by commas)}$", value = "elastin, tissue engineering, elastagen")  
+    col1, col2 = st.columns(2)
+    with col1:
+        research_period_start = st.text_input(r"$\textsf{\tiny Research period start (year)}$", value = 2013) 
+    with col2: 
+        research_period_end = st.text_input(r"$\textsf{\tiny Research period end (year)}$", value = 2023)  
+
+    organisation = st.text_input(r"$\textsf{\tiny Organisation}$", value = "The University of Sydney")  
+    language_style = st.selectbox(r"$\textsf{\tiny Language style for report}$", options=['analytical', 'journalistic', 'academic', 'legal', 'medical'], index=0)  
+
+    # impact_period_start = st.text_input('Impact period start (year)', value = 2013)  
+    # impact_period_end = st.text_input('Impact period end (year)', value = 2023)  
+    impact_period_start = 2013
+    impact_period_end = 2023
+    path_documents = st.text_input(r"$\textsf{\tiny Local document store}$", value = '../test_data/Weiss_docs')
 
     # File uploaders  
-    path_documents = st.write('Path to directory with your documents')  
-    if st.file_uploader('Upload your documents', type=None, accept_multiple_files=True)  :
+    # path_documents = st.write(r"$\textsf{\tiny Path to directory with your documents}$")  
+    if st.file_uploader(r"$\textsf{\tiny Upload your documents}$", type=None, accept_multiple_files=True)  :
         st.write('Documents uploaded!')
-    path_documents = st.text_input("Local do store", value = '../test_data/Weiss_docs')
+
+    
   
     # Button to run the RAGscholar process  
     if st.button('Generate Use-case Study'):  
@@ -43,15 +52,15 @@ def main():
             research_period_end,  
             impact_period_start,  
             impact_period_end,  
-            benchmark_review=False  
+            benchmark_review=True  
         )  
 
-        # Get the content from the StringIO object and display it  
-        output_text = output_stream.getvalue()  
-        st.text_area("Output", value=output_text, height=300, disabled=False)  
-        output_stream.close()  
+        # # Get the content from the StringIO object and display it  
+        # output_text = output_stream.getvalue()  
+        # st.text_area("Output", value=output_text, height=300, disabled=False)  
+        # output_stream.close()  
   
-        st.success('Use-case study generated successfully.')  
+        # st.success('Use-case study generated successfully.')  
   
 if __name__ == '__main__':  
     main()  
