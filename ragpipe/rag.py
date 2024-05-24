@@ -41,7 +41,7 @@ _list_max_word =  [250, 300, 500, 300]
 _context_window = 4096
 _num_output = 1000
 _scholar_limit = 50
-_model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
+_model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
@@ -356,6 +356,7 @@ class RAGscholar:
 
         # Step 5: run web search queries for missing information
         web_search_results = []
+        webcontext = []
         #create missing information index
         for query in web_search_queries:
             logging.info(f"Running web search query: {query}")
@@ -747,31 +748,39 @@ class RAGscholar:
         if benchmark_review:
             agent_reviewer = AgentReviewer(llm=None,LLMSERVICE='openai')
             # Set gold standard response paths. These are broken up by indivdual question.
-            example_repsonse_file_q1 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q1.md'
-            example_repsonse_file_q2 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q2.md'
-            example_repsonse_file_q3 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q3.md'
-            example_repsonse_file_q4 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q4.md'
+            # check that the path ../use_case_studies/'+fname_out+'/ exists, if not stop the review
+            if not os.path.exists('../use_case_studies/'+fname_out+'/'):
+                print("No benchmark review possible. No matching case study folder found.")
+                logging.info("No benchmark review possible. No matching case study folder found.")
+            else:
+                print("Benchmark review ...")
+                logging.info("Benchmark review ...")
+                example_repsonse_file_q1 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q1.md'
+                example_repsonse_file_q2 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q2.md'
+                example_repsonse_file_q3 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q3.md'
+                example_repsonse_file_q4 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q4.md'
 
-            question1 = "What is the problem this research seeks to address and why is it significant?"
-            question2 = "What are the research outputs of this study?"
-            question3 = "What impacts has this research delivered to date?"
-            question4 = "What impact from this research is expected in the future?"
 
-            questions_and_files = [  
-                (question1, example_repsonse_file_q1, self.list_answers[0]),  
-                (question2, example_repsonse_file_q2, self.list_answers[1]),  
-                (question3, example_repsonse_file_q3, self.list_answers[2]),  
-                (question4, example_repsonse_file_q4, self.list_answers[3])   
-            ]  
+                question1 = "What is the problem this research seeks to address and why is it significant?"
+                question2 = "What are the research outputs of this study?"
+                question3 = "What impacts has this research delivered to date?"
+                question4 = "What impact from this research is expected in the future?"
 
-            logging.info("Reviewing.")
-            for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
-                with open(example_response_file, 'r', encoding='utf-8') as file:  
-                    example_response = file.readline().strip()  
-                response = agent_reviewer.review_response(question_text, response_text, example_response)  
-                print(f"Q{i}", response)  
-                logging.info(f"Q{i}")
-                logging.info(response) 
+                questions_and_files = [  
+                    (question1, example_repsonse_file_q1, self.list_answers[0]),  
+                    (question2, example_repsonse_file_q2, self.list_answers[1]),  
+                    (question3, example_repsonse_file_q3, self.list_answers[2]),  
+                    (question4, example_repsonse_file_q4, self.list_answers[3])   
+                ]  
 
-            print("Fully Done. Results in "+ self.outpath)
-            logging.info("Fully Done.")
+                logging.info("Reviewing.")
+                for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
+                    with open(example_response_file, 'r', encoding='utf-8') as file:  
+                        example_response = file.readline().strip()  
+                    response = agent_reviewer.review_response(question_text, response_text, example_response)  
+                    print(f"Q{i}", response)  
+                    logging.info(f"Q{i}")
+                    logging.info(response) 
+
+                print("Fully Done. Results in "+ self.outpath)
+                logging.info("Fully Done.")
