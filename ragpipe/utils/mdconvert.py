@@ -6,6 +6,9 @@ import os,sys
 import subprocess
 # import markdown
 from docxtpl import DocxTemplate 
+from docx import Document
+from markdown import markdown
+from bs4 import BeautifulSoup
 
 def markdown_to_pdf(markdown_file_path):
     """
@@ -52,8 +55,9 @@ def markdown_to_html(markdown_file_path):
         output=html_file_path,
         encoding='utf8',
         )
+    
 
-def markdown_to_docx(markdown_file_path,ORG_NAME,TITLE_NAME,RESEARCH_PERIOD, AUTHOR, IMPACT_PERIOD, RESEARCH_TOPIC, q1, q2, q3, q4, refs):
+def report_to_docx(markdown_file_path,ORG_NAME,TITLE_NAME,RESEARCH_PERIOD, AUTHOR, IMPACT_PERIOD, RESEARCH_TOPIC, q1, q2, q3, q4, refs):
     """
     Convert Markdown to HTML
 
@@ -65,6 +69,9 @@ def markdown_to_docx(markdown_file_path,ORG_NAME,TITLE_NAME,RESEARCH_PERIOD, AUT
     # Check if the file exists
     if not os.path.exists(markdown_file_path):
         raise FileNotFoundError(f"The file {markdown_file_path} does not exist")
+    
+    # convert questions to docx
+    converted_answers = convert_answers_to_docx([q1, q2, q3, q4])
 
     # Generate the PDF file path
     base_name = os.path.splitext(markdown_file_path)[0]
@@ -79,14 +86,57 @@ def markdown_to_docx(markdown_file_path,ORG_NAME,TITLE_NAME,RESEARCH_PERIOD, AUT
                 "AUTHOR":AUTHOR,
                 "IMPACT_PERIOD":IMPACT_PERIOD,
                 "RESEARCH_TOPIC":RESEARCH_TOPIC,
-                "q1":q1,
-                "q2":q2,
-                "q3":q3,
-                "q4":q4,
+                "q1":converted_answers[0],
+                "q2":converted_answers[1],
+                "q3":converted_answers[2],
+                "q4":converted_answers[4],
                 "refs":refs
                 }
     doc.render(docx_content)
     doc.save(docx_file_path)
+
+
+def markdown_to_docx(markdown_text):
+    html = markdown(markdown_text)
+    soup = BeautifulSoup(html, features="html.parser")
+    doc = Document()
+
+    for element in soup:
+        if element.name == 'h1':
+            doc.add_heading(element.text, level=1)
+        elif element.name == 'h2':
+            doc.add_heading(element.text, level=2)
+        elif element.name == 'h3':
+            doc.add_heading(element.text, level=3)
+        elif element.name == 'h4':
+            doc.add_heading(element.text, level=4)
+        elif element.name == 'h5':
+            doc.add_heading(element.text, level=5)
+        elif element.name == 'h6':
+            doc.add_heading(element.text, level=6)
+        elif element.name == 'p':
+            doc.add_paragraph(element.text)
+        elif element.name == 'strong':
+            doc.add_paragraph(element.text, style='Bold')
+        elif element.name == 'em':
+            doc.add_paragraph(element.text, style='Italic')
+        elif element.name == 'ul':
+            for li in element.find_all('li'):
+                doc.add_paragraph(li.text, style='ListBullet')
+        elif element.name == 'ol':
+            for li in element.find_all('li'):
+                doc.add_paragraph(li.text, style='ListNumber')
+
+    return doc
+
+# Convert list answers to DOCX format
+def convert_answers_to_docx(answers):
+    docs = []
+    for answer in answers:
+        doc = markdown_to_docx(answer)
+        docx_content = "\n".join([p.text for p in doc.paragraphs])
+        docs.append(docx_content)
+    return docs
     
 
 if __name__ == '__main__':  
