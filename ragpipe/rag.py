@@ -6,7 +6,7 @@ import logging
 
 from llama_index.core import load_index_from_storage
 from llama_index.core.retrievers import VectorIndexRetriever
-from llama_index.core import PromptTemplate, Document
+from llama_index.core import PromptTemplate
 from llama_index.core.llms import ChatMessage, MessageRole
 from llama_index.core.chat_engine import CondenseQuestionChatEngine
 from llama_index.core.chat_engine import CondensePlusContextChatEngine
@@ -17,11 +17,7 @@ from docxtpl import DocxTemplate
 from utils.pubprocess import publications_to_markdown, clean_publications
 from retriever.semanticscholar import read_semanticscholar 
 from retriever.scholarai import ScholarAI
-from retriever.bingsearch import (
-    bing_custom_search, 
-    get_urls_from_bing, 
-    get_titles_from_bing,
-    get_snippets_from_bing)
+from retriever.bingsearch import bing_custom_search, get_urls_from_bing, get_titles_from_bing
 from retriever.webcontent import web2docs_async, web2docs_simple
 from retriever.directoryreader import MyDirectoryReader
 from queryengine.queryprocess import QueryEngine
@@ -32,7 +28,7 @@ from indexengine.process import (
     load_index
     )
 from agentreviewer.agentreviewer import AgentReviewer
-#from utils.mdconvert import convert_answers_to_docx
+from utils.mdconvert import markdown_to_question
 
 
 # Config parameters (TBD: move to config file)
@@ -41,7 +37,7 @@ _list_max_word =  [250, 300, 500, 300]
 _context_window = 4096
 _num_output = 1000
 _scholar_limit = 50
-_model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-32k"
+_model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 # make sure respective OPENAI_API_KEY is set in os.environ or keyfile
@@ -73,8 +69,7 @@ class RAGscholar:
                 path_documents = None,
                 path_openai_key = None, 
                 language_style = "analytical",
-                load_index_from_storage = False,
-                output_stream=None):
+                load_index_from_storage = False):
         
         self.path_index = path_index
         self.path_templates = path_templates
@@ -357,7 +352,6 @@ class RAGscholar:
 
         # Step 5: run web search queries for missing information
         web_search_results = []
-        webcontext = []
         #create missing information index
         for query in web_search_queries:
             logging.info(f"Running web search query: {query}")
@@ -370,24 +364,14 @@ class RAGscholar:
                 logging.info(f"Retrieving web content for {len(bing_results)} sources...")
                 urls = get_urls_from_bing(bing_results)
                 titles = get_titles_from_bing(bing_results)
-                snippets = get_snippets_from_bing(bing_results)
                 webcontent, documents_missing = web2docs_async(urls, titles)
-                if len(webcontent) > 0:
-                    webcontext += webcontent
+                if len(webcontext) > 0:
+                    webcontext = webcontext + webcontent
+                else:
+                    webcontext = webcontent
                 if len(documents_missing) > 0:
+                    # add list of a urls and titles to missing documents
                     self.documents_missing.extend(documents_missing)
-                    # add web snippets to documents instead of full content
-                    urls_missing = [doc['url'] for doc in documents_missing]
-                    titles_missing = [doc['title'] for doc in documents_missing]
-                    # find snippets missing by finding indices matching urls_missing with urls
-                    snippets_missing = []
-                    for url in urls_missing:
-                        index = urls.index(url)
-                        snippets_missing.append(snippets[index])
-                    metadata = [{'href': url, 'title': title} for url, title in zip(urls_missing, titles_missing)]
-                    documents = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(snippets_missing, urls_missing, metadata)]
-                    webcontext += documents
-                
             else:
                 logging.info("No web search results found.")
 
@@ -660,7 +644,6 @@ class RAGscholar:
             logging.info(f"Retrieving web content for {len(bing_results)} sources...")
             urls = get_urls_from_bing(bing_results)
             titles = get_titles_from_bing(bing_results)
-            snippets = get_snippets_from_bing(bing_results)
             documents_web, documents_missing = web2docs_async(urls, titles)
             if len(self.documents) > 0:
                 self.documents = self.documents + documents_web
@@ -669,17 +652,6 @@ class RAGscholar:
             if len(documents_missing) > 0:
                 # add list of a urls and titles to missing documents
                 self.documents_missing.extend(documents_missing)
-                # add web snippets to documents instead of full content
-                urls_missing = [doc['url'] for doc in documents_missing]
-                titles_missing = [doc['title'] for doc in documents_missing]
-                # find snippets missing by finding indices matching urls_missing with urls
-                snippets_missing = []
-                for url in urls_missing:
-                    index = urls.index(url)
-                    snippets_missing.append(snippets[index])
-                metadata = [{'href': url, 'title': title} for url, title in zip(urls_missing, titles_missing)]
-                documents_web = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(snippets_missing, urls_missing, metadata)]
-                self.documents = self.documents + documents_web
 
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
@@ -749,39 +721,31 @@ class RAGscholar:
         if benchmark_review:
             agent_reviewer = AgentReviewer(llm=None,LLMSERVICE='openai')
             # Set gold standard response paths. These are broken up by indivdual question.
-            # check that the path ../use_case_studies/'+fname_out+'/ exists, if not stop the review
-            if not os.path.exists('../use_case_studies/'+fname_out+'/'):
-                print("No benchmark review possible. No matching case study folder found.")
-                logging.info("No benchmark review possible. No matching case study folder found.")
-            else:
-                print("Benchmark review ...")
-                logging.info("Benchmark review ...")
-                example_repsonse_file_q1 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q1.md'
-                example_repsonse_file_q2 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q2.md'
-                example_repsonse_file_q3 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q3.md'
-                example_repsonse_file_q4 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q4.md'
+            example_repsonse_file_q1 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q1.md'
+            example_repsonse_file_q2 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q2.md'
+            example_repsonse_file_q3 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q3.md'
+            example_repsonse_file_q4 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q4.md'
 
+            question1 = "What is the problem this research seeks to address and why is it significant?"
+            question2 = "What are the research outputs of this study?"
+            question3 = "What impacts has this research delivered to date?"
+            question4 = "What impact from this research is expected in the future?"
 
-                question1 = "What is the problem this research seeks to address and why is it significant?"
-                question2 = "What are the research outputs of this study?"
-                question3 = "What impacts has this research delivered to date?"
-                question4 = "What impact from this research is expected in the future?"
+            questions_and_files = [  
+                (question1, example_repsonse_file_q1, self.list_answers[0]),  
+                (question2, example_repsonse_file_q2, self.list_answers[1]),  
+                (question3, example_repsonse_file_q3, self.list_answers[2]),  
+                (question4, example_repsonse_file_q4, self.list_answers[3])   
+            ]  
 
-                questions_and_files = [  
-                    (question1, example_repsonse_file_q1, self.list_answers[0]),  
-                    (question2, example_repsonse_file_q2, self.list_answers[1]),  
-                    (question3, example_repsonse_file_q3, self.list_answers[2]),  
-                    (question4, example_repsonse_file_q4, self.list_answers[3])   
-                ]  
+            logging.info("Reviewing.")
+            for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
+                with open(example_response_file, 'r', encoding='utf-8') as file:  
+                    example_response = file.readline().strip()  
+                response = agent_reviewer.review_response(question_text, response_text, example_response)  
+                print(f"Q{i}", response)  
+                logging.info(f"Q{i}")
+                logging.info(response) 
 
-                logging.info("Reviewing.")
-                for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
-                    with open(example_response_file, 'r', encoding='utf-8') as file:  
-                        example_response = file.readline().strip()  
-                    response = agent_reviewer.review_response(question_text, response_text, example_response)  
-                    print(f"Q{i}", response)  
-                    logging.info(f"Q{i}")
-                    logging.info(response) 
-
-                print("Fully Done. Results in "+ self.outpath)
-                logging.info("Fully Done.")
+            print("Fully Done. Results in "+ self.outpath)
+            logging.info("Fully Done.")
