@@ -25,10 +25,36 @@ To install dependencies, ensure you have Mamba or Conda installed. Then install 
 conda create -n riaf python=3.11
 conda activate riaf
 pip install semanticscholar arxiv==1.4.8 llama-index==0.10.27 pypdf2==3.0.1 pypdf==4.1.0 llama-index-readers-web==0.1.8 llama-index-readers-semanticscholar==0.1.3 llama-index-embeddings-azure-openai==0.1.6 docxtpl==0.16.8
-
+pip install -U semanticscholar==0.8.1
+pip install -U llama-index-llms-openai==0.1.20
 ```
 
 ## How-to and examples
+
+Add your `azure_sih_bing_key.txt` to the top level directory.
+Add your `openai_sih_key.txt` to the top level directory.
+
+### Quick start
+
+Modify `ragpipe/tests/use_case_studies.py` then launch the script.
+
+```shell
+cd ragpipe
+python tests/use_case_studies.py run1
+```
+
+### Run from Frontend APP
+
+Launch the frontend app
+
+```shell
+cd ragpipe
+streamlit run app.py
+```
+
+Modify options and execute. Check `app.py` for any hardcoded configuration options.
+
+### All options
 
 To generate a research report run
 
