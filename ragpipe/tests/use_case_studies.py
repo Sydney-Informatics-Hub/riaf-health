@@ -98,8 +98,8 @@ def test_RAGscholar_run3():
                     outpath = '../../results/',
                     path_index = '../../index_store',
                     path_documents = '../test_data/Ice_docs',
-                    path_openai_key = '../../openai_techlab_key.txt')
-    query_author="Cath Chapman, Steph Kershaw"
+                    path_openai_key = '../../openai_sih_key.txt')
+    query_author="Steph Kershaw" #"Cath Chapman" #Steph Kershaw
     query_topic="Online resources to reduce the impact of crystal methamphetamine harms in the community"
     keywords = "methamphetamine, ice"
     research_period_start = 2017
