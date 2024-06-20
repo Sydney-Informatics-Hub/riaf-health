@@ -275,7 +275,7 @@ class RAGscholar:
                                         + "Do not deviate from the original instructions for this question. \n"
                                         + "Stay close to original response and references, only improve the parts of response that need to be fixed. \n"
                                         + "If you can not find an improvement, keep the original response. \n"
-                                        + "You must include all references and update reference footnote numbers if necessary. \n\n"
+                                        + "You must include all references and links to references. Update reference footnote numbers if necessary. \n\n"
                                         + "Review: \n"
                                         + f"{review_txt}")
                     content, sources = self.query_chatengine(review_prompt)
@@ -320,7 +320,7 @@ class RAGscholar:
             
                         "Instructions:\n"
                         "Do not repeat or rephrase the questions and only provide concise answers within the word limit.\n"
-                        "Include references to relevant sources of evidence."
+                        "You must include references and links to relevant sources of evidence."
                         )
         # Step 2
         content, sources = self.query_chatengine(prompt_text)
