@@ -12,7 +12,6 @@
 200_data_clean/*
 
 # Ignore secrets
-# DO NOT change this
 secrets/*
 
 /.quarto/
@@ -27,4 +26,31 @@ _freeze
 */**/_pycache__
 *.pyc
 
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# mac
+.DS_Store
+
+# Other
+.vscode
+*.tsv
+*.pt
+*.env
+local/
+local_*
+build/
+*.egg-info/
+.idea
+*.zip
+
+# Project-specific
+secrets.toml
+ragpipe/secrets.toml
+*.log
+*/assertion.log
+*results/
 ragpipe/pdfs
