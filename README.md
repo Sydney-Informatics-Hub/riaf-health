@@ -2,7 +2,7 @@
 
 ## Introduction
 
-To measure health and medical research impact, a new Research Impact Assessment Framework (RIAF) has been developed. The RIAF evaluates the research environment and the alignment and influence of research, with the goal of providing funders a holistic analysis of NSW’s health and medical research ecosystem for making informed investment decisions.
+This AI software generates research impact assessment studies for health and medical research, in accordance with the Research Impact Assessment Framework (RIAF). The RIAF evaluates the research environment and the alignment and influence of research, with the goal of providing funders a holistic analysis of NSW’s health and medical research ecosystem for making informed investment decisions.
 
 To improve the scalability of this framework, an AI powered software has been developed that allows researchers and funding organisations to generate assessment reports about the research impact for a given research group and topic. Research impact is evaluated along distinct criteria such as overall problem addressed, research impact-to-date, and potential future applications. The current design of the case study template includes four assessment criteria and provides researchers the freedom to use a set of indicators that are relevant to their research program (e.g. research/impact period).
 
@@ -41,7 +41,7 @@ OPENAI_API_TYPE="azure"
 AZURE_API_BASE="your_azure_api_base_url"
 AZURE_API_VERSION="your_azure_api_version"
 # Set up Bing search API key.
-BING_SEARCH_API_KEY=""="your_bing_api_key"
+BING_SEARCH_API_KEY="your_bing_api_key"
 
 ```
 
@@ -123,30 +123,33 @@ The pipeline includes the following steps:
 
 ### AI agents
 
-- Writer agent: generating impact assessment report including references
 - Context agent:
     - defining general problem and context information
     - find missing information online
     - generate context memory
-- Review agent:
-    - analyse output from writer agent
-    - suggest improvements
 - Data-source search and retrieval agents:
     1. Publications: search, filter, relevance ranking, content extraction, metadata generation
     2. Web Content: online search (via Bing API), filter, content retrieval, metadata generation
     3. Directory Reader: read all documents from a local directory, add to LLM database
-- Database agent: index content and metadata, generate vector embeddings, query database with LLM
+- Database tool: index content and metadata, generate vector embeddings, query database with LLM
+- Writer agent: generating impact assessment report including references
+- Review agent:
+    - analyse output from writer agent
+    - suggest improvements
+    - curate report
+
 
 ### Supported data source integrations:
 
-- Scholar publications (e.g., Pubmed, ArXiv)
-- Web content (html)
+- Scholar publications (e.g., SemanticScholar, Pubmed, ArXiv)
+- Bing search and web content retrieval 
 - Documents in local document folder (pdf, docx, ...)
 
 ### Other features
 
 - citation analysis
 - language style options for report
+- user interface
 
 ## Main Software Contributors
 
@@ -155,6 +158,7 @@ The pipeline includes the following steps:
 
 ## Project Partners
 
+This project has been developed in collaboration with the Faculty of Medicine and Health at the UNiversity of Sydney, in particular:
 - Janine Richards <janine.richards@sydney.edu.au>
 - Mona Shamshiri <mona.shamshiri@sydney.edu.au>
 
