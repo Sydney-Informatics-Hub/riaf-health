@@ -21,25 +21,20 @@ Author: Sebastian Haan
 import json
 import requests
 import os
-
-FNAME_BING_KEY = '../../azure_sih_bing_key.txt'
+from utils.envloader import load_api_key
 
 
 def init_bing():
     """
     Initialize Bing search client
     """
-    # Add your Bing Search V7 subscription key to your environment variables.
-    # Once set, you can use these variables to create the Bing Search client.
-    # SUBSCRIPTION_KEY = os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"]
+    # Add your Bing Search subscription key to your environment variables.
     ENDPOINT = "https://api.bing.microsoft.com/v7.0"
-    if "BING_SEARCH_V7_SUBSCRIPTION_KEY" not in os.environ:
-        fname_key = FNAME_BING_KEY
-        with open(fname_key) as f:
-            SUBSCRIPTION_KEY = f.read().strip()
-            os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"] = SUBSCRIPTION_KEY
+    if "BING_SEARCH_API_KEY" not in os.environ:
+        load_api_key("secrets.toml")
+        SUBSCRIPTION_KEY = os.environ.get["BING_SEARCH_API_KEY"]
     else:
-        SUBSCRIPTION_KEY = os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"]
+        SUBSCRIPTION_KEY = os.environ["BING_SEARCH_API_KEY"]
     return SUBSCRIPTION_KEY, ENDPOINT
 
 
