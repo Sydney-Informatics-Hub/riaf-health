@@ -1,4 +1,5 @@
 # AI Generator for Research Impact Assessment Studies
+<img width="1003" alt="Architecture" src="https://media.github.sydney.edu.au/user/291/files/a12249da-0c72-4f9d-a8a5-1e9677a6de18">
 
 ## Introduction
 
