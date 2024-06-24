@@ -15,6 +15,7 @@ from docxtpl import DocxTemplate
 
 # local package imports
 from utils.pubprocess import publications_to_markdown, clean_publications
+from utils.envloader import load_api_key
 from retriever.semanticscholar import read_semanticscholar 
 from retriever.scholarai import ScholarAI
 from retriever.bingsearch import (
@@ -44,9 +45,7 @@ _scholar_limit = 50
 _model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
-# make sure respective OPENAI_API_KEY is set in os.environ or keyfile
-_llm_service = 'openai' # 'azure' or 'openai' or 'techlab'#
-_use_scholarai = True # use scholarai to retrieve documents. Much more accurate but slower than semanticscholar
+_use_scholarai = True # use scholarai script to retrieve documents. Much more accurate but slower than semanticscholar
 
 
 class RAGscholar:
@@ -96,7 +95,8 @@ class RAGscholar:
             else:
                 self.path_documents = None
 
-        self.openai_init()
+        load_api_key(toml_file_path='secrets.toml')
+        self.llm_service = os.environ.get("OPENAI_API_TYPE")
 
         if load_index_from_storage:
             self.index = load_index(path_index)
@@ -402,7 +402,7 @@ class RAGscholar:
                                                 context_window=_context_window,
                                                 num_output=_num_output,
                                                 model_llm=_model_llm,
-                                                llm_service=_llm_service)
+                                                llm_service=self.llm_service)
             # Initialize chat engine with context prompt
             logging.info("Initializing chat engine with web context ...")
             system_prompt = ("You are an LLM agent that acts as a assistant to find missing information from data.\n"
@@ -690,7 +690,7 @@ class RAGscholar:
                                 context_window=_context_window, 
                                 num_output=_num_output, 
                                 model_llm=_model_llm,
-                                llm_service=_llm_service)
+                                llm_service=self.llm_service)
         
         # Add documents from the additional folder to the aggregated documents
         if local_document_path: 
