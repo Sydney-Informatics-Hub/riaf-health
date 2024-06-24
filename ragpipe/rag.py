@@ -35,7 +35,6 @@ from indexengine.process import (
 from agentreviewer.agentreviewer import AgentReviewer
 #from utils.mdconvert import convert_answers_to_docx
 
-
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
 _list_max_word =  [250, 300, 500, 300]
@@ -96,7 +95,7 @@ class RAGscholar:
                 self.path_documents = None
 
         load_api_key(toml_file_path='secrets.toml')
-        self.llm_service = os.environ.get("OPENAI_API_TYPE")
+        self.llm_service = os.getenv("OPENAI_API_TYPE")
 
         if load_index_from_storage:
             self.index = load_index(path_index)
@@ -105,11 +104,7 @@ class RAGscholar:
         # Authenticate and read file from file
         #check if "OPENAI_API_KEY" parameter in os.environ:
         if "OPENAI_API_KEY" not in os.environ:
-            if self.path_openai_key is None:
-                logging.error("OPENAI_API_KEY not found in os.environ and path_openai_key is None")
-            else:
-                with open(self.path_openai_key , "r") as f:
-                    os.environ["OPENAI_API_KEY"] = f.read()
+            logging.error("OPENAI_API_KEY not found in os.environ nor in secrets.toml")
 
 
     def generate_chatengine_react(self):
