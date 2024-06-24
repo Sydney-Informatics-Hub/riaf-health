@@ -40,17 +40,18 @@ from llama_index.core.readers.base import BaseReader
 from llama_index.core import Document
 from PyPDF2 import PdfReader
 # local imports
+from utils.envloader import load_api_key
 from retriever.pdfdownloader import download_pdf, download_pdf_from_arxiv
 
-LLMSERVICE = 'openai' # 'openai' or 'azure' or 'techlab'
 
-AZURE_ENDPOINT = "https://techlab-copilots-aiservices.openai.azure.com/" 
-AZURE_API_VERSION = "2023-12-01-preview" 
+#AZURE_ENDPOINT = "https://techlab-copilots-aiservices.openai.azure.com/" 
+#AZURE_API_VERSION = "2023-12-01-preview" 
 AZURE_ENGINE = "gpt-35-turbo"
 
-techlab_endpoint = 'https://apim-techlab-usydtechlabgenai.azure-api.net/'
-techlab_deployment = 'GPT35shopfront'
-techlab_api_version = '2023-12-01-preview'
+# Outdated:
+#techlab_endpoint = 'https://apim-techlab-usydtechlabgenai.azure-api.net/'
+#techlab_deployment = 'GPT35shopfront'
+#techlab_api_version = '2023-12-01-preview'
 
 class ScholarAI:
     """
@@ -81,22 +82,28 @@ class ScholarAI:
         self.delete_pdfs = delete_pdfs
         self.keywords = keywords
 
+        if os.getenv("OPENAI_API_TYPE") is None:
+            load_api_key('secrets.toml')
+        self.llmservice = os.getenv("OPENAI_API_TYPE")
+    
+
+
     def init_llm(self):
-        if LLMSERVICE == 'openai':
+        if self.llmservice == 'openai':
             llm = OpenAI(
                 temperature=0,
                 model='gpt-3.5-turbo',
                 max_tokens=1)
-        elif LLMSERVICE == 'azure':
+        elif self.llmservice == 'azure':
             llm = AzureOpenAI(
                 engine=AZURE_ENGINE,
                 model='gpt-3.5-turbo',
                 temperature=0,
-                azure_endpoint=AZURE_ENDPOINT,
+                azure_endpoint=os.environ['AZURE_API_BASE'],
                 api_key=os.environ["OPENAI_API_KEY"],
-                api_version=AZURE_API_VERSION,
+                api_version=os.environ['AZURE_API_VERSION'],
             )
-        elif LLMSERVICE == 'techlab':
+        elif self.llmservice == 'techlab':
             llm = AzureOpenAI(
                 engine=techlab_deployment,
                 model='gpt-3.5-turbo', 
@@ -107,7 +114,7 @@ class ScholarAI:
                 api_base=os.getenv("OPENAI_API_BASE", ""),
             )
         else:
-            logging.error(f"LLM service {LLMSERVICE} not supported")
+            logging.error(f"LLM service {self.llmservice} not supported")
             return None
         return llm
         
