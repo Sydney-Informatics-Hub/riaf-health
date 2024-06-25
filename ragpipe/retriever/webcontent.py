@@ -24,6 +24,7 @@ import io
 import httpx
 import concurrent.futures
 from PyPDF2 import PdfReader
+from typing import List, Dict
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from trafilatura import extract
 
