@@ -326,16 +326,17 @@ class RAGscholar:
 
         # Step 4:  Extract missing information and generate web search queries
         prompt_text = ("Based on the answers above, identify missing information and quantitative data statements to back up the answers.\n"
-                        "Then formulate up to 5 short web search queries that will search for this missing information and data.\n"
+                        "Then formulate up to 10 short Google search queries that will search for this missing information and data.\n"
+                        "What do you type in the search box?\n\n"
+
                         "Example missing information statements: \n"
-                        "[X] million people worldwide and [Y] million people in Australia are impacted by health issues related this problem.\n"
-                        "The commercial value of the proposed solution is [X] billion dollars. \n"
-                        "The proposed solution would save the Australian healthcare sector [X] million dollars yearly.\n"
+                        "The commercial value of this technology is [X] billion dollars. \n"
+                        "This research application would save the Australian healthcare sector [X] million dollars yearly.\n"
             
                         "Instructions:\n"
                         "Do not repeat or rephrase the questions and only provide concise answers.\n"
                         "Provide missing information in one sentence per line, starting with 'MissingInfo:' and using '[X]' as blank.\n"
-                        "Start each web query with 'WebSearch_String:' and end with a question mark.\n"
+                        "Start each web query with 'WebSearch_String:'\n"
                         )
         
         content_missing, sources = self.query_chatengine(prompt_text)
@@ -355,6 +356,7 @@ class RAGscholar:
         webcontext = []
         #create missing information index
         for query in web_search_queries:
+            # Todo: replace with retriever.bingsearch.BingSearch (snippets created from web page content)
             logging.info(f"Running web search query: {query}")
             print(f"Running web search query: {query}")
             query = query.replace("WebSearch_String:", "").strip()
@@ -370,6 +372,7 @@ class RAGscholar:
                 if len(webcontent) > 0:
                     webcontext += webcontent
                 if len(documents_missing) > 0:
+                    logging.info(f"Web content missing for {len(documents_missing)} sources.")
                     self.documents_missing.extend(documents_missing)
                     # add web snippets to documents instead of full content
                     urls_missing = [doc['url'] for doc in documents_missing]
@@ -382,7 +385,7 @@ class RAGscholar:
                     metadata = [{'href': url, 'title': title} for url, title in zip(urls_missing, titles_missing)]
                     documents = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(snippets_missing, urls_missing, metadata)]
                     webcontext += documents
-                
+                    logging.info(f"Added {len(snippets_missing)} snippets to web context.")
             else:
                 logging.info("No web search results found.")
 
