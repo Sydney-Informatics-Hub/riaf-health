@@ -25,6 +25,7 @@ Author: Sebastian Haan
 """
 
 import os
+import sys
 import time
 import requests
 import logging
@@ -40,6 +41,7 @@ from llama_index.core.readers.base import BaseReader
 from llama_index.core import Document
 from PyPDF2 import PdfReader
 # local imports
+#sys.path.append('../')
 from utils.envloader import load_api_key
 from retriever.pdfdownloader import download_pdf, download_pdf_from_arxiv
 
