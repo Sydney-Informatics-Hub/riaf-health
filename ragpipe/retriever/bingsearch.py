@@ -68,6 +68,7 @@ def bing_custom_search(query, count=10, mkt='en-AU', language='en', year_start =
     headers = {"Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY}
     #params = {"q": query, "count": count, "responseFilter": "Webpages", "freshness": None}
     params = {
+            'q': query,
             'mkt': mkt,
             "setLang": language,
             "count": count,
@@ -81,6 +82,7 @@ def bing_custom_search(query, count=10, mkt='en-AU', language='en', year_start =
 
     results = response.json()
     if 'webPages' not in results:
+        logging.error(f"No webPages in Bing search results for query: {query}")
         return None
 
     return results['webPages']['value']
@@ -215,7 +217,6 @@ class BingSearch():
             **kwargs: Additional parameters for the Bing search API.
                 - Reference: https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/reference/query-parameters
         """
-        super().__init__(k=k)
 
         if year_start is not None and year_end is not None:
             timeframe = f"{year_start}-01-01..{year_end}-12-31"
