@@ -20,8 +20,12 @@ Author: Sebastian Haan
 
 import json
 import requests
+import logging
 import os
+import sys
+from typing import Callable, Union, List
 from utils.envloader import load_api_key
+from retriever.webcontent import WebPageProcessor
 
 
 def init_bing():
@@ -32,13 +36,14 @@ def init_bing():
     ENDPOINT = "https://api.bing.microsoft.com/v7.0"
     if "BING_SEARCH_API_KEY" not in os.environ:
         load_api_key("secrets.toml")
-        SUBSCRIPTION_KEY = os.environ.get["BING_SEARCH_API_KEY"]
+        SUBSCRIPTION_KEY = os.environ["BING_SEARCH_API_KEY"]
     else:
         SUBSCRIPTION_KEY = os.environ["BING_SEARCH_API_KEY"]
     return SUBSCRIPTION_KEY, ENDPOINT
 
 
-def bing_custom_search(query, count=10, year_start = None, year_end= None):
+
+def bing_custom_search(query, count=10, mkt='en-US', language='en-AU', year_start = None, year_end= None):
     """
     Perform a Bing Custom Search with the given search term.
     see for search parameters: https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/reference/query-parameters
@@ -61,7 +66,13 @@ def bing_custom_search(query, count=10, year_start = None, year_end= None):
     SUBSCRIPTION_KEY, ENDPOINT = init_bing()
     search_url = ENDPOINT + "/search" 
     headers = {"Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY}
-    params = {"q": query, "count": count, "responseFilter": "Webpages", "freshness": None}
+    #params = {"q": query, "count": count, "responseFilter": "Webpages", "freshness": None}
+    params = {
+            'mkt': mkt,
+            "setLang": language,
+            "count": count,
+            "freshness": timeframe
+        }
     #params = {"q": query, "customconfig": CUSTOMCONFIGID, "count": count}
 
     response = requests.get(search_url, headers=headers, params=params)
@@ -182,3 +193,98 @@ def get_metadata(url_list):
             desc = ''
         metadata_desc.append(desc)
     return metadata_desc
+
+
+class BingSearch():
+    def __init__(self, k=3, is_valid_source: Callable = None,
+                 min_char_count: int = 150, snippet_chunk_size: int = 1000, webpage_helper_max_threads=10,
+                 mkt='en-AU', language='en', **kwargs):
+        """
+        Initialize BingSearch with specific parameters.
+
+        Params:
+            min_char_count: Minimum character count for the article to be considered valid.
+            snippet_chunk_size: Maximum character count for each snippet.
+            webpage_helper_max_threads: Maximum number of threads to use for webpage helper.
+            mkt: Market to use for the Bing search (default is 'en-US').
+            language: Language to use for the Bing search (default is 'en').
+            **kwargs: Additional parameters for the Bing search API.
+                - Reference: https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/reference/query-parameters
+        """
+        super().__init__(k=k)
+        self.bing_api_key, endpoint = init_bing()
+        self.endpoint = endpoint + "/search" #"https://api.bing.microsoft.com/v7.0/search"
+        self.params = {
+            'mkt': mkt,
+            "setLang": language,
+            "count": k,
+            **kwargs
+        }
+        self.webpage_helper = WebPageProcessor(
+            min_char_count=min_char_count,
+            snippet_chunk_size=snippet_chunk_size,
+            max_thread_num=webpage_helper_max_threads
+        )
+        self.usage = 0
+
+        # If not None, is_valid_source shall be a function that takes a URL and returns a boolean.
+        if is_valid_source:
+            self.is_valid_source = is_valid_source
+        else:
+            self.is_valid_source = lambda x: True
+
+    def get_usage_and_reset(self):
+        """
+        Get the usage count and reset it.
+
+        Returns:
+            A dictionary with the usage count for 'BingSearch'.
+        """
+        usage = self.usage
+        self.usage = 0
+
+        return {'BingSearch': usage}
+
+    def forward(self, query_or_queries: Union[str, List[str]], exclude_urls: List[str] = []):
+        """Search with Bing for self.k top passages for query or queries
+
+        Args:
+            query_or_queries (Union[str, List[str]]): The query or queries to search for.
+            exclude_urls (List[str]): A list of urls to exclude from the search results.
+
+        Returns:
+            a list of Dicts, each dict has keys of 'description', 'snippets' (list of strings), 'title', 'url'
+        """
+        queries = (
+            [query_or_queries]
+            if isinstance(query_or_queries, str)
+            else query_or_queries
+        )
+        self.usage += len(queries)
+
+        url_to_results = {}
+
+        headers = {"Ocp-Apim-Subscription-Key": self.bing_api_key}
+
+        for query in queries:
+            try:
+                results = requests.get(
+                    self.endpoint,
+                    headers=headers,
+                    params={**self.params, 'q': query}
+                ).json()
+
+                for d in results['webPages']['value']:
+                    if self.is_valid_source(d['url']) and d['url'] not in exclude_urls:
+                        url_to_results[d['url']] = {'url': d['url'], 'title': d['name'], 'description': d['snippet']}
+            except Exception as e:
+                logging.error(f'Error occurs when searching query {query}: {e}')
+
+        valid_url_to_snippets = self.webpage_helper.urls_to_snippets(list(url_to_results.keys()))
+        collected_results = []
+        for url in valid_url_to_snippets:
+            r = url_to_results[url]
+            r['snippets'] = valid_url_to_snippets[url]['snippets']
+            collected_results.append(r)
+
+        return collected_results
