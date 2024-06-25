@@ -43,7 +43,7 @@ def init_bing():
 
 
 
-def bing_custom_search(query, count=10, mkt='en-US', language='en-AU', year_start = None, year_end= None):
+def bing_custom_search(query, count=10, mkt='en-AU', language='en', year_start = None, year_end= None):
     """
     Perform a Bing Custom Search with the given search term.
     see for search parameters: https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/reference/query-parameters
@@ -71,7 +71,8 @@ def bing_custom_search(query, count=10, mkt='en-US', language='en-AU', year_star
             'mkt': mkt,
             "setLang": language,
             "count": count,
-            "freshness": timeframe
+            "freshness": timeframe,
+            "responseFilter": "Webpages"
         }
     #params = {"q": query, "customconfig": CUSTOMCONFIGID, "count": count}
 
@@ -198,26 +199,35 @@ def get_metadata(url_list):
 class BingSearch():
     def __init__(self, k=3, is_valid_source: Callable = None,
                  min_char_count: int = 150, snippet_chunk_size: int = 1000, webpage_helper_max_threads=10,
-                 mkt='en-AU', language='en', **kwargs):
+                 mkt='en-AU', language='en', year_start = None, year_end= None, **kwargs):
         """
         Initialize BingSearch with specific parameters.
 
         Params:
+            k (int): Number of search results to return.
             min_char_count: Minimum character count for the article to be considered valid.
             snippet_chunk_size: Maximum character count for each snippet.
             webpage_helper_max_threads: Maximum number of threads to use for webpage helper.
             mkt: Market to use for the Bing search (default is 'en-US').
             language: Language to use for the Bing search (default is 'en').
+            year_start (int): start of period to search
+            year_end (int): end of period to search
             **kwargs: Additional parameters for the Bing search API.
                 - Reference: https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/reference/query-parameters
         """
         super().__init__(k=k)
+
+        if year_start is not None and year_end is not None:
+            timeframe = f"{year_start}-01-01..{year_end}-12-31"
+        else:
+            timeframe = None
         self.bing_api_key, endpoint = init_bing()
         self.endpoint = endpoint + "/search" #"https://api.bing.microsoft.com/v7.0/search"
         self.params = {
             'mkt': mkt,
             "setLang": language,
             "count": k,
+            "freshness": timeframe,
             **kwargs
         }
         self.webpage_helper = WebPageProcessor(
