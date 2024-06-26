@@ -305,17 +305,19 @@ class RAGscholar:
                         f"{self.research_topic}\n\n"
                         "Use the following questions to guide your analysis:\n"
                         "1. What is the primary problem that this topic is aiming to address with regard to the healthcare and medical sector? (max 100 words)\n"
-                        "2. What is the context of the problem in terms of healthcare sector and medicine? (max 100 words)\n"
+                        "2. What is the impact on health system and medical sector? (max 100 words)\n"
                         "3. Who is mainly impacted or effected by this problem or its consequences? (max 50 words)\n"
                         "4. How many people are impacted by health issues that are related to this problem? (max 50 words)\n"
-                        "5. What are the economic costs in $ related to this problem? (max 50 words)\n"
-                        f"6. What is the novelty or advantage of the new solution as proposed by {self.author} (max 100 words)\n"
+                        "5. What are the economic costs in $ related to this problem? (max 100 words)\n"
+                        f"6. What is the novelty or advantage of the new solution as proposed by {self.author} (max 50 words)\n"
                         "7. How would the proposed solution to this problem improve healthcare? (max 100 words)\n"
-                        "8. What are the commercial (in $) or societal implications of the proposed solution? (max 100 words)\n"
+                        "8. What are the commercial (in $) or social implications of the proposed solution? (max 100 words)\n"
+                        "9. What capacity is build at the organisation? (max 50 words)\n"
+                        "10. List any rewards, funding or recognition received for this research. (max 100 words)\n\n"
             
                         "Instructions:\n"
-                        "Do not repeat or rephrase the questions and only provide concise answers within the word limit.\n"
-                        "You must include references and links to relevant sources of evidence."
+                        "Do not repeat or rephrase the questions and only provide concise answers as bullet points within the word limit.\n"
+                        "You must include references and links to relevant sources of evidence after each point."
                         )
         # Step 2
         content, sources = self.query_chatengine(prompt_text)
@@ -326,7 +328,7 @@ class RAGscholar:
 
         # Step 4:  Extract missing information and generate web search queries
         prompt_text = ("Based on the answers above, identify missing information and quantitative data statements to back up the answers.\n"
-                        "Then formulate up to 10 short Google search queries that will search for this missing information and data.\n"
+                        "Then formulate up to 20 short Google search queries that will search for this missing information and data.\n"
                         "What do you type in the search box?\n\n"
 
                         "Example missing information statements: \n"
