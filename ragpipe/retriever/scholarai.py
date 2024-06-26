@@ -34,26 +34,18 @@ import arxiv
 import shutil
 from llama_index.llms.openai import OpenAI
 # from llama_index.embeddings.azure_openai import AzureOpenAI
-
 from llama_index.llms.azure_openai import AzureOpenAI
 from llama_index.core.llms import ChatMessage
 from llama_index.core.readers.base import BaseReader
 from llama_index.core import Document
 from PyPDF2 import PdfReader
 # local imports
-#sys.path.append('../')
 from utils.envloader import load_api_key
 from retriever.pdfdownloader import download_pdf, download_pdf_from_arxiv
 
-
-#AZURE_ENDPOINT = "https://techlab-copilots-aiservices.openai.azure.com/" 
-#AZURE_API_VERSION = "2023-12-01-preview" 
+# see secrets.toml for Azure endpoints and version
 AZURE_ENGINE = "gpt-35-turbo"
 
-# Outdated:
-#techlab_endpoint = 'https://apim-techlab-usydtechlabgenai.azure-api.net/'
-#techlab_deployment = 'GPT35shopfront'
-#techlab_api_version = '2023-12-01-preview'
 
 class ScholarAI:
     """
