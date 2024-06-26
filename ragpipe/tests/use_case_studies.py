@@ -1,12 +1,16 @@
 """
 This module contains test examples for the RAGscholar class using the use case studies.
 
-To run the tests, setup your environment with the following keys:
+To run the tests, configure secrets.toml in the current working directory (cwd),
+or alternatively setup your environment with the following keys:
 os.environ["OPENAI_API_KEY"] = "xxx"
 os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"] = "xxx"
 
+
 add export PYTHONPATH="/Users/nbut3013/PROJECTS/PIPE-4668-RIAF/PIPE-4668-RIAF_NSWHEALTH/ragpipe:$PYTHONPATH"
 Alternatively the path to the keys is needed (by default in the tests the keys are read from the files).
+
+Conda env: fmm
 
 cd ragpipe
 python tests/use_case_studies.py run1
@@ -16,8 +20,6 @@ from rag import RAGscholar
 import time
 import os,sys
 
-with open("../../openai_sih_key.txt", "r") as file:
-    os.environ["OPENAI_API_KEY"]  = file.read().strip()
 
 def test_RAGscholar_run1():
 
@@ -27,8 +29,7 @@ def test_RAGscholar_run1():
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store',
-                    path_documents = '../test_data/Weiss_docs',
-                    path_openai_key = '../../openai_sih_key.txt',
+                    path_documents = None, #'../test_data/Weiss_docs',
                     language_style = "analytical",
                     load_index_from_storage = False)
     query_author="Anthony Weiss"
@@ -64,7 +65,6 @@ def test_RAGscholar_run2():
                     outpath = '../../results/',
                     path_index = '../../index_store',
                     path_documents = '../test_data/Nursing_docs',
-                    path_openai_key = '../../openai_techlab_key.txt',
                     language_style = "analytical",
                     load_index_from_storage = False)
     query_author="Kate Curtis"
@@ -97,8 +97,7 @@ def test_RAGscholar_run3():
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store',
-                    path_documents = '../test_data/Ice_docs',
-                    path_openai_key = '../../openai_sih_key.txt')
+                    path_documents = '../test_data/Ice_docs')
     query_author="Steph Kershaw" #"Cath Chapman" #Steph Kershaw
     query_topic="Online resources to reduce the impact of crystal methamphetamine harms in the community"
     keywords = "methamphetamine, ice"
