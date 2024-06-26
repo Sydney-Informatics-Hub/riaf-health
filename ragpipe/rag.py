@@ -57,7 +57,6 @@ class RAGscholar:
     :param outpath: path to output
     :param path_index: path to index
     :param path_documents: path name to directory from where to read documents for index
-    :param path_openai_key: path to openai key
     :param language_style: str, language style, default "analytical"
     :param load_index_from_storage: bool, load index from storage path, default False
     """
@@ -69,14 +68,12 @@ class RAGscholar:
                 outpath, 
                 path_index, 
                 path_documents = None,
-                path_openai_key = None, 
                 language_style = "analytical",
                 load_index_from_storage = False,
                 output_stream=None):
         
         self.path_index = path_index
         self.path_templates = path_templates
-        self.path_openai_key = path_openai_key
         self.load_index_from_storage = load_index_from_storage
         self.fname_system_prompt = os.path.join(path_templates, fname_system_prompt)
         self.fname_report_template = os.path.join(path_templates, fname_report_template)
@@ -88,11 +85,11 @@ class RAGscholar:
         self.author = None
         self.language_style = language_style
         self.documents_missing = []
-        if path_documents is not None:
-            if os.path.exists(path_documents):
-                self.path_documents = path_documents
-            else:
-                self.path_documents = None
+        if path_documents is not None and os.path.exists(path_documents):
+            self.path_documents = path_documents
+        else:
+            self.path_documents = None
+
 
         load_api_key(toml_file_path='secrets.toml')
         self.llm_service = os.getenv("OPENAI_API_TYPE")
@@ -312,8 +309,8 @@ class RAGscholar:
                         f"6. What is the novelty or advantage of the new solution as proposed by {self.author} (max 50 words)\n"
                         "7. How would the proposed solution to this problem improve healthcare? (max 100 words)\n"
                         "8. What are the commercial (in $) or social implications of the proposed solution? (max 100 words)\n"
-                        "9. What capacity is build at the organisation? (max 50 words)\n"
-                        "10. List any rewards, funding or recognition received for this research. (max 100 words)\n\n"
+                        f"9. What capacity is build at {self.organisation} by this research? (max 100 words)\n"
+                        f"10. List any rewards, funding or recognition received for this research at {self.organisation}. (max 100 words)\n\n"
             
                         "Instructions:\n"
                         "Do not repeat or rephrase the questions and only provide concise answers as bullet points within the word limit.\n"
