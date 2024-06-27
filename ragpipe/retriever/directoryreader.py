@@ -21,7 +21,10 @@ def get_pdf_metadata(pdf_file_path):
     """
     with open(pdf_file_path, 'rb') as f:
         pdf_reader = PdfReader(f) 
-        return pdf_reader.metadata
+        metadata = pdf_reader.metadata
+        # convert all metadata keys that start with / to strings without / and in lower case
+        metadata = {key[1:].lower(): value for key, value in metadata.items() if key.startswith('/')}
+        return metadata
     
 def get_docx_metadata(docx_file_path):
     """
