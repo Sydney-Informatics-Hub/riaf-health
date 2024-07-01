@@ -12,6 +12,7 @@ from llama_index.core.chat_engine import CondenseQuestionChatEngine
 from llama_index.core.chat_engine import CondensePlusContextChatEngine
 from llama_index.core.memory import ChatMemoryBuffer
 from docxtpl import DocxTemplate
+from llama_index.llms.openai import OpenAI
 
 # local package imports
 from utils.pubprocess import publications_to_markdown, clean_publications
@@ -38,7 +39,7 @@ from agentreviewer.agentreviewer import AgentReviewer
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
 _list_max_word =  [250, 300, 500, 300]
-_context_window = 4096
+_context_window = 12000
 _num_output = 1000
 _scholar_limit = 50
 _model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-32k"
@@ -160,8 +161,6 @@ class RAGscholar:
         )
         self.chat_engine = CondensePlusContextChatEngine.from_defaults(
             retriever=retriever,
-
-            chat_history=custom_chat_history,
             verbose=True,
             )
         """  
@@ -170,10 +169,11 @@ class RAGscholar:
             "Here are the relevant documents for the context:\n"
             "{context_str}"
             "\nInstruction: Use the previous chat history, or the context above, to interact and help the user."
-        ),
+        )
         self.chat_engine = self.index.as_chat_engine(
             chat_mode="condense_plus_context",
             memory=memory,
+            llm = OpenAI(model = _model_llm),
             context_prompt=context,
             verbose=True,
             )
@@ -182,11 +182,12 @@ class RAGscholar:
         # Condense Plus Context Chat Engine (WIP)
         system_prompt = self.generate_system_prompt()
 
-        memory = ChatMemoryBuffer.from_defaults(token_limit=10000)
+        memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
         self.chat_engine = self.index.as_chat_engine(
             chat_mode="context",
             memory=memory,
             system_prompt=system_prompt,
+            llm = OpenAI(model = _model_llm),
             verbose=True,
             )
         
@@ -201,7 +202,7 @@ class RAGscholar:
         response = self.chat_engine.chat(query)
         content = response.response
         try:
-            sources = response.sources[0].raw_output.metadata
+            sources  = [response.source_nodes[i].metadata for i in range(len(response.source_nodes))]
         except:
             sources = []
         return content, sources
@@ -240,7 +241,7 @@ class RAGscholar:
         self.list_sources = []
         self.list_questions = []
         # initilise and reset chat engine history: 
-        self.chat_engine.reset()
+        #self.chat_engine.reset()
         # Initialize review agent
         # TBD should review agent evaluate each question separately or final report?
         if review:
@@ -347,9 +348,9 @@ class RAGscholar:
         missing_info = []
         web_search_queries = []
         for line in content_missing.splitlines():
-            if line.startswith("MissingInfo:"):
+            if line.startswith("MissingInfo:") or line.startswith("- MissingInfo:"):
                 missing_info.append(line)
-            elif line.startswith("WebSearch_String:"):
+            elif line.startswith("WebSearch_String:") or line.startswith("- WebSearch_String:"):
                 web_search_queries.append(line)
 
         # Step 5: run web search queries for missing information
@@ -364,7 +365,7 @@ class RAGscholar:
             bing_results = bing_custom_search(query, count=2)
             webcontext = []
             # Step 6: Extract content from web search results
-            if len(bing_results) > 0:
+            if bing_results is not None and len(bing_results) > 0:
                 logging.info(f"Retrieving web content for {len(bing_results)} sources...")
                 urls = get_urls_from_bing(bing_results)
                 titles = get_titles_from_bing(bing_results)
@@ -701,8 +702,8 @@ class RAGscholar:
             self.index = add_docs_to_index(local_document_path, self.index)  
 
         # Initialize chat engine with context prompt
-        #self.generate_chatengine_condensecontext()
         logging.info("Initializing chat engine ...")
+        #self.generate_chatengine_condensecontext()
         #self.generate_chatengine_condense()
         # mode: openAI (no publication metadata)
         #self.generate_chatengine_openai()
@@ -737,6 +738,7 @@ class RAGscholar:
                     file.write(doc['title'] + ": " + doc['url'] + "\n")
 
         # Run through prompt questions
+        self.generate_chatengine_context()
         print("Processing assessment questions ...")
         logging.info("Processing assessment questions ...")
         self.prompt_pipeline(
