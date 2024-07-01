@@ -239,6 +239,8 @@ class RAGscholar:
         self.list_answers = []
         self.list_sources = []
         self.list_questions = []
+        # initilise and reset chat engine history: 
+        self.chat_engine.reset()
         # Initialize review agent
         # TBD should review agent evaluate each question separately or final report?
         if review:
@@ -717,8 +719,8 @@ class RAGscholar:
         if npublications is not None:
             self.context += "\n\n"
             self.context += f"Publication analysis for {self.author}:\n"
-            self.context += f"Number of topic-related publications for period {self.research_start} - {self.research_end}: At least {npublications}\n"
-            self.context += f"Number of citations: At least {ncitations}\n"
+            self.context += f"Number of topic-related publications for period {self.research_start} - {self.research_end}: At least {npublications}, Reference: SemanticScholar (https://www.semanticscholar.org)\n"
+            self.context += f"Number of citations: At least {ncitations}, Reference: SemanticScholar (https://www.semanticscholar.org)\n"
             if len(top_cited_papers) > 0:
                 self.context += "Top cited papers:\n"
                 for i, paper in enumerate(top_cited_papers):
