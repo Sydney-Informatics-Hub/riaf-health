@@ -523,7 +523,7 @@ class RAGscholar:
         Run RAG pipeline.
 
         :param research_topic: str, research topic
-        :param author: str, author name
+        :param author: str or list of strings, author name(s)
         :param keywords: str, keywords
         :param organisation: str, organisation
         :param research_start: int, research period start
@@ -594,7 +594,11 @@ class RAGscholar:
             if isinstance(self.author, list):
                 authors = self.author
             else:
-                authors = [self.author]
+                # check if authors seperated by comma
+                if "," in self.author:
+                    authors = self.author.split(",")
+                else:
+                    author = self.author
             # convert keywords to list
             if isinstance(self.keywords, str):
                 keywords = self.keywords.split(",")

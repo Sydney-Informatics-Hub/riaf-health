@@ -173,8 +173,9 @@ class ScholarAI:
                 papers, citationcounts = self.filter_papers(papers)
                 paper_list.extend(papers)
                 citations.extend(citationcounts)
-            # add delay to avoid rate limit
-            time.sleep(1)
+                print(f"Number of relevant papers found for author {author}: {len(papers)}")
+                # add delay to avoid rate limit
+                time.sleep(1)
         # sort lists by citations (descending) and select top max
         idx_sorted = sorted(range(len(citations)), key=lambda k: citations[k], reverse=True)
         paper_list = [paper_list[i] for i in idx_sorted]
@@ -221,7 +222,6 @@ class ScholarAI:
             if ok:
                 papers_ok.append(paper)
                 citationcount.append(paper.citationCount)
-        print(f"Number of relevant papers found for author: {len(papers)}")
         # order by citation count
         idx_sorted = sorted(range(len(citationcount)), key=lambda k: citationcount[k], reverse=True)
         papers_ok = [papers_ok[i] for i in idx_sorted]
