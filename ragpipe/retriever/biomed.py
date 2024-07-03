@@ -1,13 +1,23 @@
 """ Tool for searching, metadata retrieval and and full-text extraction of bio-medical publications
 
+This tool accesses the Entrez query and database system at the National Center for Biotechnology Information (NCBI).
+
+Note API is limited to 3 requests per second.
+API key registration is required for higher usage limits.
+
 See documentation for biopython: https://biopython.org/docs/dev/index.html
+See documentation for Entrez: https://biopython.org/docs/dev/Tutorial/chapter_entrez.html
 """
 
+import os
 from Bio import Entrez
 import xml.etree.ElementTree as ET
 
 # Set your email
-#Entrez.email = "[your-email@example.com]"
+if 'NCBI_EMAIL' in os.environ:
+    Entrez.email = os.environ.get('NCBI_EMAIL')
+else:
+    print("Please set the NCBI_EMAIL environment variable.")
 
 
 def search_pmc_by_title(title):
