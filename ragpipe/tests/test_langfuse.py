@@ -10,6 +10,7 @@ import sys
 from llama_index.core import SimpleDirectoryReader
 from llama_index.llms.openai import OpenAI
 from llama_index.core import VectorStoreIndex
+import time
 
 from utils.envloader import load_api_key
 
@@ -32,19 +33,28 @@ langfuse_callback_handler = LlamaIndexCallbackHandler(
   host="https://cloud.langfuse.com"
 )
 
-Settings.callback_manager = CallbackManager([langfuse_callback_handler]) 
+def run(with_langfuse = True):
 
-documents = SimpleDirectoryReader(input_dir="../test_data/documents_to_add").load_data()
- 
-index = VectorStoreIndex.from_documents(documents)
+  # measure time
+  start_time = time.time()
 
-model = OpenAI(model = LLM_MODEL)
+  if with_langfuse:
+    Settings.callback_manager = CallbackManager([langfuse_callback_handler]) 
 
-query_engine = index.as_query_engine(llm = model)
+  documents = SimpleDirectoryReader(input_dir="../test_data/documents_to_add").load_data()
+  
+  index = VectorStoreIndex.from_documents(documents)
 
-response = query_engine.query("What are the research priorities in health for Australia? Include references")
-print(response)
-response = query_engine.query("What does RIAF stand for? Provide references")
-print(response)
+  model = OpenAI(model = LLM_MODEL)
 
-langfuse_callback_handler.flush()
+  query_engine = index.as_query_engine(llm = model)
+
+  response = query_engine.query("What are the research priorities in health for Australia? Include references")
+  print(response)
+  response = query_engine.query("What does RIAF stand for? Provide references")
+  print(response)
+
+  if with_langfuse:
+    langfuse_callback_handler.flush()
+
+  print(f"Time taken: {round(time.time() - start_time, 2)} seconds")
