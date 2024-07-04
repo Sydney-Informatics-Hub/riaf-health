@@ -40,9 +40,11 @@ index = VectorStoreIndex.from_documents(documents)
 
 model = OpenAI(model = LLM_MODEL)
 
-response = index.as_query_engine(llm = model).query("What are the research priorities in health for Australia? Include references")
+query_engine = index.as_query_engine(llm = model)
+
+response = query_engine.query("What are the research priorities in health for Australia? Include references")
 print(response)
-response = index.as_query_engine().query("What does RIAF stand for? Provide references")
+response = query_engine.query("What does RIAF stand for? Provide references")
 print(response)
 
 langfuse_callback_handler.flush()
