@@ -5,6 +5,7 @@ This class add the following functionality to Semantic Scholar API:
 - Filter papers by topic using LLM (GPT-3.5-turbo)
 - custom filter and ranking of papers by publication period and citations
 - Download open-access PDFs and retrieve full text from papers
+- Includes multi archives search (ArXiv and Pubmed Central) and download for full papers access
 - Store metadata and content of papers in Document objects for further LLM processing
 
 How to use:
@@ -42,6 +43,7 @@ from PyPDF2 import PdfReader
 # local imports
 from utils.envloader import load_api_key
 from retriever.pdfdownloader import download_pdf, download_pdf_from_arxiv
+from retriever.biomed import biomedAI
 
 # see secrets.toml for Azure endpoints and version
 AZURE_ENGINE = "gpt-35-turbo"
@@ -287,7 +289,22 @@ class ScholarAI:
             file_path = download_pdf_from_arxiv(paper_id, externalIds["ArXiv"], base_dir)
 
         if not file_path and "ArXiv" in externalIds:
+            logging.info(f"Downloading pdf from arxiv for paper {paper_id}")
             file_path = download_pdf_from_arxiv(paper_id, externalIds["ArXiv"], base_dir)
+        elif not file_path and 'PubMedCentral' in externalIds and 'NCBI_EMAIL' in os.environ:
+            logging.info(f"Downloading full text from PubMedCentral for paper {paper_id}")
+            pmc_id = externalIds['PubMedCentral']
+            biomedai = biomedAI()
+            try:
+                full_text_xml = biomedai.fetch_full_text(pmc_id)
+                articles_content = biomedai.parse_full_text(full_text_xml)
+                #metadata_bm = biomedai.parse_metadata(full_text_xml)
+            except Exception as e:
+                logging.error(f"Failed to download full text from PubMedCentral with exception: {e}. Skipping document...")
+                articles_content = []
+            if len(articles_content) > 0:
+                text = articles_content[0]
+                return text 
 
         if file_path:
             try:
@@ -300,7 +317,7 @@ class ScholarAI:
             for page in pdf.pages:
                 text += page.extract_text()
         else:
-            logging.error(f"Failed to download pdf from {url} or arxiv")
+            logging.error(f"Failed to download pdf from {url} or ArXiv or Pubmed. Skipping document...")
             return None
 
         return text
