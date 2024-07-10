@@ -323,9 +323,9 @@ class BingSearch():
             documents: List of documents with main text content of the webpages.
             documents_missing: List of dict of title and URLs for which no content could be extracted.
         """
+        contents = [result['snippets'] for result in webresults]
         metadata = [{'href': result['url'], 'title': result['title'], 'description': result['description']} for result in webresults]
         doc_ids = [result['url'] for result in webresults]
-        contents = [result['snippets'] for result in webresults]
         # filter metadata for contents that are not None
         contents_ok = []
         urls_ok = []
@@ -338,5 +338,10 @@ class BingSearch():
                 metadata_ok.append(metadata[i])
             else:
                 documents_missing.append({'title': webresults[i]['title'],'url': doc_ids[i]})
-        documents = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(contents_ok, urls_ok, metadata_ok)]
+        documents = []
+        for i in range(len(contents_ok)):
+            for snippet in contents_ok[i]:
+                if len(snippet) > 0:
+                    documents.append(Document(text=snippet, doc_id = urls_ok[i], extra_info = metadata_ok[i]))
+        #documents = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(contents_ok, urls_ok, metadata_ok)]
         return documents, documents_missing
