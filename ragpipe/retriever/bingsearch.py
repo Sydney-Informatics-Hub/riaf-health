@@ -26,6 +26,7 @@ import sys
 from typing import Callable, Union, List
 from utils.envloader import load_api_key
 from retriever.webcontent import WebPageProcessor
+from llama_index.core import Document
 
 
 def init_bing():
@@ -161,11 +162,11 @@ def get_snippets_from_bing(dict_list):
     dict_list (list of dict): List of Bing search results
 
     Returns:
-    list of str: List of snippeets from Bing search results
+    list of str: List of snippets from Bing search results
     """
     snippet_list = []
     for result in dict_list:
-        snippet_list.append(result['name'])
+        snippet_list.append(result['snippets'])
     return snippet_list
 
 
@@ -207,6 +208,7 @@ class BingSearch():
 
         Params:
             k (int): Number of search results to return.
+            is_valid_source: A function that takes a URL and returns a boolean.
             min_char_count: Minimum character count for the article to be considered valid.
             snippet_chunk_size: Maximum character count for each snippet.
             webpage_helper_max_threads: Maximum number of threads to use for webpage helper.
@@ -231,6 +233,7 @@ class BingSearch():
             "freshness": timeframe,
             **kwargs
         }
+        # setup the webpage helper for getting content from the URLs
         self.webpage_helper = WebPageProcessor(
             min_char_count=min_char_count,
             snippet_chunk_size=snippet_chunk_size,
@@ -256,7 +259,7 @@ class BingSearch():
 
         return {'BingSearch': usage}
 
-    def forward(self, query_or_queries: Union[str, List[str]], exclude_urls: List[str] = []):
+    def search_and_retrieve(self, query_or_queries: Union[str, List[str]], exclude_urls: List[str] = []):
         """Search with Bing for self.k top passages for query or queries
 
         Args:
@@ -264,7 +267,8 @@ class BingSearch():
             exclude_urls (List[str]): A list of urls to exclude from the search results.
 
         Returns:
-            a list of Dicts, each dict has keys of 'description', 'snippets' (list of strings), 'title', 'url'
+            - a list of Dicts, each dict has keys of 'description', 'snippets' (list of strings), 'title', 'url'
+            - a list of Dicts for missing results
         """
         queries = (
             [query_or_queries]
@@ -291,11 +295,48 @@ class BingSearch():
             except Exception as e:
                 logging.error(f'Error occurs when searching query {query}: {e}')
 
-        valid_url_to_snippets = self.webpage_helper.urls_to_snippets(list(url_to_results.keys()))
+        # Get content from the URLs:
+        valid_url_to_snippets, urls_invalid = self.webpage_helper.urls_to_snippets(list(url_to_results.keys()))
         collected_results = []
         for url in valid_url_to_snippets:
             r = url_to_results[url]
             r['snippets'] = valid_url_to_snippets[url]['snippets']
             collected_results.append(r)
+        # Get the missing results    
+        missing_results = []
+        for url in urls_invalid:
+            r = url_to_results[url]
+            missing_results.append(r)
 
-        return collected_results
+        return collected_results, missing_results
+    
+    def web2docs(self, webresults : List[dict]):
+        """
+        Converts a list of websearch results to a list of documents with metadata and text snippets of the webpages.
+        Additionally returns a list of dict of title and URLs for which no content could be extracted.
+
+        Args:
+            webresults (list of dict): List of Bing search results with keys:
+                'description', 'snippets' (list of strings), 'title', 'url'
+
+        Returns:
+            documents: List of documents with main text content of the webpages.
+            documents_missing: List of dict of title and URLs for which no content could be extracted.
+        """
+        metadata = [{'href': result['url'], 'title': result['title'], 'description': result['description']} for result in webresults]
+        doc_ids = [result['url'] for result in webresults]
+        contents = [result['snippets'] for result in webresults]
+        # filter metadata for contents that are not None
+        contents_ok = []
+        urls_ok = []
+        metadata_ok = []
+        documents_missing = []
+        for i in range(len(contents)):
+            if contents[i] and len(contents[i]) > 0:
+                contents_ok.append(contents[i])
+                urls_ok.append(doc_ids[i])
+                metadata_ok.append(metadata[i])
+            else:
+                documents_missing.append({'title': webresults[i]['title'],'url': doc_ids[i]})
+        documents = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(contents_ok, urls_ok, metadata_ok)]
+        return documents, documents_missing
