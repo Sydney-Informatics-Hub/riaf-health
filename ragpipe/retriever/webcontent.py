@@ -201,12 +201,25 @@ class WebPageProcessor:
             res = self.httpx_client.get(url, timeout=4)
             if res.status_code >= 400:
                 res.raise_for_status()
-            return res.content
+            if res.status_code == 200:
+                content_type = res.headers.get('Content-Type', '')
+                # Check if the response is likely a PDF
+                if 'application/pdf' in content_type or url.lower().endswith('.pdf'):
+                    # Read the PDF content
+                    pdf_data = res.read()
+                    reader = PdfReader(io.BytesIO(pdf_data))
+                    text = ''
+                    for page in reader.pages:
+                        text += page.extract_text() if page.extract_text() else ''
+                    return text.encode('utf-8')
+                else:
+                    # Handle as HTML or other text-based formats
+                    return res.content
         except httpx.HTTPError as exc:
             print(f"Error while requesting {exc.request.url!r} - {exc!r}")
             return None
 
-    def urls_to_articles(self, urls: List[str]) -> Dict:
+    def urls_to_articles(self, urls: List[str]):
         """
         Convert a list of URLs to their corresponding articles.
 
@@ -214,28 +227,41 @@ class WebPageProcessor:
             urls: List of URLs to be processed.
 
         Returns:
-            A dictionary with URLs as keys and their respective articles as values.
+            - A dictionary with URLs as keys and their respective articles as values.
+            - A list of invalid URLs.
         """
+        
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_thread_num) as executor:
             htmls = list(executor.map(self.download_webpage, urls))
 
         articles = {}
+        urls_invalid = []
 
-        for h, u in zip(htmls, urls):
-            if h is None:
+        for html, url in zip(htmls, urls):
+            if html is None:
+                urls_invalid.append(url)
                 continue
-            article_text = extract(
-                h,
-                include_tables=False,
-                include_comments=False,
-                output_format="text",
-            )
-            if article_text is not None and len(article_text) > self.min_char_count:
-                articles[u] = {"text": article_text}
+            try:
+                if url.lower().endswith('.pdf'):
+                    # check if decode utf-8
+                    html = html.decode("utf-8", errors="ignore")
+                    articles[url] = {"text": html}
+                else:
+                    article_text = extract(
+                        html,
+                        include_tables=False,
+                        include_comments=False,
+                        output_format="text",
+                    )
+                    if article_text is not None and len(article_text) > self.min_char_count:
+                        articles[url] = {"text": article_text}
+            except Exception as e:
+                urls_invalid.append(url)
+                print(f"Error processing {url}: {e}")
+            
+        return articles, urls_invalid
 
-        return articles
-
-    def urls_to_snippets(self, urls: List[str]) -> Dict:
+    def urls_to_snippets(self, urls: List[str]):
         """
         Convert a list of URLs to snippets.
 
@@ -243,11 +269,11 @@ class WebPageProcessor:
             urls: List of URLs to be processed.
 
         Returns:
-            A dictionary with URLs as keys and their respective snippets as values.
+            - A dictionary with URLs as keys and their respective snippets as values.
+            - A list of invalid URLs.
         """
-        articles = self.urls_to_articles(urls)
-        for u in articles:
-            articles[u]["snippets"] = self.text_splitter.split_text(articles[u]["text"])
-
-        return articles
+        articles, urls_invalid = self.urls_to_articles(urls)
+        for url in articles:
+            articles[url]["snippets"] = self.text_splitter.split_text(articles[url]["text"])
+        return articles, urls_invalid
 
