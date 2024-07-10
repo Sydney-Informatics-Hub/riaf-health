@@ -350,9 +350,16 @@ class RAGscholar:
             
                         "Instructions:\n"
                         "Do not repeat or rephrase the questions and only provide concise answers.\n"
-                        "Provide missing information in one sentence per line.\n
-                        "Start each missing info with 'MissingInfo:' and using '[X]' as blank.\n"
-                        "Start each web query with 'WebSearch_String:'\n"
+                        "Provide missing information in one sentence per line.\n"
+
+                        "Output format:\n"
+                        "Start each missing info with '- MissingInfo:' and using '[X]' as blank.\n"
+                        "Start each web query with '- WebSearch_String:'\n"
+                        "Example:\n"
+                        "- MissingInfo: The commercial value of this technology is [X] billion dollars.\n"
+                        "- WebSearch_String: Commercial value of technology in healthcare sector.\n"
+
+                        "Do not use any special characters in or markdown formatting.\n"
                         )
         
         content_missing, sources = self.query_chatengine(prompt_text)
