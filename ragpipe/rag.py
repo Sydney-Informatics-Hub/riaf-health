@@ -13,6 +13,11 @@ from llama_index.core.chat_engine import CondensePlusContextChatEngine
 from llama_index.core.memory import ChatMemoryBuffer
 from docxtpl import DocxTemplate
 from llama_index.llms.openai import OpenAI
+# Imports for Langfuse tracing and eval
+from llama_index.core import Settings
+from llama_index.core.callbacks import CallbackManager
+from langfuse.llama_index import LlamaIndexCallbackHandler
+from langfuse.decorators import langfuse_context, observe
 
 # local package imports
 from utils.pubprocess import publications_to_markdown, clean_publications
@@ -94,6 +99,11 @@ class RAGscholar:
 
         load_api_key(toml_file_path='secrets.toml')
         self.llm_service = os.getenv("OPENAI_API_TYPE")
+
+        # Check for Langfuse keys
+        if 'LANGFUSE_SECRET_KEY' not in os.environ or 'LANGFUSE_PUBLIC_KEY' not in os.environ:
+            logging.error("LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY environment variables must be set.")
+            raise ValueError("LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY environment variables must be set.")
 
         if load_index_from_storage:
             self.index = load_index(path_index)
@@ -222,6 +232,7 @@ class RAGscholar:
         system_prompt = system_prompt.replace("LANGUAGE_STYLE", self.language_style)
         return system_prompt
 
+    @observe()
     def prompt_pipeline(self, 
                         list_prompt_filenames = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md'],
                         list_max_word = [250, 300, 500, 300],
@@ -237,6 +248,8 @@ class RAGscholar:
 
         :return: list_questions, list_answers, list_sources
         """
+        langfuse_handler = langfuse_context.get_current_llama_index_handler()
+        Settings.callback_manager = CallbackManager([langfuse_handler])
         self.list_answers = []
         self.list_sources = []
         self.list_questions = []
@@ -337,7 +350,8 @@ class RAGscholar:
             
                         "Instructions:\n"
                         "Do not repeat or rephrase the questions and only provide concise answers.\n"
-                        "Provide missing information in one sentence per line, starting with 'MissingInfo:' and using '[X]' as blank.\n"
+                        "Provide missing information in one sentence per line.\n
+                        "Start each missing info with 'MissingInfo:' and using '[X]' as blank.\n"
                         "Start each web query with 'WebSearch_String:'\n"
                         )
         
@@ -348,8 +362,10 @@ class RAGscholar:
         missing_info = []
         web_search_queries = []
         for line in content_missing.splitlines():
+            line = line.lstrip()
             if line.startswith("MissingInfo:") or line.startswith("- MissingInfo:"):
                 missing_info.append(line)
+    
             elif line.startswith("WebSearch_String:") or line.startswith("- WebSearch_String:"):
                 web_search_queries.append(line)
 
@@ -455,6 +471,9 @@ class RAGscholar:
         if len(self.context.split()) > max_tokens_context:
             logging.info("Token limit exceeded. Context is too long. Context is truncated.")
             self.context = " ".join(self.context.split()[:max_tokens_context])
+        
+        # flush langfuse handler
+        langfuse_context.flush()
 
     
 
