@@ -70,6 +70,9 @@ class ScholarAI:
                  delete_pdfs = False,
                  keywords = []):
         self.topic = topic
+        # check if authors is a list
+        if not isinstance(authors, list):
+            authors = [authors]
         self.authors = authors
         self.year_start = year_start
         self.year_end = year_end
@@ -304,6 +307,8 @@ class ScholarAI:
                 articles_content = []
             if len(articles_content) > 0:
                 text = articles_content[0]
+                # wait 0.35 seconds to avoid rate limit
+                time.sleep(0.35)
                 return text 
 
         if file_path:
