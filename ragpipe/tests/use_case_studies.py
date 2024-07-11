@@ -17,8 +17,17 @@ python tests/use_case_studies.py run1
 """
 
 from rag import RAGscholar
+from utils.envloader import load_api_key
 import time
 import os,sys
+# Imports for Langfuse tracing and eval
+from llama_index.core import Settings
+from llama_index.core.callbacks import CallbackManager
+from langfuse.llama_index import LlamaIndexCallbackHandler
+#from langfuse.decorators import langfuse_context, observe
+
+ENABLE_LANGFUSE_CALLBACKS = True
+
 
 
 def test_RAGscholar_run1():
@@ -97,8 +106,8 @@ def test_RAGscholar_run3():
                     fname_report_template = 'Report.md',
                     outpath = '../../results/',
                     path_index = '../../index_store',
-                    path_documents = '../test_data/Ice_docs')
-    query_author="Steph Kershaw" #"Cath Chapman" #Steph Kershaw
+                    path_documents = None) #'../test_data/Ice_docs')
+    query_author="Cath Chapman, Steph Kershaw" #"Cath Chapman" #Steph Kershaw
     query_topic="Online resources to reduce the impact of crystal methamphetamine harms in the community"
     keywords = "methamphetamine, ice"
     research_period_start = 2017
@@ -120,9 +129,20 @@ def test_RAGscholar_run3():
     # typical time with Azure OpenAI API call: 103.24 seconds
 
 if __name__ == '__main__':
+
+    if ENABLE_LANGFUSE_CALLBACKS:
+        load_api_key(toml_file_path='secrets.toml')
+        langfuse_callback_handler = LlamaIndexCallbackHandler(
+        secret_key=os.getenv('LANGFUSE_SECRET_KEY'),
+        public_key=os.getenv('LANGFUSE_PUBLIC_KEY'),
+        host="https://cloud.langfuse.com"
+        )
+        Settings.callback_manager = CallbackManager([langfuse_callback_handler]) 
     if 'run1' in sys.argv:
         test_RAGscholar_run1()
     elif 'run2' in sys.argv:
         test_RAGscholar_run2()
     elif 'run3' in sys.argv:
         test_RAGscholar_run3()
+    if ENABLE_LANGFUSE_CALLBACKS:
+        langfuse_callback_handler.flush()
