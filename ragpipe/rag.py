@@ -29,6 +29,7 @@ from retriever.bingsearch import (
     get_urls_from_bing, 
     get_titles_from_bing,
     get_snippets_from_bing)
+from retriever.bingsearch import BingSearch
 from retriever.webcontent import web2docs_async, web2docs_simple
 from retriever.directoryreader import MyDirectoryReader
 from queryengine.queryprocess import QueryEngine
@@ -232,7 +233,7 @@ class RAGscholar:
         system_prompt = system_prompt.replace("LANGUAGE_STYLE", self.language_style)
         return system_prompt
 
-    @observe()
+
     def prompt_pipeline(self, 
                         list_prompt_filenames = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md'],
                         list_max_word = [250, 300, 500, 300],
@@ -248,8 +249,6 @@ class RAGscholar:
 
         :return: list_questions, list_answers, list_sources
         """
-        langfuse_handler = langfuse_context.get_current_llama_index_handler()
-        Settings.callback_manager = CallbackManager([langfuse_handler])
         self.list_answers = []
         self.list_sources = []
         self.list_questions = []
@@ -313,6 +312,7 @@ class RAGscholar:
         8. Answer missing questions by querying database
         9. Add missing info to self.context
         """
+
         # Step 1
         prompt_text = ("Analyse the problem and context for the following topic:\n"
                         f"{self.research_topic}\n\n"
@@ -341,7 +341,7 @@ class RAGscholar:
 
         # Step 4:  Extract missing information and generate web search queries
         prompt_text = ("Based on the answers above, identify missing information and quantitative data statements to back up the answers.\n"
-                        "Then formulate up to 20 short Google search queries that will search for this missing information and data.\n"
+                        "Then formulate up to 10 short Google search queries that will search for this missing information and data.\n"
                         "What do you type in the search box?\n\n"
 
                         "Example missing information statements: \n"
@@ -377,13 +377,25 @@ class RAGscholar:
                 web_search_queries.append(line)
 
         # Step 5: run web search queries for missing information
-        web_search_results = []
         webcontext = []
         #create missing information index
         for query in web_search_queries:
             # Todo: replace with retriever.bingsearch.BingSearch (snippets created from web page content)
             logging.info(f"Running web search query: {query}")
             print(f"Running web search query: {query}")
+            bing = BingSearch()
+            bing_results, missing_results = bing.search_and_retrieve(query)
+            webdocs, documents_missing = bing.web2docs(bing_results)
+            webcontext.extend(webdocs)
+            logging.info(f"Added {len(webdocs)} websnippets to context documents.")
+            if len(missing_results) > 0:
+                self.documents_missing.extend(missing_results)
+                logging.info(f"Web content missing for {len(missing_results)} sources.")
+            
+
+
+
+            """ old bing retrieval method
             query = query.replace("WebSearch_String:", "").strip()
             bing_results = bing_custom_search(query, count=2)
             webcontext = []
@@ -393,11 +405,12 @@ class RAGscholar:
                 urls = get_urls_from_bing(bing_results)
                 titles = get_titles_from_bing(bing_results)
                 snippets = get_snippets_from_bing(bing_results)
-                webcontent, documents_missing = web2docs_async(urls, titles)
-                if len(webcontent) > 0:
-                    webcontext += webcontent
+                #webdocs, documents_missing = web2docs_async(urls, titles)
+                if len(webdocs) > 0:
+                    webcontext += webdocs
                 if len(documents_missing) > 0:
-                    logging.info(f"Web content missing for {len(documents_missing)} sources.")
+                    # Add smippet to documents_missing (make this deault behaviour in web2docs_async)
+                    #logging.info(f"Web content missing for {len(documents_missing)} sources.")
                     self.documents_missing.extend(documents_missing)
                     # add web snippets to documents instead of full content
                     urls_missing = [doc['url'] for doc in documents_missing]
@@ -413,6 +426,7 @@ class RAGscholar:
                     logging.info(f"Added {len(snippets_missing)} snippets to web context.")
             else:
                 logging.info("No web search results found.")
+            """
 
         # Step 7. Generate index store and save content and metadata in vector database
         if len(webcontext) > 0:
@@ -479,13 +493,9 @@ class RAGscholar:
             logging.info("Token limit exceeded. Context is too long. Context is truncated.")
             self.context = " ".join(self.context.split()[:max_tokens_context])
         
-        # flush langfuse handler
-        langfuse_context.flush()
-
-    
 
     def generate_case_study(self, process_sources = False, make_docx = True):
-        
+
         with open(self.fname_report_template, "r") as file:
             report = file.read()
         #report = json.dumps(report_text, indent=2)
@@ -627,7 +637,7 @@ class RAGscholar:
                 if "," in self.author:
                     authors = self.author.split(",")
                 else:
-                    author = self.author
+                    authors = self.author
             # convert keywords to list
             if isinstance(self.keywords, str):
                 keywords = self.keywords.split(",")
@@ -681,6 +691,20 @@ class RAGscholar:
         # Search web for content related to research topic
         print("Searching web for content ...")
         logging.info("Searching web for content ...")
+        bing = BingSearch(k=5, year_start = self.impact_start, year_end= self.impact_end)
+        bing_results, missing_results = bing.search_and_retrieve(self.research_topic)
+        webdocs, documents_missing = bing.web2docs(bing_results)
+        if len(self.documents) > 0:
+            self.documents = self.documents + webdocs
+            logging.info(f"Added {len(webdocs)} websnippets to documents.")
+        else:
+            self.documents = webdocs
+        if len(documents_missing) > 0:
+            # add list of a urls and titles to missing documents
+            self.documents_missing.extend(documents_missing)
+            logging.info(f"Web content missing for {len(documents_missing)} sources.")
+
+        """ old bing retrieval method
         bing_results = bing_custom_search(self.research_topic, 
                                           count=3, 
                                           year_start = self.impact_start, 
@@ -710,6 +734,7 @@ class RAGscholar:
                 metadata = [{'href': url, 'title': title} for url, title in zip(urls_missing, titles_missing)]
                 documents_web = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(snippets_missing, urls_missing, metadata)]
                 self.documents = self.documents + documents_web
+            """
 
         # generate index store and save index in self.path_index
         logging.info("Generating index database ...")
