@@ -3,6 +3,10 @@ import subprocess
 import sys
 import os
 import time
+import logging
+from io import StringIO
+import threading
+from rag import RAGscholar
 
 class StreamToLogger:
     def __init__(self):
