@@ -841,3 +841,45 @@ class RAGscholar:
 
                 print("Fully Done. Results in "+ self.outpath)
                 logging.info("Fully Done.")
+def main():
+    import argparse
+    import time
+
+    parser = argparse.ArgumentParser(description="Run RAGscholar for generating impact assessment studies")
+    parser.add_argument("--query_author", type=str, default="Anthony Weiss", help="Author name to search for")
+    parser.add_argument("--query_topic", type=str, default="Elastagen", help="Topic for Use-case Study")
+    parser.add_argument("--keywords", type=str, default="elastin, tissue engineering, elastagen", help="Keywords for query (comma-separated)")
+    parser.add_argument("--research_period_start", type=int, default=2013, help="Research period start (year)")
+    parser.add_argument("--research_period_end", type=int, default=2023, help="Research period end (year)")
+    parser.add_argument("--impact_period_start", type=int, default=2013, help="Impact period start (year)")
+    parser.add_argument("--impact_period_end", type=int, default=2023, help="Impact period end (year)")
+    parser.add_argument("--organisation", type=str, default="University of Sydney", help="Organisation")
+    parser.add_argument("--language_style", type=str, default="analytical", choices=['analytical', 'journalistic', 'academic', 'legal', 'medical'], help="Language style for report")
+    parser.add_argument("--path_documents", type=str, default=None, help="Path to directory with documents")
+
+    args = parser.parse_args()
+
+    time_now = time.time()
+    rag = RAGscholar(path_templates='./templates/',
+                    fname_system_prompt='Prompt_context.md',
+                    fname_report_template='Report.md',
+                    outpath='../../results/',
+                    path_index='../../index_store',
+                    path_documents=args.path_documents,
+                    language_style=args.language_style,
+                    load_index_from_storage=False)
+
+    rag.run(query_topic=args.query_topic,
+            query_author=args.query_author,
+            keywords=args.keywords,
+            organisation=args.organisation,
+            research_start=args.research_period_start,
+            research_end=args.research_period_end,
+            impact_start=args.impact_period_start,
+            impact_end=args.impact_period_end,
+            scholarai_delete_pdfs=False
+            )
+    print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
+
+if __name__ == '__main__':
+    main()
