@@ -869,8 +869,8 @@ def main():
                     language_style=args.language_style,
                     load_index_from_storage=False)
 
-    rag.run(query_topic=args.query_topic,
-            query_author=args.query_author,
+    rag.run(research_topic=args.query_topic,
+            author=args.query_author,
             keywords=args.keywords,
             organisation=args.organisation,
             research_start=args.research_period_start,
