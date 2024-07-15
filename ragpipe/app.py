@@ -1,11 +1,8 @@
-import streamlit as st  
-from rag import RAGscholar
+import streamlit as st
+import subprocess
 import sys
-import threading
-from io import StringIO
+import os
 import time
-import logging
-from io import StringIO
 
 class StreamToLogger:
     def __init__(self):
