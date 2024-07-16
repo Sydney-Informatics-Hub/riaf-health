@@ -56,13 +56,14 @@ def main():
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
 
         # Read and display the output line by line
-        output = ""
+        #output = ""
         while process.poll() is None:
             line = process.stdout.readline()
             if not line:
                 continue
-            output += line.strip()
-            output_area.text_area("Output", value=output, height=200)
+            #output += line.strip()
+            #output_area.text_area("Output", value=output, height=200)
+            output_area.text_area("Output", value=line.strip(), height=200)
         
 
         # Wait for the subprocess to finish
