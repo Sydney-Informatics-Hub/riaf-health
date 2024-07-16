@@ -92,12 +92,11 @@ def main():
             fname_report_template='Report.md',  
             outpath='../../results/',  
             path_index='../../index_store',   
-            path_documents=path_documents,  
-            path_openai_key='../../openai_sih_key.txt',  
-            language_style=language_style  
-        )  
+            path_documents=path_documents,   
+            language_style=language_style,
+            load_index_from_storage=False)   
 
-       
+
         thread =capture_output(
             rag.run(  
             query_topic,  
