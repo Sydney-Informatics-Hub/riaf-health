@@ -50,10 +50,9 @@ def main():
         ]
 
         # Create a placeholder for the spinner and output
-        spinner_placeholder = st.empty()
         output_area = st.empty()
 
-        with spinner_placeholder.spinner("Generating Use-case Study..."):
+        with st.spinner("Generating Use-case Study..."):
             # Run the subprocess and capture its output in real-time
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
 
@@ -79,9 +78,6 @@ def main():
 
             # Wait for the subprocess to finish
             process.wait()
-
-        # Clear the spinner after the process is complete
-        spinner_placeholder.empty()
 
         if process.returncode == 0:
             st.success('Use-case study generated successfully.')
