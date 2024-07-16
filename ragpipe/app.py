@@ -30,7 +30,6 @@ def main():
 
     # Button to run the RAGscholar process
     if st.button('Generate Use-case Study'):
-        st.title("Generating Use-case Study")
 
         # Prepare the command to run rag.py as a subprocess
         cmd = [
@@ -53,9 +52,9 @@ def main():
         spinner_container = st.empty()
         output_container = st.container()
 
-        with spinner_container, st.spinner("Generating Use-case Study..."):
+        with spinner_container, st.spinner("### Generating Use-case Study"):
             with output_container:
-                st.markdown("### Process Info")
+                st.markdown("#### Process Information:")
                 output_area = st.empty()
 
             # Run the subprocess and capture its output in real-time
@@ -80,7 +79,7 @@ def main():
                 # Join the last lines and display them
                 output = "\n".join(last_lines)
                 with output_container:
-                    output_area.text_area("", value=output, height=300)
+                    output_area.text_area("Process Info", value=output, height=300, label_visibility = 'hidden')
 
             # Wait for the subprocess to finish
             process.wait()
