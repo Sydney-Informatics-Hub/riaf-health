@@ -73,7 +73,7 @@ def main():
             
             # Join the last lines and display them
             output = "\n".join(last_lines)
-            output_area.text_area("Output", value=output, height=200)
+            output_area.text_area("Process Info", value=output, height=300)
 
         # Wait for the subprocess to finish
         process.wait()
