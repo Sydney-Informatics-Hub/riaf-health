@@ -35,6 +35,7 @@ def main():
         # Prepare the command to run rag.py as a subprocess
         cmd = [
             sys.executable,
+            '-u',
             "rag.py",
             "--query_author", query_author,
             "--query_topic", query_topic,
@@ -56,17 +57,16 @@ def main():
 
         # Read and display the output line by line
         output = ""
-        for line in iter(process.stdout.readline, ''):
-            print(line, end='')  # Print to terminal
-            output += line
-            output_area.text_area("Output", value=output, height=400)
-            st.empty()  # Force Streamlit to update the display
+        while process.poll() is None:
+            line = process.stdout.readline()
+            if not line:
+                continue
+            output += line.strip()
+            output_area.text_area("Output", value=output, height=200)
+        
 
         # Wait for the subprocess to finish
         process.wait()
-
-        # Display final output
-        output_area.text_area("Output", value=output, height=400)
 
         if process.returncode == 0:
             st.success('Use-case study generated successfully.')
