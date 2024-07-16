@@ -49,10 +49,15 @@ def main():
             "--path_documents", path_documents
         ]
 
-        # Create a placeholder for the spinner and output
-        output_area = st.empty()
+        # Create containers for the spinner and output
+        spinner_container = st.empty()
+        output_container = st.container()
 
-        with st.spinner("Generating Use-case Study..."):
+        with spinner_container, st.spinner("Generating Use-case Study..."):
+            with output_container:
+                st.markdown("### Process Info")
+                output_area = st.empty()
+
             # Run the subprocess and capture its output in real-time
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
 
@@ -74,7 +79,8 @@ def main():
                 
                 # Join the last lines and display them
                 output = "\n".join(last_lines)
-                output_area.text_area("Process Info", value=output, height=300)
+                with output_container:
+                    output_area.text_area("", value=output, height=300)
 
             # Wait for the subprocess to finish
             process.wait()
