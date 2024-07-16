@@ -57,9 +57,10 @@ def main():
         # Read and display the output line by line
         output = ""
         for line in iter(process.stdout.readline, ''):
+            print(line, end='')  # Print to terminal
             output += line
             output_area.text_area("Output", value=output, height=400)
-            time.sleep(0.1)
+            st.empty()  # Force Streamlit to update the display
 
         # Wait for the subprocess to finish
         process.wait()
