@@ -49,34 +49,39 @@ def main():
             "--path_documents", path_documents
         ]
 
-        # Create an empty text area to display the output
+        # Create a placeholder for the spinner and output
+        spinner_placeholder = st.empty()
         output_area = st.empty()
 
-        # Run the subprocess and capture its output in real-time
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
+        with spinner_placeholder.spinner("Generating Use-case Study..."):
+            # Run the subprocess and capture its output in real-time
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
 
-        # Initialize a list to store the last 5 lines
-        last_lines = []
+            # Initialize a list to store the last 5 lines
+            last_lines = []
 
-        # Read and display the output line by line
-        while process.poll() is None:
-            line = process.stdout.readline()
-            if not line:
-                continue
-            
-            # Add the new line to the list
-            last_lines.append(line.strip())
-            
-            # Keep only the last 5 lines
-            if len(last_lines) > 5:
-                last_lines.pop(0)
-            
-            # Join the last lines and display them
-            output = "\n".join(last_lines)
-            output_area.text_area("Process Info", value=output, height=300)
+            # Read and display the output line by line
+            while process.poll() is None:
+                line = process.stdout.readline()
+                if not line:
+                    continue
+                
+                # Add the new line to the list
+                last_lines.append(line.strip())
+                
+                # Keep only the last 5 lines
+                if len(last_lines) > 5:
+                    last_lines.pop(0)
+                
+                # Join the last lines and display them
+                output = "\n".join(last_lines)
+                output_area.text_area("Process Info", value=output, height=300)
 
-        # Wait for the subprocess to finish
-        process.wait()
+            # Wait for the subprocess to finish
+            process.wait()
+
+        # Clear the spinner after the process is complete
+        spinner_placeholder.empty()
 
         if process.returncode == 0:
             st.success('Use-case study generated successfully.')
