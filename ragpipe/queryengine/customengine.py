@@ -7,11 +7,10 @@ from llama_index.llms.openai import OpenAI
 from llama_index.core.retrievers import RecursiveRetriever
 from llama_index.core.schema import IndexNode
 from llama_index.core.extractors import SummaryExtractor, QuestionsAnsweredExtractor
+from llama_index.memory import ChatMemoryBuffer
 
 def generate_chatengine_context(system_prompt, index, model_llm):
     # Condense Plus Context Chat Engine (WIP)
-    system_prompt = self.generate_system_prompt()
-
     memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
     chat_engine = index.as_chat_engine(
         chat_mode="context",
