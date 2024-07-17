@@ -4,6 +4,7 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.prompts import PromptTemplate
 from llama_index.core.node_parser import SimpleNodeParser
 from llama_index.core.response_synthesizers import get_response_synthesizer
+from llama_index.llms import OpenAI
 
 def get_custom_synthesizer():
     return get_response_synthesizer(
@@ -22,8 +23,10 @@ def test_custom_synthesizer():
     nodes = parser.get_nodes_from_documents(documents)
     index = VectorStoreIndex(nodes)
 
-    # Create a chat engine with the custom synthesizer
+    # Create a chat engine with the custom synthesizer and GPT-4 model
+    llm = OpenAI(model="gpt-4")
     chat_engine = index.as_chat_engine(
+        llm=llm,
         response_synthesizer=get_custom_synthesizer(),
         include_text=True,
         text_qa_template=PromptTemplate(
