@@ -57,7 +57,6 @@ def test_custom_synthesizer():
     llm = OpenAI(model="gpt-4")
     chat_engine = vector_index.as_chat_engine(
         llm=llm,
-        retriever=recursive_retriever,
         include_text=True,
         text_qa_template=PromptTemplate(
             "Context information is below.\n"
@@ -72,7 +71,8 @@ def test_custom_synthesizer():
         node_postprocessors=[
             lambda nodes: sorted(nodes, key=lambda x: x.score or 0, reverse=True)[:10]
         ],
-        structured_answer_filtering=True
+        structured_answer_filtering=True,
+        retriever=recursive_retriever
     )
 
     # return the response with inline citations, along with the references and snippets
