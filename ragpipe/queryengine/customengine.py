@@ -11,7 +11,7 @@ from llama_index.core.extractors import SummaryExtractor, QuestionsAnsweredExtra
 def test_custom_synthesizer():
     from utils.envloader import load_api_key
     load_api_key(toml_file_path='secrets.toml')
-    chunk_size=256
+    chunk_size=512
     
     # Load your documents and create the index
     documents = SimpleDirectoryReader('../test_data/documents_to_add').load_data()
