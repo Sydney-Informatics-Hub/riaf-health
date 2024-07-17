@@ -3,10 +3,11 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.prompts import PromptTemplate
 from llama_index.core.node_parser import SimpleNodeParser
-from llama_index.core.response_synthesizers import TreeSummarize
+from llama_index.core.response_synthesizers import get_response_synthesizer
 
 def get_custom_synthesizer():
-    return TreeSummarize(
+    return get_response_synthesizer(
+        response_mode="tree_summarize",
         verbose=True
     )
 
@@ -37,7 +38,8 @@ def test_custom_synthesizer():
         ),
         node_postprocessors=[
             lambda nodes: sorted(nodes, key=lambda x: x.score or 0, reverse=True)[:10]
-        ]
+        ],
+        structured_answer_filtering=True
     )
 
     # return the response with inline citations, along with the references and snippets
