@@ -65,7 +65,6 @@ def test_custom_synthesizer():
     chat_engine = vector_index.as_chat_engine(
         llm=llm,
         retriever=recursive_retriever,
-        response_synthesizer=get_custom_synthesizer(),
         include_text=True,
         text_qa_template=PromptTemplate(
             "Context information is below.\n"
