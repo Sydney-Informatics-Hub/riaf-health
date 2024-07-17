@@ -4,7 +4,7 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.prompts import PromptTemplate
 from llama_index.core.node_parser import SimpleNodeParser
 from llama_index.core.response_synthesizers import get_response_synthesizer
-from llama_index.llms import OpenAI
+from llama_index.llms.openai import OpenAI
 
 def get_custom_synthesizer():
     return get_response_synthesizer(
@@ -46,7 +46,7 @@ def test_custom_synthesizer():
     )
 
     # return the response with inline citations, along with the references and snippets
-    response = chat_engine.chat("What are the research priorities in health for Australia? Provide list in bullets with inline reference links and list of references at the end.")
+    response = chat_engine.chat("What are the research priorities in health for Australia? Provide list in bullets with inline reference to context and list of references at the end.")
     
     # Process the response to ensure inline references
     processed_response = response.response
