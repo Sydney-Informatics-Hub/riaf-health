@@ -3,17 +3,10 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.prompts import PromptTemplate
 from llama_index.core.node_parser import SimpleNodeParser
-from llama_index.core.response_synthesizers import get_response_synthesizer
 from llama_index.llms.openai import OpenAI
 from llama_index.core.retrievers import RecursiveRetriever
 from llama_index.core.schema import IndexNode
 from llama_index.core.extractors import SummaryExtractor, QuestionsAnsweredExtractor
-
-def get_custom_synthesizer():
-    return get_response_synthesizer(
-        response_mode="tree_summarize",
-        verbose=True
-    )
 
 def test_custom_synthesizer():
     from utils.envloader import load_api_key
