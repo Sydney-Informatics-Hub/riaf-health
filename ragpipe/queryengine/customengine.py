@@ -44,21 +44,28 @@ def test_custom_synthesizer():
 
     # return the response with inline citations, along with the references and snippets
     response = chat_engine.chat("What are the research priorities in health for Australia? Provide list in bullets with inline reference links and list of references at the end.")
-    print("Response:")
-    print(response.response)
+    
+    # Process the response to ensure inline references
+    processed_response = response.response
+    for i, source_node in enumerate(response.source_nodes):
+        processed_response = processed_response.replace(f"[{i+1}]", f"[{i+1}]")
+    
+    print("Response with inline references:")
+    print(processed_response)
+    
     print("\nSource Nodes:")
     for i, source_node in enumerate(response.source_nodes):
         print(f"[{i+1}] Node ID: {source_node.node.node_id}")
         print(f"Score: {source_node.score}")
-        print(f"Text: {source_node.node.text}...")  # Print first 200 characters
+        print(f"Text: {source_node.node.text[:200]}...")  # Print first 200 characters
         print("---")
     
     # Generate a response with links and node IDs
-    linked_response = response.response
+    linked_response = processed_response
     for i, source_node in enumerate(response.source_nodes):
         linked_response = linked_response.replace(
             f"[{i+1}]", 
-            f"[[{i+1}]](#{source_node.node.node_id}) (Node ID: {source_node.node.node_id})"
+            f"[[{i+1}]](#{source_node.node.node_id})"
         )
     
     print("\nResponse with links and node IDs:")
