@@ -47,29 +47,32 @@ def test_custom_synthesizer():
     documents = SimpleDirectoryReader('../test_data/documents_to_add').load_data()
     index = VectorStoreIndex.from_documents(documents, chunk_size=chunk_size)
 
+    # Generate system prompt and create chat engine
+    system_prompt = "You are a helpful AI assistant. Always provide source references for your answers."
+    chat_engine = generate_chatengine_context(system_prompt, index, "gpt-3.5-turbo")
 
-    # Add here system prompt generate chatenegine and query chatengine
-
+    # Query the chat engine
+    query = "What are the main topics covered in the documents?"
+    content, sources = query_chatengine(chat_engine, query)
 
     print("Response with inline references:")
-    print(response.response)
+    print(content)
     
     print("\nSource Nodes:")
-    for i, source_node in enumerate(response.source_nodes):
-        print(f"[{i+1}] Node ID: {source_node.node.node_id}")
-        print(f"Score: {source_node.score}")
-        print(f"Text: {source_node.node.text[:200]}...")  # Print first 200 characters
+    for i, source in enumerate(sources):
+        print(f"[{i+1}] File: {source.get('file_name', 'Unknown')}")
+        print(f"Text: {source.get('text', '')[:200]}...")  # Print first 200 characters
         print("---")
     
     # Generate a response with links and node IDs
-    linked_response = response.response
-    for i, source_node in enumerate(response.source_nodes):
+    linked_response = content
+    for i, source in enumerate(sources):
         linked_response = linked_response.replace(
             f"[{i+1}]", 
-            f"[[{i+1}]](#{source_node.node.node_id})"
+            f"[[{i+1}]](#{source.get('file_name', 'Unknown')})"
         )
     
-    print("\nResponse with links and node IDs:")
+    print("\nResponse with links and file names:")
     print(linked_response)
     
-    assert response is not None
+    assert content is not None and sources is not None
