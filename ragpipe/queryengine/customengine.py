@@ -3,7 +3,7 @@
 ToDo:
 - check Semantic Chunker: https://docs.llamaindex.ai/en/latest/examples/node_parsers/semantic_chunking/ 
 """
-
+import os
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.prompts import PromptTemplate
 from llama_index.core.node_parser import SimpleNodeParser
@@ -13,6 +13,12 @@ from llama_index.core.schema import IndexNode
 from llama_index.core.extractors import SummaryExtractor, QuestionsAnsweredExtractor
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core.response.pprint_utils import pprint_response
+# Imports for Langfuse tracing and eval
+from llama_index.core import Settings
+from llama_index.core.callbacks import CallbackManager
+from langfuse.llama_index import LlamaIndexCallbackHandler
+
+ENABLE_LANGFUSE_CALLBACKS = True
 
 def generate_chatengine_context(system_prompt, index, model_llm):
     # Condense Plus Context Chat Engine (WIP)
@@ -51,6 +57,16 @@ def query_chatengine(chat_engine, query):
 def test_custom_synthesizer():
     from utils.envloader import load_api_key
     load_api_key(toml_file_path='secrets.toml')
+
+    if ENABLE_LANGFUSE_CALLBACKS:
+        load_api_key(toml_file_path='secrets.toml')
+        langfuse_callback_handler = LlamaIndexCallbackHandler(
+        secret_key=os.getenv('LANGFUSE_SECRET_KEY'),
+        public_key=os.getenv('LANGFUSE_PUBLIC_KEY'),
+        host="https://cloud.langfuse.com"
+        )
+        Settings.callback_manager = CallbackManager([langfuse_callback_handler]) 
+
     chunk_size=512
     
     # Load your documents and create the index
@@ -62,19 +78,11 @@ def test_custom_synthesizer():
     chat_engine = generate_chatengine_context(system_prompt, index, "gpt-4o")
 
     # Query the chat engine
-    query = ("What are the main research priorities in NSW and Australia? Back up each statement with a reference to the document in the format:\n"
-             "{'Reference': ..., 'file_name': ..., 'reference_snippet': ...}\n"
-             "The output should be in mardown format.\n")
-    # query = ("What are the main research priorities in NSW and Australia? Back up each point with a reference to the document.\n"
-    #          "The output should include the node id and reference snippet and be in the format:\n"
-    #          "Research priorities in NSW and Australia:\n"
-    #          "- text ..... [1]\n"
-    #          "- text ..... [2]\n"
-    #          "...\n\n"
-    #          "References:\n"
-    #          "1. Title: ..., metadata: ... , id_: .., reference-snippet: ...:\n"
-    #          "2. Title: ..., metadata: ... , id_: .., reference-snippet: ...:\n"
-    #          "...\n")
+    query = ("What are the main research priorities in NSW and Australia? Back up statements with a reference to the document in the format:\n"
+             "text ... [Reference: {'source': ..., 'n0de_id': ..., 'reference_snippet': ...}]\n"
+             "The reference should include relevant metadata and the node_id: X, where X is the number of the node you used for that information.\n"
+             "The output must be in markdown format.\n")
+    # --> node_id is not referenceing the actual node but just a number of the reference
              
 
     content, sources = query_chatengine(chat_engine, query)
@@ -98,5 +106,8 @@ def test_custom_synthesizer():
     
     print("\nResponse with links and file names:")
     print(linked_response)
+
+    if ENABLE_LANGFUSE_CALLBACKS:
+        langfuse_callback_handler.flush()
     
     assert content is not None and sources is not None
