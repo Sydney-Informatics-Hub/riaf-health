@@ -54,3 +54,4 @@ ragpipe/secrets.toml
 */assertion.log
 *results/
 ragpipe/pdfs
+.aider*
