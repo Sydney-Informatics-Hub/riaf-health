@@ -22,7 +22,6 @@ from langfuse.decorators import langfuse_context, observe
 # local package imports
 from utils.pubprocess import publications_to_markdown, clean_publications
 from utils.envloader import load_api_key
-from retriever.semanticscholar import read_semanticscholar 
 from retriever.scholarai import ScholarAI
 from retriever.bingsearch import (
     bing_custom_search, 
