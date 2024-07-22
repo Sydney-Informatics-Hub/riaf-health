@@ -2,7 +2,7 @@
 Scholar AI class to retrieve papers from authors and topic and filter by publication period and topic.
 
 This class add the following functionality to Semantic Scholar API:
-- Filter papers by topic using LLM (GPT-3.5-turbo)
+- Filter papers by topic using LLM (GPT)
 - custom filter and ranking of papers by publication period and citations
 - Download open-access PDFs and retrieve full text from papers
 - Includes multi archives search (ArXiv and Pubmed Central) and download for full papers access
@@ -48,6 +48,7 @@ from retriever.biomed import biomedAI
 # see secrets.toml for Azure endpoints and version
 AZURE_ENGINE = "gpt-35-turbo"
 
+MODEL_LLM = "gpt-4o-mini"  #"gpt-3.5-turbo" 
 
 class ScholarAI:
     """
@@ -91,7 +92,7 @@ class ScholarAI:
         if self.llmservice == 'openai':
             llm = OpenAI(
                 temperature=0,
-                model='gpt-3.5-turbo',
+                model=MODEL_LLM,
                 max_tokens=1)
         elif self.llmservice == 'azure':
             llm = AzureOpenAI(
@@ -120,7 +121,7 @@ class ScholarAI:
 
     def llmfilter(self, title, abstract):
         """
-        LLM (GPT-3.5-turbo) filter to check if paper is related to topic.
+        LLM (GPT mini) filter to check if paper is related to topic.
 
         :param title: str, paper title
         :param abstract: str, paper abstract
