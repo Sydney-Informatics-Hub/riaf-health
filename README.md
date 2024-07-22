@@ -18,16 +18,16 @@ git clone git@github.sydney.edu.au:informatics/PIPE-4668-RIAF_NSWHEALTH.git
 cd PIPE-4668-RIAF_NSWHEALTH/ragpipe
 ```
 
-2) To install dependencies, ensure you have Mamba or Conda installed. Then install dependencies in the following order:
+2) To install dependencies, ensure you have Mamba or Conda installed. Then install dependencies with the following command:
 
 ```shell
 
-conda create -n riaf python=3.11
+conda env update --file environment.yaml 
 conda activate riaf
-pip install semanticscholar arxiv==1.4.8 llama-index==0.10.27 pypdf2==3.0.1 pypdf==4.1.0 llama-index-readers-web==0.1.8 llama-index-readers-semanticscholar==0.1.3 llama-index-embeddings-azure-openai==0.1.6 docxtpl==0.16.8 trafilatura==1.10.0
-docx2txt biopython==1.84
-
 ```
+
+If the installation fails, please try to install the dependencies with environment_all.yaml or use the `--prune` flag to remove unused packages.
+
 
 3) Set up OpenAI API and the Bing search API key. Create a file `secrets.toml` under the root directory (directory where you run the code from) and add the following content:
 
