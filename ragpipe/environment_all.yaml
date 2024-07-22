@@ -1,4 +1,4 @@
-name: fmh2
+name: riaf
 channels:
   - conda-forge
 dependencies:
