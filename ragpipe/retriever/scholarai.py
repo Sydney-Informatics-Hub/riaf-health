@@ -34,7 +34,7 @@ from semanticscholar import SemanticScholar
 import arxiv
 import shutil
 from llama_index.llms.openai import OpenAI
-# from llama_index.embeddings.azure_openai import AzureOpenAI
+from llama_index.embeddings.azure_openai import AzureOpenAI
 from llama_index.llms.azure_openai import AzureOpenAI
 from llama_index.core.llms import ChatMessage
 from llama_index.core.readers.base import BaseReader
@@ -97,21 +97,11 @@ class ScholarAI:
         elif self.llmservice == 'azure':
             llm = AzureOpenAI(
                 engine=AZURE_ENGINE,
-                model='gpt-3.5-turbo',
+                model=AZURE_ENGINE,
                 temperature=0,
                 azure_endpoint=os.environ['AZURE_API_BASE'],
                 api_key=os.environ["OPENAI_API_KEY"],
                 api_version=os.environ['AZURE_API_VERSION'],
-            )
-        elif self.llmservice == 'techlab':
-            llm = AzureOpenAI(
-                engine=techlab_deployment,
-                model='gpt-3.5-turbo', 
-                temperature=0,
-                azure_endpoint=techlab_endpoint,
-                api_key=os.environ["OPENAI_API_KEY"],
-                api_version=techlab_api_version,
-                api_base=os.getenv("OPENAI_API_BASE", ""),
             )
         else:
             logging.error(f"LLM service {self.llmservice} not supported")
