@@ -39,7 +39,7 @@ from indexengine.process import (
     load_index
     )
 from agentreviewer.agentreviewer import AgentReviewer
-from utils.mdconvert import markdown_to_question
+#from utils.mdconvert import markdown_to_question
 
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
@@ -47,7 +47,7 @@ _list_max_word =  [250, 300, 500, 300]
 _context_window = 12000
 _num_output = 1000
 _scholar_limit = 50
-_model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
+_model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 _use_scholarai = True # use scholarai script to retrieve documents. Much more accurate but slower than semanticscholar
