@@ -22,4 +22,6 @@ Period when the underpinning research was undertaken: RESEARCH_PERIOD
 Details of staff conducting the underpinning research: AUTHOR
 Period when the impact occurred: IMPACT_PERIOD
 
+Do not repeat the program information in the case study.
+
 Your task is to assist in writing an impact assessment report on RESEARCH_TOPIC. 
