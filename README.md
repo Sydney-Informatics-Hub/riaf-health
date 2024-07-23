@@ -1,4 +1,5 @@
 # AI Generator for Research Impact Assessment Studies
+<img width="1003" alt="Architecture" src="https://media.github.sydney.edu.au/user/291/files/a12249da-0c72-4f9d-a8a5-1e9677a6de18">
 
 ## Introduction
 
@@ -47,6 +48,31 @@ BING_SEARCH_API_KEY="your_bing_api_key"
 ```
 
 ## How-to and examples
+
+Add your `azure_sih_bing_key.txt` to the top level directory.
+Add your `openai_sih_key.txt` to the top level directory.
+
+### Quick start
+
+Modify `ragpipe/tests/use_case_studies.py` then launch the script.
+
+```shell
+cd ragpipe
+python tests/use_case_studies.py run1
+```
+
+### Run from Frontend APP
+
+Launch the frontend app
+
+```shell
+cd ragpipe
+streamlit run app.py
+```
+
+Modify options and execute. Check `app.py` for any hardcoded configuration options.
+
+### All options
 
 To generate a research report run
 

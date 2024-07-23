@@ -6,7 +6,7 @@ import logging
 
 from llama_index.core import load_index_from_storage
 from llama_index.core.retrievers import VectorIndexRetriever
-from llama_index.core import PromptTemplate, Document
+from llama_index.core import PromptTemplate
 from llama_index.core.llms import ChatMessage, MessageRole
 from llama_index.core.chat_engine import CondenseQuestionChatEngine
 from llama_index.core.chat_engine import CondensePlusContextChatEngine
@@ -39,7 +39,7 @@ from indexengine.process import (
     load_index
     )
 from agentreviewer.agentreviewer import AgentReviewer
-#from utils.mdconvert import convert_answers_to_docx
+from utils.mdconvert import markdown_to_question
 
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
@@ -47,7 +47,7 @@ _list_max_word =  [250, 300, 500, 300]
 _context_window = 12000
 _num_output = 1000
 _scholar_limit = 50
-_model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-32k"
+_model_llm = "gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
 # Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
 _use_scholarai = True # use scholarai script to retrieve documents. Much more accurate but slower than semanticscholar
@@ -75,8 +75,7 @@ class RAGscholar:
                 path_index, 
                 path_documents = None,
                 language_style = "analytical",
-                load_index_from_storage = False,
-                output_stream=None):
+                load_index_from_storage = False):
         
         self.path_index = path_index
         self.path_templates = path_templates
@@ -713,7 +712,6 @@ class RAGscholar:
             logging.info(f"Retrieving web content for {len(bing_results)} sources...")
             urls = get_urls_from_bing(bing_results)
             titles = get_titles_from_bing(bing_results)
-            snippets = get_snippets_from_bing(bing_results)
             documents_web, documents_missing = web2docs_async(urls, titles)
             if len(self.documents) > 0:
                 self.documents = self.documents + documents_web
@@ -804,30 +802,31 @@ class RAGscholar:
         if benchmark_review:
             agent_reviewer = AgentReviewer(llm=None,LLMSERVICE='openai')
             # Set gold standard response paths. These are broken up by indivdual question.
-            # check that the path ../use_case_studies/'+fname_out+'/ exists, if not stop the review
-            if not os.path.exists('../use_case_studies/'+fname_out+'/'):
-                print("No benchmark review possible. No matching case study folder found.")
-                logging.info("No benchmark review possible. No matching case study folder found.")
-            else:
-                print("Benchmark review ...")
-                logging.info("Benchmark review ...")
-                example_repsonse_file_q1 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q1.md'
-                example_repsonse_file_q2 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q2.md'
-                example_repsonse_file_q3 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q3.md'
-                example_repsonse_file_q4 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q4.md'
+            example_repsonse_file_q1 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q1.md'
+            example_repsonse_file_q2 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q2.md'
+            example_repsonse_file_q3 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q3.md'
+            example_repsonse_file_q4 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q4.md'
 
+            question1 = "What is the problem this research seeks to address and why is it significant?"
+            question2 = "What are the research outputs of this study?"
+            question3 = "What impacts has this research delivered to date?"
+            question4 = "What impact from this research is expected in the future?"
 
-                question1 = "What is the problem this research seeks to address and why is it significant?"
-                question2 = "What are the research outputs of this study?"
-                question3 = "What impacts has this research delivered to date?"
-                question4 = "What impact from this research is expected in the future?"
+            questions_and_files = [  
+                (question1, example_repsonse_file_q1, self.list_answers[0]),  
+                (question2, example_repsonse_file_q2, self.list_answers[1]),  
+                (question3, example_repsonse_file_q3, self.list_answers[2]),  
+                (question4, example_repsonse_file_q4, self.list_answers[3])   
+            ]  
 
-                questions_and_files = [  
-                    (question1, example_repsonse_file_q1, self.list_answers[0]),  
-                    (question2, example_repsonse_file_q2, self.list_answers[1]),  
-                    (question3, example_repsonse_file_q3, self.list_answers[2]),  
-                    (question4, example_repsonse_file_q4, self.list_answers[3])   
-                ]  
+            logging.info("Reviewing.")
+            for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
+                with open(example_response_file, 'r', encoding='utf-8') as file:  
+                    example_response = file.readline().strip()  
+                response = agent_reviewer.review_response(question_text, response_text, example_response)  
+                print(f"Q{i}", response)  
+                logging.info(f"Q{i}")
+                logging.info(response) 
 
                 logging.info("Reviewing.")
                 for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
