@@ -4,6 +4,7 @@ import sys
 import os
 import time
 
+
 def main():
     st.title(r"$\textsf{\tiny Research Impact Assessment Framework}$" + "\n" + r"Use-Case-Study Generator")
     
@@ -52,11 +53,16 @@ def main():
         spinner_container = st.empty()
         output_container = st.container()
 
+        output_area = st.empty()
+
+        def update_text(output):
+            # callback function to avoid duplication of widget
+            output_area.text_area("Process Info", value=output, height=300, label_visibility = 'hidden')
+
         with spinner_container, st.spinner("### Generating Use-case Study"):
             with output_container:
                 st.markdown("#### Process Information:")
-                output_area = st.empty()
-
+                
             # Run the subprocess and capture its output in real-time
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
 
@@ -79,7 +85,7 @@ def main():
                 # Join the last lines and display them
                 output = "\n".join(last_lines)
                 with output_container:
-                    output_area.text_area("Process Info", value=output, height=300, label_visibility = 'hidden')
+                    update_text(output)
 
             # Wait for the subprocess to finish
             process.wait()
