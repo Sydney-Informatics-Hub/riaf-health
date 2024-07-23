@@ -261,7 +261,7 @@ class RAGscholar:
                 prompt_text = file.read()
             self.list_questions.append(prompt_text.splitlines()[0])
             if include_context_text and (self.context != ''):
-                prompt_text = prompt_text + "\n\n Additional context info:\n" + self.context
+                prompt_text = prompt_text + "\n\n **Additional context info**:\n" + self.context  
             # query chat engine
             logging.info(f"Querying chat engine with prompt {i} ...")
             content, sources = self.query_chatengine(prompt_text)
@@ -271,7 +271,7 @@ class RAGscholar:
             #    logging.info("Word count exceeds maximum word count. Content is run again though the model.")
             #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
             if review:
-                review_txt = review_agent.run(content, i)
+                review_txt = review_agent.run(content, i, self.list_answers)
                 logging.info(f"Review response {i}: {review_txt}")
                 if review_txt is not None:
                     logging.info("Reviewing response ...")
@@ -280,9 +280,11 @@ class RAGscholar:
                                         + "Do not deviate from the original instructions for this question. \n"
                                         + "Stay close to original response and references, only improve the parts of response that need to be fixed. \n"
                                         + "If you can not find an improvement, keep the original response. \n"
+                                        + "You must replace the statements for which duplications have been found with other facts or context that has not been mentioned previously. \n"
                                         + "You must include all references and links to references. Update reference footnote numbers if necessary. \n\n"
                                         + "Review: \n"
                                         + f"{review_txt}")
+            
                     content, sources = self.query_chatengine(review_prompt)
                     logging.info(f"Response {i} after review: {content}")
                 else:

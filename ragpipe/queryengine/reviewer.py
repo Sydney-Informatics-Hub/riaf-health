@@ -27,7 +27,7 @@ class ReviewAgent:
             self.llm = OpenAI(
                 temperature=0,
                 model='gpt-4o',
-                max_tokens=300)
+                max_tokens=800)
         elif LLMSERVICE == 'azure':
             self.llm = AzureOpenAI(
                 engine=AZURE_ENGINE,
@@ -55,7 +55,7 @@ class ReviewAgent:
                 raise ValueError(f"Review file {filename} does not exist")
 
 
-    def run(self, content, question_number):
+    def run(self, content, question_number, response_history=[]):
         """
         LLM run to review a paper given a response and a question number
 
@@ -67,13 +67,28 @@ class ReviewAgent:
         self.system_prompt = ("You are an agent that acts as a reviewer. You will review the response from another LLM query. \n"
                             "Follow the review criteria and suggest specific points how to improve the response. \n"
                             "You do not need to address all review criteria, only suggest changes if they are necessary. \n"
-                            "Suggestions must be short and concise in bullet points.\n"
+                            "Suggestions must be short and concise.\n"
                             "Do not include a revised version in you response\n"
                             "Do NOT introduce any new statements or make up any facts that are not included in the original response.\n\n"
                             f"{review_criteria}")
+
         #self.system_prompt = json.dumps(review_criteria, indent=2)
         prompt = (f"Given the review criteria above, provide instructive and concise feedback how to improve the following response: \n"
                     + f"{content}")
+        
+        if len(response_history) > 0:
+            prompt = (f"{prompt} \n\n"
+                        + "**Duplications**: check that no statements are repeated from response history.\n"
+                        + "If you find any repeated statements, you must also return a list of duplications in your response.\n"
+                        + "Each point in this duplication list must include the text snippet of the statement that is duplicated.\n"
+                        + "Advise in your review response to not include these duplications.\n\n"
+                        + "Do not just refer to the 'response history', but provide specific feedback on the response.\n\n"
+                        + "Response History:\n"
+            )
+            for j in range(len(response_history)):
+                prompt = prompt + f"{response_history[j]} \n"
+            prompt = prompt + "----End of Response History----\n"
+
         messages = [
                 ChatMessage(role="system", content=self.system_prompt),
                 ChatMessage(role="user", content=prompt),
