@@ -27,7 +27,7 @@ class ReviewAgent:
             self.llm = OpenAI(
                 temperature=0,
                 model='gpt-4o',
-                max_tokens=600)
+                max_tokens=300)
         elif LLMSERVICE == 'azure':
             self.llm = AzureOpenAI(
                 engine=AZURE_ENGINE,
@@ -64,10 +64,12 @@ class ReviewAgent:
         """
         with open(self.filenames_review[question_number], "r") as file:
             review_criteria = file.read()
-        self.system_prompt = ("You are an LLM agent that acts as a reviewer. You will review the response from another LLM query. \n"
-                            "Follow the review criteria strictly and suggest changes to the text if necessary. \n"
+        self.system_prompt = ("You are an agent that acts as a reviewer. You will review the response from another LLM query. \n"
+                            "Follow the review criteria and suggest specific points how to improve the response. \n"
                             "You do not need to address all review criteria, only suggest changes if they are necessary. \n"
-                            "Suggestions must be short and concise. \n\n"
+                            "Suggestions must be short and concise in bullet points.\n"
+                            "Do not include a revised version in you response\n"
+                            "Do NOT introduce any new statements or make up any facts that are not included in the original response.\n\n"
                             f"{review_criteria}")
         #self.system_prompt = json.dumps(review_criteria, indent=2)
         prompt = (f"Given the review criteria above, provide instructive and concise feedback how to improve the following response: \n"
