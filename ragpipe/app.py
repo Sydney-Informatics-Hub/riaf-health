@@ -5,6 +5,27 @@ import os
 import time
 
 
+def st_redirect(src, dst):
+    placeholder = st.empty()
+    output_func = getattr(placeholder, dst)
+
+    with StringIO() as buffer:
+        old_write = src.write
+
+        def new_write(b):
+            if getattr(current_thread(), REPORT_CONTEXT_ATTR_NAME, None):
+                buffer.write(b + '')
+                output_func(buffer.getvalue() + '')
+            else:
+                old_write(b)
+
+        try:
+            src.write = new_write
+            yield
+        finally:
+            src.write = old_write
+
+
 def main():
     st.title(r"$\textsf{\tiny Research Impact Assessment Framework}$" + "\n" + r"Use-Case-Study Generator")
     
@@ -54,11 +75,13 @@ def main():
         output_container = st.container()
 
         output_area = st.empty()
+        output_area.text_area("Process Info", value="Initiating process engine...", height=400, label_visibility = 'hidden', key=f"text_0")
 
         def update_text(output):
-            # callback function to avoid duplication of widget
-            output_area.text_area("Process Info", value=output, height=300, label_visibility = 'hidden')
-
+            # callback function
+            output_area.text_area("Process Info", value=output, height=400, label_visibility = 'hidden', key = f"text_{time.time()}")
+            
+            
         with spinner_container, st.spinner("### Generating Use-case Study"):
             with output_container:
                 st.markdown("#### Process Information:")
@@ -78,8 +101,8 @@ def main():
                 # Add the new line to the list
                 last_lines.append(line.strip())
                 
-                # Keep only the last 5 lines
-                if len(last_lines) > 5:
+                # Keep only the last 4 lines
+                if len(last_lines) > 4:
                     last_lines.pop(0)
                 
                 # Join the last lines and display them
