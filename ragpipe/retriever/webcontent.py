@@ -210,7 +210,8 @@ class WebPageProcessor:
                     # Handle as HTML or other text-based formats
                     return res.content
         except httpx.HTTPError as exc:
-            print(f"Error while requesting {exc.request.url!r} - {exc!r}")
+            logging.error(f"Error while requesting {exc.request.url!r} - {exc!r}")
+            #print(f"Error while requesting {exc.request.url!r} - {exc!r}")
             return None
 
     def urls_to_articles(self, urls: List[str]):
