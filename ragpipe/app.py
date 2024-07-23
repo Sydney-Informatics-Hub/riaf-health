@@ -54,16 +54,16 @@ def main():
         output_container = st.container()
 
         output_area = st.empty()
-        output_area.text_area("Process Info", value="Initiating process engine...", height=400, label_visibility = 'hidden', key=f"text_0")
+        output_area.text_area(r"$\textsf{\large Process Info}$", value="Initiating process engine...", height=300, key=f"text_0")
 
         def update_text(output):
             # callback function
-            output_area.text_area("Process Info", value=output, height=400, label_visibility = 'hidden', key = f"text_{time.time()}")
-            
+            output_area.text_area(r"$\textsf{\large Process Info}$", value=output, height=300, key = f"text_{time.time()}")
+            #output_area.text_area("Process Info", value=output, height=300, label_visibility = 'hidden', key = f"text_{time.time()}")
+
+        st.text("")
             
         with spinner_container, st.spinner("### Generating Use-case Study"):
-            with output_container:
-                st.markdown("#### Process Information:")
                 
             # Run the subprocess and capture its output in real-time
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
