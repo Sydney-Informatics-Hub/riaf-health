@@ -293,7 +293,7 @@ class RAGscholar:
             self.list_sources.append(sources)
             print(f'Finished processing question {i}.')
 
-    def context_engine(self, max_tokens_context = 2000, additional_context = ""):
+    def context_engine(self, max_tokens_context = 2000):
         """
         Analyse problem and context using chat engine.
         Save results to self.context
@@ -316,7 +316,7 @@ class RAGscholar:
         # Step 1
         prompt_text = ("Analyse the problem and context for the following topic:\n"
                         f"{self.research_topic}\n\n"
-                        f"Additional context: {additional_context}\n\n"
+                        f"Additional context: {self.additional_context}\n\n"
                         "Use the following questions to guide your analysis:\n"
                         "1. What is the primary problem that this topic is aiming to address with regard to the healthcare and medical sector? (max 100 words)\n"
                         "2. What is the impact on health system and medical sector? (max 100 words)\n"
@@ -573,6 +573,8 @@ class RAGscholar:
         :param impact_end: int, impact period end
         :param scholarai_delete_pdfs: bool, delete pdfs after processing
         :param local_document_path: str, path to the optional user-defined folder of documents  
+        :param benchmark_review: bool, run benchmark review
+        :param additional_context: str, additional context
 
         The pipeline includes the following key steps:
         - Search and process documents from Semantic Scholar
@@ -589,6 +591,7 @@ class RAGscholar:
         self.keywords = keywords
         self.scholarai_delete_pdfs = scholarai_delete_pdfs
         self.organisation = organisation
+        self.additional_context = additional_context
         
         if research_start is not None:
             try:
@@ -764,7 +767,7 @@ class RAGscholar:
 
         # Analyse problem and context
         print("Analyse problem and context...")
-        self.context_engine(additional_context=additional_context)
+        self.context_engine()
 
 
         # Add publications and citations to context
