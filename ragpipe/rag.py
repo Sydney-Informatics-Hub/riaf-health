@@ -316,6 +316,7 @@ class RAGscholar:
         # Step 1
         prompt_text = ("Analyse the problem and context for the following topic:\n"
                         f"{self.research_topic}\n\n"
+                        f"Additional context: {additional_context}\n\n"
                         "Use the following questions to guide your analysis:\n"
                         "1. What is the primary problem that this topic is aiming to address with regard to the healthcare and medical sector? (max 100 words)\n"
                         "2. What is the impact on health system and medical sector? (max 100 words)\n"
@@ -557,7 +558,8 @@ class RAGscholar:
             impact_end = None,
             scholarai_delete_pdfs = False,
             local_document_path = None,
-            benchmark_review = True):
+            benchmark_review = True,
+            additional_context = ""):
         """
         Run RAG pipeline.
 
@@ -856,6 +858,7 @@ def main():
     parser.add_argument("--organisation", type=str, default="University of Sydney", help="Organisation")
     parser.add_argument("--language_style", type=str, default="analytical", choices=['analytical', 'journalistic', 'academic', 'legal', 'medical'], help="Language style for report")
     parser.add_argument("--path_documents", type=str, default=None, help="Path to directory with documents")
+    parser.add_argument("--additional_context", type=str, default="", help="Additional context for the use case study")
 
     args = parser.parse_args()
 
@@ -877,7 +880,8 @@ def main():
             research_end=args.research_period_end,
             impact_start=args.impact_period_start,
             impact_end=args.impact_period_end,
-            scholarai_delete_pdfs=False
+            scholarai_delete_pdfs=False,
+            additional_context=args.additional_context
             )
     print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
 
