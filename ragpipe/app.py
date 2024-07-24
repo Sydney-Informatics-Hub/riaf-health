@@ -6,30 +6,30 @@ import time
 
 
 def main():
-    st.title(r"$\textsf{\tiny Research Impact Assessment Framework}$" + "\n" + r"Use-Case-Study Generator")
+    st.title(r"$\textsf{\tiny RIAF Use-Case-Study Generator}$")
     
     # Create input fields for each argument
-    query_author = st.text_input(r"$\textsf{\tiny Author name to search for}$", value="Anthony Weiss")
-    query_topic = st.text_input(r"$\textsf{\tiny Topic for Use-case Study}$", value="Elastagen")
-    query_keywords = st.text_input(r"$\textsf{\tiny Keywords for query (separated by commas)}$", value="elastin, tissue engineering, elastagen")
+    query_author = st.text_input(r"$\textsf{\small Author name to search for}$", value="Anthony Weiss")
+    query_topic = st.text_input(r"$\textsf{\small Topic for Use-case Study}$", value="Elastagen")
+    query_keywords = st.text_input(r"$\textsf{\small Keywords for publication query (separated by commas)}$", value="elastin, tissue engineering, elastagen")
     col1, col2 = st.columns(2)
     with col1:
-        research_period_start = st.text_input(r"$\textsf{\tiny Research period start (year)}$", value=2013)
+        research_period_start = st.text_input(r"$\textsf{\small Research period start (year)}$", value=2013)
     with col2:
-        research_period_end = st.text_input(r"$\textsf{\tiny Research period end (year)}$", value=2023)
+        research_period_end = st.text_input(r"$\textsf{\small Research period end (year)}$", value=2023)
 
-    organisation = st.text_input(r"$\textsf{\tiny Organisation}$", value="The University of Sydney")
-    language_style = st.selectbox(r"$\textsf{\tiny Language style for report}$", options=['analytical', 'journalistic', 'academic', 'legal', 'medical'], index=0)
+    organisation = st.text_input(r"$\textsf{\small Organisation}$", value="The University of Sydney")
+    language_style = st.selectbox(r"$\textsf{\small Language style for report}$", options=['analytical', 'journalistic', 'academic', 'legal', 'medical'], index=0)
 
     impact_period_start = 2013
     impact_period_end = 2023
-    path_documents = st.text_input(r"$\textsf{\tiny Local document store}$", value='../test_data/Weiss_docs')
+    path_documents = st.text_input(r"$\textsf{\small Local document store}$", value='../test_data/Weiss_docs')
 
     # Additional context input
-    additional_context = st.text_area(r"$\textsf{\tiny Additional context}$", value="", height=100)
+    additional_context = st.text_area(r"$\textsf{\small Additional context and instructions}$", value="", height=100)
 
     # File uploaders
-    if st.file_uploader(r"$\textsf{\tiny Upload your documents}$", type=None, accept_multiple_files=True):
+    if st.file_uploader(r"$\textsf{\small Upload your documents}$", type=None, accept_multiple_files=True):
         st.write('Documents uploaded!')
 
     # Button to run the RAGscholar process
