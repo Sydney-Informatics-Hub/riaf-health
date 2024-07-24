@@ -55,22 +55,36 @@ class ReviewAgent:
                 raise ValueError(f"Review file {filename} does not exist")
 
 
-    def run(self, content, question_number, response_history=[]):
+    def run(self, content, question_number, response_history=[], additional_context=""):
         """
         LLM run to review a paper given a response and a question number
 
         :param content: str, content
         :param question_number: int, question number, 0 - 3
+        :param response_history: list, response history
+        :param additional_context: str, additional context
         """
         with open(self.filenames_review[question_number], "r") as file:
             review_criteria = file.read()
-        self.system_prompt = ("You are an agent that acts as a reviewer. You will review the response from another LLM query. \n"
-                            "Follow the review criteria and suggest specific points how to improve the response. \n"
-                            "You do not need to address all review criteria, only suggest changes if they are necessary. \n"
-                            "Suggestions must be short and concise.\n"
-                            "Do not include a revised version in you response\n"
-                            "Do NOT introduce any new statements or make up any facts that are not included in the original response.\n\n"
-                            f"{review_criteria}")
+        if additional_context == "":
+            self.system_prompt = ("You are an agent that acts as a reviewer. You will review the response from another LLM query. \n"
+                    "Follow the review criteria and suggest specific points how to improve the response. \n"
+                    "You do not need to address all review criteria, only suggest changes if they are necessary. \n"
+                    "Suggestions must be short and concise.\n"
+                    "Do not include a revised version in you response\n"
+                    "Do NOT introduce any new statements or make up any facts that are not included in the original response.\n\n"
+                    f"{review_criteria}")
+        else:
+            self.system_prompt = ("You are an agent that acts as a reviewer. You will review the response from another LLM query. \n"
+                                "Follow the review criteria and suggest specific points how to improve the response. \n"
+                                "You do not need to address all review criteria, only suggest changes if they are necessary. \n"
+                                "Suggestions must be short and concise.\n"
+                                "Do not include a revised version in you response\n"
+                                "Do NOT introduce any new statements or make up any facts that are not included in the original response.\n\n"
+                                f"{review_criteria}\n\n"
+                                f"In addition check that the response also addresses the following: \n"
+                                f"{additional_context}"
+                                )
 
         #self.system_prompt = json.dumps(review_criteria, indent=2)
         prompt = (f"Given the review criteria above, provide instructive and concise feedback how to improve the following response: \n"
