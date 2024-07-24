@@ -25,6 +25,9 @@ def main():
     impact_period_end = 2023
     path_documents = st.text_input(r"$\textsf{\tiny Local document store}$", value='../test_data/Weiss_docs')
 
+    # Additional context input
+    additional_context = st.text_area(r"$\textsf{\tiny Additional context}$", value="", height=100)
+
     # File uploaders
     if st.file_uploader(r"$\textsf{\tiny Upload your documents}$", type=None, accept_multiple_files=True):
         st.write('Documents uploaded!')
@@ -46,7 +49,8 @@ def main():
             "--impact_period_end", str(impact_period_end),
             "--organisation", organisation,
             "--language_style", language_style,
-            "--path_documents", path_documents
+            "--path_documents", path_documents,
+            "--additional_context", additional_context
         ]
 
         # Create containers for the spinner and output
