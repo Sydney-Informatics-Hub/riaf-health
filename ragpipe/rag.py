@@ -631,6 +631,24 @@ class RAGscholar:
         logfile = os.path.join(self.outpath, 'ragscholar.log')
         logging.basicConfig(filename = logfile, filemode = 'w', level=logging.INFO, format='%(message)s')
 
+        # save all arguments to log file
+        logging.info(f"Research topic: {self.research_topic}")
+        logging.info(f"Author: {self.author}")
+        logging.info(f"Keywords: {self.keywords}")
+        logging.info(f"Organisation: {self.organisation}")
+        logging.info(f"Research period: {self.research_period}")
+        logging.info(f"Impact period: {self.impact_period}")
+        logging.info(f"Additional context: {self.additional_context}")
+        logging.info(f"Path to output: {self.outpath}")
+        logging.info(f"Path to index: {self.path_index}")
+        logging.info(f"Path to templates: {self.path_templates}")
+        logging.info(f"Path to documents: {self.path_documents}")
+        logging.info(f"Load index from storage: {self.load_index_from_storage}")
+        logging.info(f"Use scholarai script: {self.scholarai_delete_pdfs}")
+        logging.info(f"Local document path: {local_document_path}")
+        logging.info(f"Benchmark review: {benchmark_review}")
+        
+
         # Search, retrieve and read documents from Semantic Scholar
         if _use_scholarai:
             print("Searching and reading documents with AI-assisted Semantic Scholar...")
