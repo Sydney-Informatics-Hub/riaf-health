@@ -293,7 +293,7 @@ class RAGscholar:
             self.list_sources.append(sources)
             print(f'Finished processing question {i}.')
 
-    def context_engine(self, max_tokens_context = 2000):
+    def context_engine(self, max_tokens_context = 2000, additional_context = ""):
         """
         Analyse problem and context using chat engine.
         Save results to self.context
@@ -670,7 +670,7 @@ class RAGscholar:
         else:
             print("Searching and reading documents from Semantic Scholar API ..")
             logging.info("Searching and reading documents from Semantic Scholar API ..")
-            self.documents = read_semanticscholar(self.research_topic, 
+            self.documents = read_semanticscholar_api(self.research_topic, 
                                                 self.author, 
                                                 self.keywords, 
                                                 limit = _scholar_limit,
@@ -764,7 +764,7 @@ class RAGscholar:
 
         # Analyse problem and context
         print("Analyse problem and context...")
-        self.context_engine()
+        self.context_engine(additional_context=additional_context)
 
 
         # Add publications and citations to context
