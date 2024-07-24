@@ -7,13 +7,6 @@ The report should follow along RIAF's core criteria:
 - evaluate the extent to which the organization's research programs contribute to policy, practice, population health, the economy, and the organization's reputation and brand.
 - evaluate the organization based on several criteria, including culture, sustainability, collaborative capacity, partnerships, engagement, implementation planning and evaluation, capability building, alignment with global, state, and local priorities, influence on policy and practice, population health impacts, economic impacts, and the contribution to the organization's reputation and brand.
 
-
-**Instructions**:
-Construct a case study following the RIAF context, sub-domains, assessment criteria, and objectives for the program given below. 
-
-Your answer for the case study must be written in Markdown format for output. The language style is LANGUAGE_STYLE. Answers can include subsections and bullet points. 
-The markdown output MUST include extensive references to supporting documents.
-
 **Program Information**:
 
 Organization name: ORG_NAME
@@ -21,6 +14,13 @@ Title of case study: TITLE_NAME
 Period when the underpinning research was undertaken: RESEARCH_PERIOD
 Details of staff conducting the underpinning research: AUTHOR
 Period when the impact occurred: IMPACT_PERIOD
+Additional information: ADDITIONAL_INFORMATION
+
+**Instructions**:
+Construct a case study following the RIAF context, sub-domains, assessment criteria, and objectives for the program given below. 
+
+Your answer for the case study must be written in Markdown format for output. The language style is LANGUAGE_STYLE. Answers can include subsections and bullet points. 
+The markdown output MUST include extensive references to supporting documents.
 
 Do not repeat the program information in the case study.
 

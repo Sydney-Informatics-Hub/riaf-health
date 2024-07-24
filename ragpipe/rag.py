@@ -229,6 +229,7 @@ class RAGscholar:
         system_prompt = system_prompt.replace("IMPACT_PERIOD", self.impact_period)
         system_prompt = system_prompt.replace("RESEARCH_TOPIC", self.research_topic)
         system_prompt = system_prompt.replace("LANGUAGE_STYLE", self.language_style)
+        system_prompt = system_prompt.replace("ADDITIONAL_INFORMATION", self.additional_context)
         return system_prompt
 
 
@@ -271,7 +272,7 @@ class RAGscholar:
             #    logging.info("Word count exceeds maximum word count. Content is run again though the model.")
             #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
             if review:
-                review_txt = review_agent.run(content, i, self.list_answers)
+                review_txt = review_agent.run(content, i, self.list_answers, self.additional_context)
                 logging.info(f"Review response {i}: {review_txt}")
                 if review_txt is not None:
                     logging.info("Reviewing response ...")
