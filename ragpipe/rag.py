@@ -140,8 +140,9 @@ class RAGscholar:
         logging.info(f"Path to documents: {self.path_documents}")
         logging.info(f"Load index from storage: {self.load_index_from_storage}")
         logging.info(f"Use scholarai script: {self.scholarai_delete_pdfs}")
-        logging.info(f"Local document path: {local_document_path}")
-        logging.info(f"Benchmark review: {benchmark_review}")
+        logging.info(f"Language style: {self.language_style}")
+        logging.info(f"LLM service: {self.llm_service}")
+        logging.info(f"Benchmark Review enables: {self.benchmark_review}")
 
 
     def generate_chatengine_react(self):
@@ -623,6 +624,7 @@ class RAGscholar:
         self.scholarai_delete_pdfs = scholarai_delete_pdfs
         self.organisation = organisation
         self.additional_context = additional_context
+        self.benchmark_review = benchmark_review
         
         if research_start is not None:
             try:
