@@ -39,7 +39,6 @@ from indexengine.process import (
     load_index
     )
 from agentreviewer.agentreviewer import AgentReviewer
-#from utils.mdconvert import markdown_to_question
 
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
@@ -49,8 +48,6 @@ _num_output = 1000
 _scholar_limit = 50
 _model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.1
-# Set OpenAI service engine: "azure" or "openai". See indexengine.process.py for azure endpoint configuration
-_use_scholarai = True # use scholarai script to retrieve documents. Much more accurate but slower than semanticscholar
 
 
 class RAGscholar:
@@ -66,7 +63,6 @@ class RAGscholar:
     :param language_style: str, language style, default "analytical"
     :param load_index_from_storage: bool, load index from storage path, default False
     """
-
     def __init__(self, 
                 path_templates, 
                 fname_system_prompt, 
@@ -262,6 +258,51 @@ class RAGscholar:
         system_prompt = system_prompt.replace("LANGUAGE_STYLE", self.language_style)
         system_prompt = system_prompt.replace("ADDITIONAL_INFORMATION", self.additional_context)
         return system_prompt
+    
+
+    def generate_benchmark_review(self):
+        """
+        Benchmark review of generated content.
+        """
+        agent_reviewer = AgentReviewer(llm=None,LLMSERVICE='openai')
+        # Set gold standard response paths. These are broken up by indivdual question.
+        example_repsonse_file_q1 = '../use_case_studies/'+self.fname_out+'/RIAF_Case_Study_q1.md'
+        example_repsonse_file_q2 = '../use_case_studies/'+self.fname_out+'/RIAF_Case_Study_q2.md'
+        example_repsonse_file_q3 = '../use_case_studies/'+self.fname_out+'/RIAF_Case_Study_q3.md'
+        example_repsonse_file_q4 = '../use_case_studies/'+self.fname_out+'/RIAF_Case_Study_q4.md'
+
+        question1 = "What is the problem this research seeks to address and why is it significant?"
+        question2 = "What are the research outputs of this study?"
+        question3 = "What impacts has this research delivered to date?"
+        question4 = "What impact from this research is expected in the future?"
+
+        questions_and_files = [  
+            (question1, example_repsonse_file_q1, self.list_answers[0]),  
+            (question2, example_repsonse_file_q2, self.list_answers[1]),  
+            (question3, example_repsonse_file_q3, self.list_answers[2]),  
+            (question4, example_repsonse_file_q4, self.list_answers[3])   
+        ]  
+
+        logging.info("Reviewing.")
+        for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
+            with open(example_response_file, 'r', encoding='utf-8') as file:  
+                example_response = file.readline().strip()  
+            response = agent_reviewer.review_response(question_text, response_text, example_response)  
+            print(f"Q{i}", response)  
+            logging.info(f"Q{i}")
+            logging.info(response) 
+
+            logging.info("Reviewing.")
+            for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
+                with open(example_response_file, 'r', encoding='utf-8') as file:  
+                    example_response = file.readline().strip()  
+                response = agent_reviewer.review_response(question_text, response_text, example_response)  
+                print(f"Q{i}", response)  
+                logging.info(f"Q{i}")
+                logging.info(response) 
+
+            print("Benchmark Review Done. Results in "+ self.outpath)
+            logging("Benchmark Review Done. Results in "+ self.outpath)
 
 
     def prompt_pipeline(self, 
@@ -324,6 +365,52 @@ class RAGscholar:
             self.list_answers.append(content)
             self.list_sources.append(sources)
             print(f'Finished processing question {i}.')
+
+    def process_publications(self):
+        ####  Search, retrieve and read documents from Semantic Scholar
+        print("Searching and filtering documents with AI-assisted Semantic Scholar...")
+        logging.info("Searching and filtering documents with AI-assisted Semantic Scholar...")
+        # check if author is a list
+        if isinstance(self.author, list):
+            authors = self.author
+        else:
+            # check if authors seperated by comma
+            if "," in self.author:
+                authors = self.author.split(",")
+            else:
+                authors = self.author
+        # convert keywords to list
+        if isinstance(self.keywords, str):
+            keywords = self.keywords.split(",")
+        else:
+            keywords = self.keywords
+        scholar = ScholarAI(self.research_topic,
+                            authors, 
+                            year_start= self.research_start, 
+                            year_end = self.research_end,
+                            delete_pdfs = self.scholarai_delete_pdfs,
+                            keywords = keywords)
+        papers, citations = scholar.get_papers_from_authors(max_papers = _scholar_limit)
+        self.documents, documents_missing = scholar.load_data(papers)
+        self.papers_scholarai = papers
+        self.citations_scholarai = citations
+        # publication count
+        self.npublications = len(self.papers_scholarai)
+        # add all counts in list self.citations_scholarai
+        self.ncitations = sum([int(c) for c in self.citations_scholarai])
+        logging.info(f"Number of publications found: {self.npublications}")
+        logging.info(f"Total number of citations: {self.ncitations}") 
+        print(f"Number of publications found: {self.npublications}")
+        print(f"Total number of citations: {self.ncitations}")
+        # three papers with most citations
+        if len(self.papers_scholarai) > 2:
+            self.top_cited_papers = [self.papers_scholarai[i]['title'] + ', citations: ' + str(self.citations_scholarai[i]) for i in range(3)]
+        else:
+            self.top_cited_papers = []
+        if len(documents_missing) > 0:
+            self.documents_missing.extend(documents_missing)
+            logging.info(f"Documents missing for {len(documents_missing)} sources.")
+
 
     def context_engine(self, max_tokens_context = 2000):
         """
@@ -424,43 +511,7 @@ class RAGscholar:
             if len(missing_results) > 0:
                 self.documents_missing.extend(missing_results)
                 logging.info(f"Web content missing for {len(missing_results)} sources.")
-            
-
-
-
-            """ old bing retrieval method
-            query = query.replace("WebSearch_String:", "").strip()
-            bing_results = bing_custom_search(query, count=2)
-            webcontext = []
-            # Step 6: Extract content from web search results
-            if bing_results is not None and len(bing_results) > 0:
-                logging.info(f"Retrieving web content for {len(bing_results)} sources...")
-                urls = get_urls_from_bing(bing_results)
-                titles = get_titles_from_bing(bing_results)
-                snippets = get_snippets_from_bing(bing_results)
-                #webdocs, documents_missing = web2docs_async(urls, titles)
-                if len(webdocs) > 0:
-                    webcontext += webdocs
-                if len(documents_missing) > 0:
-                    # Add smippet to documents_missing (make this deault behaviour in web2docs_async)
-                    #logging.info(f"Web content missing for {len(documents_missing)} sources.")
-                    self.documents_missing.extend(documents_missing)
-                    # add web snippets to documents instead of full content
-                    urls_missing = [doc['url'] for doc in documents_missing]
-                    titles_missing = [doc['title'] for doc in documents_missing]
-                    # find snippets missing by finding indices matching urls_missing with urls
-                    snippets_missing = []
-                    for url in urls_missing:
-                        index = urls.index(url)
-                        snippets_missing.append(snippets[index])
-                    metadata = [{'href': url, 'title': title} for url, title in zip(urls_missing, titles_missing)]
-                    documents = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(snippets_missing, urls_missing, metadata)]
-                    webcontext += documents
-                    logging.info(f"Added {len(snippets_missing)} snippets to web context.")
-            else:
-                logging.info("No web search results found.")
-            """
-
+        
         # Step 7. Generate index store and save content and metadata in vector database
         if len(webcontext) > 0:
             # generate index store and save data and metadata in database
@@ -654,9 +705,9 @@ class RAGscholar:
         self.impact_period = f"{self.impact_start}-{self.impact_end}"
 
 
-        fname_out = self.research_topic + "_by_" + self.author
-        fname_out = fname_out.replace(" ", "_")
-        self.outpath = os.path.join(self.outpath, fname_out)
+        self.fname_out = self.research_topic + "_by_" + self.author
+        self.fname_out = self.fname_out.replace(" ", "_")
+        self.outpath = os.path.join(self.outpath, self.fname_out)
         os.makedirs(self.outpath, exist_ok=True)
 
         # setup log function
@@ -665,68 +716,19 @@ class RAGscholar:
         # save all arguments to log file
         self.log_settings()
 
-        # Search, retrieve and read documents from Semantic Scholar
-        if _use_scholarai:
-            print("Searching and reading documents with AI-assisted Semantic Scholar...")
-            logging.info("Searching and reading documents with AI-assisted Semantic Scholar...")
-            # check if author is a list
-            if isinstance(self.author, list):
-                authors = self.author
-            else:
-                # check if authors seperated by comma
-                if "," in self.author:
-                    authors = self.author.split(",")
-                else:
-                    authors = self.author
-            # convert keywords to list
-            if isinstance(self.keywords, str):
-                keywords = self.keywords.split(",")
-            else:
-                keywords = self.keywords
-            scholar = ScholarAI(self.research_topic,
-                                authors, 
-                                year_start= self.research_start, 
-                                year_end = self.research_end,
-                                delete_pdfs = self.scholarai_delete_pdfs,
-                                keywords = keywords)
-            papers, citations = scholar.get_papers_from_authors(max_papers = _scholar_limit)
-            self.documents, documents_missing = scholar.load_data(papers)
-            self.papers_scholarai = papers
-            self.citations_scholarai = citations
-            # publication count
-            npublications = len(self.papers_scholarai)
-            # add all counts in list self.citations_scholarai
-            ncitations = sum([int(c) for c in self.citations_scholarai])
-            # three papers with most citations
-            if len(self.papers_scholarai) > 2:
-                top_cited_papers = [self.papers_scholarai[i]['title'] + ', citations: ' + str(self.citations_scholarai[i]) for i in range(3)]
-            else:
-                top_cited_papers = []
-            if len(documents_missing) > 0:
-                self.documents_missing.extend(documents_missing)
+        #  Search, retrieve and read documents from Semantic Scholar
+        self.process_publications()
                 
-        else:
-            print("Searching and reading documents from Semantic Scholar API ..")
-            logging.info("Searching and reading documents from Semantic Scholar API ..")
-            self.documents = read_semanticscholar_api(self.research_topic, 
-                                                self.author, 
-                                                self.keywords, 
-                                                limit = _scholar_limit,
-                                                year_start=self.research_start,
-                                                year_end=self.research_end)
-            npublications = None
-            
-        # Upload documents to index from directory
+        # Upload local documents to index from directory
         if self.path_documents is not None:
             print("Loading documents from directory ...")
             logging.info("Loading documents from directory ...")
             reader = MyDirectoryReader(self.path_documents)
             mydocuments = reader.load_data()
-            # if len(self.documents) > 0:
-            #     self.documents = self.documents + mydocuments
-            # else:
-            self.documents = mydocuments
-
+            if len(self.documents) > 0:
+                self.documents = self.documents + mydocuments
+            else:
+                self.documents = mydocuments
         
         # Search web for content related to research topic
         print("Searching web for content ...")
@@ -744,39 +746,9 @@ class RAGscholar:
             self.documents_missing.extend(documents_missing)
             logging.info(f"Web content missing for {len(documents_missing)} sources.")
 
-        """ old bing retrieval method
-        bing_results = bing_custom_search(self.research_topic, 
-                                          count=3, 
-                                          year_start = self.impact_start, 
-                                          year_end= self.impact_end)
-        if len(bing_results) > 0:
-            print(f"Retrieving web content for {len(bing_results)} sources...")
-            logging.info(f"Retrieving web content for {len(bing_results)} sources...")
-            urls = get_urls_from_bing(bing_results)
-            titles = get_titles_from_bing(bing_results)
-            documents_web, documents_missing = web2docs_async(urls, titles)
-            if len(self.documents) > 0:
-                self.documents = self.documents + documents_web
-            else:
-                self.documents = documents_web
-            if len(documents_missing) > 0:
-                # add list of a urls and titles to missing documents
-                self.documents_missing.extend(documents_missing)
-                # add web snippets to documents instead of full content
-                urls_missing = [doc['url'] for doc in documents_missing]
-                titles_missing = [doc['title'] for doc in documents_missing]
-                # find snippets missing by finding indices matching urls_missing with urls
-                snippets_missing = []
-                for url in urls_missing:
-                    index = urls.index(url)
-                    snippets_missing.append(snippets[index])
-                metadata = [{'href': url, 'title': title} for url, title in zip(urls_missing, titles_missing)]
-                documents_web = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(snippets_missing, urls_missing, metadata)]
-                self.documents = self.documents + documents_web
-            """
 
-        # generate index store and save index in self.path_index
-        logging.info("Generating index database ...")
+        # generate index store from all documents gathered and save index in self.path_index
+        logging.info("Generating index database from all documents ...")
         self.path_index = os.path.join(self.path_index, path_index_name)
         self.index = create_index(self.documents, 
                                 self.path_index, 
@@ -786,17 +758,14 @@ class RAGscholar:
                                 model_llm=_model_llm,
                                 llm_service=self.llm_service)
         
-        # Add documents from the additional folder to the aggregated documents
+        # Add to index documents from the additional folder to the aggregated documents
         if local_document_path: 
             print("Adding documents from local folder ...")
             self.index = add_docs_to_index(local_document_path, self.index)  
 
         # Initialize chat engine with context prompt
         logging.info("Initializing chat engine ...")
-        #self.generate_chatengine_condensecontext()
-        #self.generate_chatengine_condense()
-        # mode: openAI (no publication metadata)
-        #self.generate_chatengine_openai()
+
         # mode: context. retrieve context and run LLM on context
         self.generate_chatengine_context()
 
@@ -804,17 +773,16 @@ class RAGscholar:
         print("Analyse problem and context...")
         self.context_engine()
 
-
         # Add publications and citations to context
         # npublications = None
-        if npublications is not None:
+        if self.npublications is not None:
             self.context += "\n\n"
             self.context += f"Publication analysis for {self.author}:\n"
-            self.context += f"Number of topic-related publications for period {self.research_start} - {self.research_end}: At least {npublications}, Reference: SemanticScholar (https://www.semanticscholar.org)\n"
-            self.context += f"Number of citations: At least {ncitations}, Reference: SemanticScholar (https://www.semanticscholar.org)\n"
-            if len(top_cited_papers) > 0:
+            self.context += f"Number of topic-related publications for period {self.research_start} - {self.research_end}: At least {self.npublications}, Reference: SemanticScholar (https://www.semanticscholar.org)\n"
+            self.context += f"Number of citations: At least {self.ncitations}, Reference: SemanticScholar (https://www.semanticscholar.org)\n"
+            if len(self.top_cited_papers) > 0:
                 self.context += "Top cited papers:\n"
-                for i, paper in enumerate(top_cited_papers):
+                for i, paper in enumerate(self.top_cited_papers):
                     self.context += f"{i+1}. {paper}\n"
 
         # Save context to file
@@ -838,48 +806,12 @@ class RAGscholar:
         print("Generating case study ...")
         logging.info("Generating case study ...")
         self.generate_case_study(make_docx=True)
-        print("Finished.")
+        print("Finished Case-Study Writing.")
         logging.info("FINISHED.")
 
+        # Generate benchmark review
         if benchmark_review:
-            agent_reviewer = AgentReviewer(llm=None,LLMSERVICE='openai')
-            # Set gold standard response paths. These are broken up by indivdual question.
-            example_repsonse_file_q1 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q1.md'
-            example_repsonse_file_q2 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q2.md'
-            example_repsonse_file_q3 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q3.md'
-            example_repsonse_file_q4 = '../use_case_studies/'+fname_out+'/RIAF_Case_Study_q4.md'
-
-            question1 = "What is the problem this research seeks to address and why is it significant?"
-            question2 = "What are the research outputs of this study?"
-            question3 = "What impacts has this research delivered to date?"
-            question4 = "What impact from this research is expected in the future?"
-
-            questions_and_files = [  
-                (question1, example_repsonse_file_q1, self.list_answers[0]),  
-                (question2, example_repsonse_file_q2, self.list_answers[1]),  
-                (question3, example_repsonse_file_q3, self.list_answers[2]),  
-                (question4, example_repsonse_file_q4, self.list_answers[3])   
-            ]  
-
-            logging.info("Reviewing.")
-            for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
-                with open(example_response_file, 'r', encoding='utf-8') as file:  
-                    example_response = file.readline().strip()  
-                response = agent_reviewer.review_response(question_text, response_text, example_response)  
-                print(f"Q{i}", response)  
-                logging.info(f"Q{i}")
-                logging.info(response) 
-
-                logging.info("Reviewing.")
-                for i, (question_text, example_response_file, response_text) in enumerate(questions_and_files, start=1):   
-                    with open(example_response_file, 'r', encoding='utf-8') as file:  
-                        example_response = file.readline().strip()  
-                    response = agent_reviewer.review_response(question_text, response_text, example_response)  
-                    print(f"Q{i}", response)  
-                    logging.info(f"Q{i}")
-                    logging.info(response) 
-
-                print("Benchmark Review Done. Results in "+ self.outpath)
+            self.generate_benchmark_review()
 
         # close log
         self.log_close()
