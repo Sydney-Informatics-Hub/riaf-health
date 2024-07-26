@@ -43,11 +43,11 @@ from agentreviewer.agentreviewer import AgentReviewer
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
 _list_max_word =  [250, 300, 500, 300]
-_context_window = 12000
+_context_window = 20000
 _num_output = 1000
 _scholar_limit = 50
 _model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
-_temperature = 0.1
+_temperature = 0.0
 
 
 class RAGscholar:
@@ -218,13 +218,14 @@ class RAGscholar:
         # Condense Plus Context Chat Engine (WIP)
         system_prompt = self.generate_system_prompt()
 
-        memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
+        memory = ChatMemoryBuffer.from_defaults(token_limit=10000)
         self.chat_engine = self.index.as_chat_engine(
             chat_mode="context",
             memory=memory,
             system_prompt=system_prompt,
             llm = OpenAI(model = _model_llm),
             verbose=True,
+            similarity_top_k=10,
             )
         
     def query_chatengine(self, query):
@@ -302,7 +303,7 @@ class RAGscholar:
                 logging.info(response) 
 
             print("Benchmark Review Done. Results in "+ self.outpath)
-            logging("Benchmark Review Done. Results in "+ self.outpath)
+            logging.info("Benchmark Review Done. Results in "+ self.outpath)
 
 
     def prompt_pipeline(self, 
@@ -351,6 +352,7 @@ class RAGscholar:
                     review_prompt = (f"Improve the previous response given the suggestions in the review below: \n"
                                         + "Instructions: \n"
                                         + "Do not deviate from the original instructions for this question. \n"
+                                        + "Do not include the program information in your response. \n"
                                         + "Stay close to original response and references, only improve the parts of response that need to be fixed. \n"
                                         + "If you can not find an improvement, keep the original response. \n"
                                         + "You must replace the statements for which duplications have been found with other facts or context that has not been mentioned previously. \n"
