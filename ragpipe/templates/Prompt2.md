@@ -1,15 +1,17 @@
 What are the research outputs of this study?​ (Max 300 words)
 
-Follow the RIAF context, answer this question by aligning UP TO THREE of the following research output impact assessment categories:
-'Creating novel knowledge and expertise' (e.g. citation impact),
-'Capacity building' (e.g. additional research funding attracted, Infrastructure grant values),
-'Informing decision making' (e.g. for health, research, health industry, general public),
-'Health system' (e.g. additional research funding attracted by research activity),
-'Determinants of health' (e.g. obesity rates, education levels, air pollution levels),
-'Population health' (e.g. mobidity prevalence or incidence, proportion of adults with psychological distress),
-'Economic' (e.g. licensing returns, valuation of spin-out companies),
-'Reputation and brand' (e.g. global rankings).
+Follow the RIAF context, answer this question by aligning up to five of the following research output impact assessment categories:
+- **Creating novel knowledge and expertise**: Qualitative evidence that demonstrate that the research is conducted in a scientifically rigorous and unbiased manner and produces results that are relevant to the hypothesis being investigated (examples indicators: Relative citation impact, including non-journal literature, highly cited publication count); Outreach indicators that demonstrate that research findings are distributed to other researchers to allow further research.
 
+- **Capacity building**: Funding indicators that demonstrate that research has been a factor in facilitating an increase in research activity funding capacity (e.g.matched funding); personnel indicators that show improvements in staffing or capabilities of people to do their current or future health-related jobs (e.g. graduate research students); Infrastructure indicators (e.g., grant values showing the amount in dollars of infrastructure attracted by a research project/group/organisation).
+
+- **Informing decision making**: Health relateted indicators that demonstrate impact on the decisions of health professionals and other decision makers in the health system (e.g. use of research in guidelines, Citations in public policy documents, survey of public health policy maker); Research indicators that demonstrate that research findings are used to inform future research through informing funding decisions, changing research policies, and informing the education of people in research or going into research (e.g. citation analysis of successful funding applications• Consultations to policy makers by researcher); health industry indicators (e.g. number of patents licenced, consultations to industry, collaboration with industry, use of research in R&D stage reports by industry); general public indicators that demonstrate impact on the decisions of the general public on health issues (e.g. Research cited in advocacy publications, Number of public lectures conducted, Media citations).
+
+- **Health system**: accessibility indicators that measure the ability of individuals to obtain affordable healthcare at the right place and time (e.g. wait times for specific conditions and/or interventions, types of health services available within particular geographies.); indicators that measure the coordination and integration of healthcare services over time to ensure that patients receive consistent and appropriate care (e.g. self-reported continuity of care, care coordination, level of patient engagement, level of information sharing between healthcare providers); effectiveness indicators that measure the ability of healthcare programs and services to improve health outcomes for individuals and populations (e.g. Hospital re-admission rates, Patient reported outcome measures, Potentially avoidable deaths, Screening/immunisation rates); efficiency indicators that measure the ability of the health system to provide services in a timely, cost-effective, and equitable manner while minimising waste and unnecessary expenditures (e.g. length of stay for a patient compared to the expected stay for the condition); safety indicators (e.g. number of hospital-acquired infections, adverse drug effects).
+
+- **Determinants of health**: Modifiable risk factors that are used to identify and assess behaviours and lifestyle choices, and environmental factors that can be modified or changed to reduce the risk of developing certain health conditions or diseases (e.g. Obesity rates, Alcohol consumption, Physical inactivity, Tobacco use); social determinants that are used to assess the social, economic, and cultural factors that influence health outcomes within a population (e.g. education levels, social cohesion levels, income and poverty); environmental determinants that are used to assess the physical, biological and social factors in the environment that can affect health outcomes within a population (e.g. Air pollution levels, Water quality, access to green spaces).
+
+** Instructions **
 In your response have an appropriate category as a subtitle.
 Generate text with a strong emphasis on past tense.
 Describe outputs that have already occurred with certainty, avoiding speculative or conditional language.
