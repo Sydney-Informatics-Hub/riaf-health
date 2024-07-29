@@ -445,10 +445,15 @@ class RAGscholar:
                         "4. How many people are impacted by health issues that are related to this problem? (max 50 words)\n"
                         "5. What are the economic costs in $ related to this problem? (max 100 words)\n"
                         f"6. What is the novelty or advantage of the new solution as proposed by {self.author} (max 50 words)\n"
-                        "7. How would the proposed solution to this problem improve healthcare? (max 100 words)\n"
-                        "8. What are the commercial (in $) or social implications of the proposed solution? (max 100 words)\n"
-                        f"9. What capacity is build at {self.organisation} by this research? (max 100 words)\n"
-                        f"10. List any rewards, funding or recognition received for this research at {self.organisation}. (max 100 words)\n\n"
+                        "7. What are the health benefits of the proposed solution and wow would the proposed solution to this problem improve healthcare? (max 100 words)\n"
+                        "8. What us the commercial value (in $) of the proposed solution? (max 100 words)\n"
+                        f"9. What capacity is build at {self.organisation} by this research (e.g. additional funding attracted, infrastructure grants)? (max 100 words)\n"
+                        f"10. List any rewards, funding or recognition received for this research at {self.organisation}. (max 100 words)\n
+                        f"11. What is the morbidity and mortality related to this health problem?\n"
+                        f"12. How does the solution improve the quality of life for patients (e.g.in uality-adjusted life year)\n?"
+                        f"13. What impact does the solution have on the healthcare system (e.g. cost savings, efficiency, patient outcomes)?\n"
+                        f"14. How is the solution translated into new health products (e.g. licensing retursn, patents, spin-offs)?\n"
+                        f"15. How has this research contributed to the reputation and brand of {self.organisation}?\n\n"  
             
                         "Instructions:\n"
                         "Do not repeat or rephrase the questions and only provide concise answers as bullet points within the word limit.\n"
@@ -462,8 +467,8 @@ class RAGscholar:
         logging.info(f"Problem and context added: {content}")
 
         # Step 4:  Extract missing information and generate web search queries
-        prompt_text = ("Based on the answers above, identify missing information and quantitative data statements to back up the answers.\n"
-                        "Then formulate up to 10 short Google search queries that will search for this missing information and data.\n"
+        prompt_text = ("Based on the questions and answers above, identify missing information and quantitative data statements to back up the answers.\n"
+                        "Then formulate up to 30 short Google search queries that will search for this missing information and data.\n"
                         "What do you type in the search box?\n\n"
 
                         "Example missing information statements: \n"
@@ -471,7 +476,6 @@ class RAGscholar:
                         "This research application would save the Australian healthcare sector [X] million dollars yearly.\n"
             
                         "Instructions:\n"
-                        "Do not repeat or rephrase the questions and only provide concise answers.\n"
                         "Provide missing information in one sentence per line.\n"
 
                         "Output format:\n"
@@ -481,7 +485,7 @@ class RAGscholar:
                         "- MissingInfo: The commercial value of this technology is [X] billion dollars.\n"
                         "- WebSearch_String: Commercial value of technology in healthcare sector.\n"
 
-                        "Do not use any special characters in or markdown formatting.\n"
+                        "Do not use any special characters or markdown formatting.\n"
                         )
         
         content_missing, sources = self.query_chatengine(prompt_text)
@@ -534,12 +538,13 @@ class RAGscholar:
                              "You must provide references for each answer.\n"
             )
 
-            memory = ChatMemoryBuffer.from_defaults(token_limit=4000)
+            memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
             chat_engine_context2 = self.index_context.as_chat_engine(
                 chat_mode="context",
                 memory=memory,
                 system_prompt=system_prompt,
                 verbose=True,
+                top_k_similarity=5,
                 )
             
             # Step 8. Answer missing questions by querying chat engine with index_context as context
@@ -549,8 +554,10 @@ class RAGscholar:
                 info = info.replace("MissingInfo:", "")
                 query = ("Fill in the blanks (e.g. [X]) in the following sentence: \n"
                         f"{info} \n\n"
-                        "Instructions: Return the original sentence with information replacing the blank.\n"
-                        "If you can't find the answer to fill in the blank, you must respond with only 'None'.\n"
+                        "Instructions: If possible return the original sentence with information replacing the blank.\n"
+                        "Alternatively, find a related quantitative context information to the research topic in question.\n"
+                        "If you can't find the answer to fill in the blank or can't find any related quantitative information, you must respond with only 'None'.\n"
+                        "In all cases, you must include the reference to the source of the information."
                         )
                 response = chat_engine_context2.chat(query)
                 content = response.response
@@ -735,7 +742,7 @@ class RAGscholar:
         # Search web for content related to research topic
         print("Searching web for content ...")
         logging.info("Searching web for content ...")
-        bing = BingSearch(k=5, year_start = self.impact_start, year_end= self.impact_end)
+        bing = BingSearch(k=10, year_start = self.impact_start, year_end= self.impact_end)
         bing_results, missing_results = bing.search_and_retrieve(self.research_topic)
         webdocs, documents_missing = bing.web2docs(bing_results)
         if len(self.documents) > 0:
