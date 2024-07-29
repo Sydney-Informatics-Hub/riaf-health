@@ -338,6 +338,7 @@ class RAGscholar:
                 prompt_text = prompt_text + "\n\n **Additional context info**:\n" + self.context  
             # query chat engine
             logging.info(f"Querying chat engine with prompt {i} ...")
+            print(f"Generating response to question {i} ...")
             content, sources = self.query_chatengine(prompt_text)
             logging.info(f"Response {i}: {content}")
             # Check content size
@@ -345,8 +346,10 @@ class RAGscholar:
             #    logging.info("Word count exceeds maximum word count. Content is run again though the model.")
             #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
             if review:
+                print(f"Review response to question {i} ...")
                 review_txt = review_agent.run(content, i, self.list_answers, self.additional_context)
                 logging.info(f"Review response {i}: {review_txt}")
+                
                 if review_txt is not None:
                     logging.info("Reviewing response ...")
                     review_prompt = (f"Improve the previous response given the suggestions in the review below: \n"
@@ -360,6 +363,7 @@ class RAGscholar:
                                         + "Review: \n"
                                         + f"{review_txt}")
             
+                    print(f"Updating response {i} ...")
                     content, sources = self.query_chatengine(review_prompt)
                     logging.info(f"Response {i} after review: {content}")
                 else:
@@ -448,7 +452,7 @@ class RAGscholar:
                         "7. What are the health benefits of the proposed solution and wow would the proposed solution to this problem improve healthcare? (max 100 words)\n"
                         "8. What us the commercial value (in $) of the proposed solution? (max 100 words)\n"
                         f"9. What capacity is build at {self.organisation} by this research (e.g. additional funding attracted, infrastructure grants)? (max 100 words)\n"
-                        f"10. List any rewards, funding or recognition received for this research at {self.organisation}. (max 100 words)\n
+                        f"10. List any rewards, funding or recognition received for this research at {self.organisation}. (max 100 words)\n"
                         f"11. What is the morbidity and mortality related to this health problem?\n"
                         f"12. How does the solution improve the quality of life for patients (e.g.in uality-adjusted life year)\n?"
                         f"13. What impact does the solution have on the healthcare system (e.g. cost savings, efficiency, patient outcomes)?\n"
@@ -589,6 +593,14 @@ class RAGscholar:
 
     def generate_case_study(self, process_sources = False, make_docx = True):
 
+        # clean up context
+        for i, answer in enumerate(self.list_answers):
+            if answer.startswith("```markdown"):
+                answer = answer[11:]
+            if answer.endswith("```"):
+                answer = answer[:-3]
+            self.list_answers[i] = answer
+        
         with open(self.fname_report_template, "r") as file:
             report = file.read()
         #report = json.dumps(report_text, indent=2)
@@ -601,6 +613,7 @@ class RAGscholar:
         for i, question in enumerate(self.list_questions):
             report += "\n\n"
             report += f"## {question}\n"
+
             report += f"{self.list_answers[i]}\n"
         
         # Process sources
@@ -650,7 +663,7 @@ class RAGscholar:
             impact_end = None,
             scholarai_delete_pdfs = False,
             local_document_path = None,
-            benchmark_review = True,
+            benchmark_review = False,
             additional_context = ""):
         """
         Run RAG pipeline.
