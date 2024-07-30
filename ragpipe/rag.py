@@ -39,6 +39,7 @@ from indexengine.process import (
     load_index
     )
 from agentreviewer.agentreviewer import AgentReviewer
+from utils.md2docx import markdown_to_docx
 
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
@@ -593,13 +594,22 @@ class RAGscholar:
 
     def generate_case_study(self, process_sources = False, make_docx = True):
 
-        # clean up context
+        # clean up context and save to file
+        fnames_docx = []
         for i, answer in enumerate(self.list_answers):
             if answer.startswith("```markdown"):
                 answer = answer[11:]
             if answer.endswith("```"):
                 answer = answer[:-3]
             self.list_answers[i] = answer
+            fname_md = os.path.join(self.outpath, f"Answer_q{i+1}.md")
+            # save answer as md and docx
+            with open(fname_md, "w") as file:
+                file.write(answer)
+            # convert markdown to docx ad save to file
+            markdown_to_docx(fname_md)
+            fnames_docx.append(fname_md.replace(".md", ".docx"))
+
         
         with open(self.fname_report_template, "r") as file:
             report = file.read()
@@ -613,7 +623,6 @@ class RAGscholar:
         for i, question in enumerate(self.list_questions):
             report += "\n\n"
             report += f"## {question}\n"
-
             report += f"{self.list_answers[i]}\n"
         
         # Process sources
