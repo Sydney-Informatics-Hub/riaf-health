@@ -43,6 +43,7 @@ from utils.md2docx import markdown_to_docx, append_doc_riaf
 
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
+_fname_question_titles = "question_titles.txt"
 _list_max_word =  [250, 300, 500, 300]
 _context_window = 20000
 _num_output = 1000
@@ -273,16 +274,18 @@ class RAGscholar:
         example_repsonse_file_q3 = '../use_case_studies/'+self.fname_out+'/RIAF_Case_Study_q3.md'
         example_repsonse_file_q4 = '../use_case_studies/'+self.fname_out+'/RIAF_Case_Study_q4.md'
 
-        question1 = "What is the problem this research seeks to address and why is it significant?"
-        question2 = "What are the research outputs of this study?"
-        question3 = "What impacts has this research delivered to date?"
-        question4 = "What impact from this research is expected in the future?"
+        # read questions from file _fname_question_titles. One question per line
+        questions = []
+        with open(os.path.join("./templates",_fname_question_titles), 'r') as file:
+            questions = file.readlines()
+            questions = [q.strip() for q in questions]
+
 
         questions_and_files = [  
-            (question1, example_repsonse_file_q1, self.list_answers[0]),  
-            (question2, example_repsonse_file_q2, self.list_answers[1]),  
-            (question3, example_repsonse_file_q3, self.list_answers[2]),  
-            (question4, example_repsonse_file_q4, self.list_answers[3])   
+            (questions[0], example_repsonse_file_q1, self.list_answers[0]),  
+            (questions[1], example_repsonse_file_q2, self.list_answers[1]),  
+            (questions[2], example_repsonse_file_q3, self.list_answers[2]),  
+            (questions[3], example_repsonse_file_q4, self.list_answers[3])   
         ]  
 
         logging.info("Reviewing.")
@@ -625,8 +628,6 @@ class RAGscholar:
             # convert markdown to docx ad save to file
             markdown_to_docx(fname_md)
 
-
-
         
         with open(self.fname_report_template, "r") as file:
             report = file.read()
@@ -673,8 +674,9 @@ class RAGscholar:
             fname_case_study = os.path.join(self.outpath, "Use_Case_Study.docx")
             doc.save(fname_case_study)
             # Append answers to docx
-            append_doc_riaf(answers_docxfiles, fname_case_study)
-
+            append_doc_riaf(answers_docxfiles, 
+                            fname_case_study, 
+                            fname_question_titles = os.path.join('./templates',_fname_question_titles))
 
         logging.info(f"Use case study saved to {self.outpath}")
         
