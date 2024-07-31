@@ -1,3 +1,5 @@
+#Utility functions for converting Markdown to DOCX format and inserting content into DOCX files.
+
 from docxtpl import DocxTemplate
 import os
 from docx import Document
@@ -10,18 +12,21 @@ from docx.shared import Pt, Inches
 import pypandoc
 from docxcompose.composer import Composer
 
-def append_doc_riaf(src_paths, dst_path, out_path):
+def append_doc_riaf(src_paths, dst_path, out_path = None):
     """
     Append the contents of one Word document to another.
 
     Args:
         src_paths (str): Path to the source document.
         dst_path (str): Path to the destination document.
-        out_path (str): Path to the output document.
+        out_path (str): Path to the output document. If None, the destination document will be overwritten.
     """
     # check if src_paths is a list
     if not isinstance(src_paths, list):
         src_paths = [src_paths]
+
+    if out_path is None:
+        out_path = dst_path
 
     # Load the source and destination documents
     dst_doc = Document(dst_path)
@@ -53,8 +58,6 @@ def append_doc_riaf(src_paths, dst_path, out_path):
     composer.save(out_path)
 
 
-
-
 def markdown_to_docx(input_path):
     """
     Convert a Markdown file to a DOCX file.
@@ -70,7 +73,6 @@ def markdown_to_docx(input_path):
 
     # remove the temporary HTML file
     os.remove(output_path_html)
-
 
 
 # Function to convert markdown to DOCX format
@@ -106,6 +108,7 @@ def markdown_to_docx2(markdown_text):
                 doc.add_paragraph(li.text, style='ListNumber')
 
     return doc
+
 
 def clone_formatting(source, target):
     """ Clone formatting from source paragraph to target paragraph, including font styles and paragraph spacing. """
@@ -167,10 +170,11 @@ def insert_content_into_cell(source_docx, target_docx, table_index, row_index, c
 
     target_doc.save('updated_target.docx')
 
-# Usage
+""" Usage
 source_docx = '/mnt/data/markdown_text.docx'  # Path to the source DOCX file
 target_docx = 'target_template.docx'  # Path to the target DOCX template
 insert_content_into_cell(source_docx, target_docx, table_index=0, row_index=1, col_index=1)
+"""
 
 def insert_content_into_placeholder(target_doc_path, source_doc_path, placeholder):
     target_doc = docx.Document(target_doc_path)
@@ -252,6 +256,7 @@ def replace_in_html_and_convert_to_docx(docx_template_path, replacements, output
     pypandoc.convert_text(html_content, 'docx', format='html', outputfile=docx_output_path)
     print(f"DOCX file created at {docx_output_path}")
 
+"""
 # Example usage
 replacements = {
     '{{ q1 }}': '<p>This is an answer to question 1.</p>',
@@ -309,3 +314,4 @@ docx_content = {
     "q4": docs[3],
     "refs": sources_text
 }
+"""
