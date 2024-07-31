@@ -39,7 +39,7 @@ from indexengine.process import (
     load_index
     )
 from agentreviewer.agentreviewer import AgentReviewer
-from utils.md2docx import markdown_to_docx
+from utils.md2docx import markdown_to_docx, append_doc_riaf
 
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
@@ -595,20 +595,22 @@ class RAGscholar:
     def generate_case_study(self, process_sources = False, make_docx = True):
 
         # clean up context and save to file
-        fnames_docx = []
+        answers_docxfiles = []
+        outpath_answers = os.path.join(self.outpath, "answers")
+        os.makedirs(outpath_answers, exist_ok=True)
         for i, answer in enumerate(self.list_answers):
             if answer.startswith("```markdown"):
                 answer = answer[11:]
             if answer.endswith("```"):
                 answer = answer[:-3]
             self.list_answers[i] = answer
-            fname_md = os.path.join(self.outpath, f"Answer_q{i+1}.md")
+            fname_md = os.path.join(outpath_answers, f"Answer_q{i+1}.md")
             # save answer as md and docx
             with open(fname_md, "w") as file:
                 file.write(answer)
             # convert markdown to docx ad save to file
             markdown_to_docx(fname_md)
-            fnames_docx.append(fname_md.replace(".md", ".docx"))
+            answers_docxfiles.append(fname_md.replace(".md", ".docx"))
 
         
         with open(self.fname_report_template, "r") as file:
@@ -643,7 +645,7 @@ class RAGscholar:
 
         print(sources_text)
         if make_docx:
-            doc = DocxTemplate("./templates/RIAF_template.docx")
+            doc = DocxTemplate("./templates/RIAF_template_header.docx")
             docx_content = { 
                 "ORG_NAME":self.organisation, 
                 "TITLE_NAME": self.research_topic,
@@ -651,14 +653,14 @@ class RAGscholar:
                 "AUTHOR":self.author,
                 "IMPACT_PERIOD":self.impact_period,
                 "RESEARCH_TOPIC":self.research_topic,
-                "q1":self.list_answers[0],
-                "q2":self.list_answers[1],
-                "q3":self.list_answers[2],
-                "q4":self.list_answers[3],
-                "refs":sources_text
                 }
             doc.render(docx_content)
-            doc.save(os.path.join(self.outpath, "Use_Case_Study.docx"))
+            fname_case_study = os.path.join(self.outpath, "Use_Case_Study.docx")
+            doc.save(fname_case_study)
+            # Append answers to docx
+            append_doc_riaf(answers_docxfiles, fname_case_study)
+
+
         logging.info(f"Use case study saved to {self.outpath}")
         
     def run(self, 
