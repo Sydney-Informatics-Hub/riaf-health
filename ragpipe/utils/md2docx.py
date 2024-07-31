@@ -1,51 +1,59 @@
 from docxtpl import DocxTemplate
 import os
 from docx import Document
+from docx.shared import RGBColor
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 from bs4 import BeautifulSoup
 from docx.enum.style import WD_STYLE_TYPE
 from docx.shared import Pt, Inches
 import pypandoc
+from docxcompose.composer import Composer
 
-def insert_doc_at_placeholder(src_path, dst_path, placeholder_text, remove_title = False):
+def append_doc_riaf(src_paths, dst_path, out_path):
     """
-    replace the placeholder in the destination document with the content of the source document.
+    Append the contents of one Word document to another.
 
     Args:
-        src_path (str): Path to the source document.
+        src_paths (str): Path to the source document.
         dst_path (str): Path to the destination document.
-        placeholder_text (str): Placeholder text to be replaced in the destination document.
+        out_path (str): Path to the output document.
     """
+    # check if src_paths is a list
+    if not isinstance(src_paths, list):
+        src_paths = [src_paths]
+
     # Load the source and destination documents
-    src_doc = Document(src_path)
     dst_doc = Document(dst_path)
+    
+    for src_path in src_paths:
+        # Load the source and destination documents
+        src_doc = Document(src_path)
 
-    # remove the title from the source document
-    if remove_title:
-        src_doc.paragraphs[0].clear()
+        def set_paragraph_styles(paragraph, text_color, bg_color, fontsize=11):
+            # Set the text color and background
+            for run in paragraph.runs:
+                run.font.color.rgb = RGBColor(*text_color)
+                run.font.size = Pt(fontsize)
+            
+            # Set the paragraph background color
+            p = paragraph._element
+            shading = OxmlElement('w:shd')
+            shading.set(qn('w:val'), 'clear')
+            shading.set(qn('w:color'), 'auto')
+            shading.set(qn('w:fill'), bg_color)
+            p.get_or_add_pPr().append(shading)
 
-    # Find the placeholder in the destination document
-    for paragraph in dst_doc.paragraphs:
-        if placeholder_text in paragraph.text:
-            # Split the paragraph where the placeholder is found
-            parts = paragraph.text.split(placeholder_text)
-            if len(parts) == 2:
-                before_text = parts[0]
-                after_text = parts[1]
+        # set text color and the background color of the first paragraph (title)
+        first_paragraph = src_doc.paragraphs[0] #.clear()
+        set_paragraph_styles(first_paragraph, text_color=(255, 255, 255), bg_color='000000') 
 
-                # Clear the current paragraph's text
-                paragraph.clear()
-                
-                # Add the text before the placeholder
-                paragraph.add_run(before_text)
+        composer = Composer(dst_doc)
+        composer.append(src_doc)
+    composer.save(out_path)
 
-                # Insert the content from the source document
-                for element in src_doc.element.body:
-                    new_element = paragraph._element.addnext(element)
-                
-                # Add the text after the placeholder
-                paragraph = paragraph.insert_paragraph_after(after_text)
 
-            break
+
 
 def markdown_to_docx(input_path):
     """
