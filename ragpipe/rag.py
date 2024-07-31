@@ -323,6 +323,7 @@ class RAGscholar:
         :return: list_questions, list_answers, list_sources
         """
         self.list_answers = []
+        self.list_answers_draft = []
         self.list_sources = []
         self.list_questions = []
         # initilise and reset chat engine history: 
@@ -347,21 +348,23 @@ class RAGscholar:
             #    logging.info("Word count exceeds maximum word count. Content is run again though the model.")
             #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
             if review:
+                self.list_answers_draft.append(content) 
                 print(f"Review response to question {i} ...")
                 review_txt = review_agent.run(content, i, self.list_answers, self.additional_context)
                 logging.info(f"Review response {i}: {review_txt}")
                 
                 if review_txt is not None:
                     logging.info("Reviewing response ...")
-                    review_prompt = (f"Improve the previous response given the suggestions in the review below: \n"
-                                        + "Instructions: \n"
-                                        + "Do not deviate from the original instructions for this question. \n"
-                                        + "Do not include the program information in your response. \n"
-                                        + "Stay close to original response and references, only improve the parts of response that need to be fixed. \n"
-                                        + "If you can not find an improvement, keep the original response. \n"
+                    review_prompt = (f"Improve the draft response given the suggestions in the review text below. \n\n"
+                                        + "** Instructions **: \n"
+                                        + "Do not deviate from original response and references, only improve the specific parts of response that need to be fixed. \n"
+                                        + "If you can not find an improvement for a suggestion, keep the original response in its place. \n"
                                         + "You must replace the statements for which duplications have been found with other facts or context that has not been mentioned previously. \n"
+                                        + "Do not repeat the program information in the case study.\n"
                                         + "You must include all references and links to references. Update reference footnote numbers if necessary. \n\n"
-                                        + "Review: \n"
+                                        + f"** Draft response **: \n"
+                                        + f"{content}\n\n"
+                                        + "** Review text **: \n"
                                         + f"{review_txt}")
             
                     print(f"Updating response {i} ...")
@@ -596,8 +599,10 @@ class RAGscholar:
 
         # clean up context and save to file
         answers_docxfiles = []
-        outpath_answers = os.path.join(self.outpath, "answers")
+        outpath_answers = os.path.join(self.outpath, "Answers_individual")
         os.makedirs(outpath_answers, exist_ok=True)
+        print("Saving individual answers to file ...")
+        logging.info("Saving individual answers to file ...")
         for i, answer in enumerate(self.list_answers):
             if answer.startswith("```markdown"):
                 answer = answer[11:]
@@ -611,6 +616,16 @@ class RAGscholar:
             # convert markdown to docx ad save to file
             markdown_to_docx(fname_md)
             answers_docxfiles.append(fname_md.replace(".md", ".docx"))
+        # save draft answers to file too
+        for i, answer in enumerate(self.list_answers_draft):
+            fname_md = os.path.join(outpath_answers, f"Answer_draft_q{i+1}.md")
+            # save answer as md and docx
+            with open(fname_md, "w") as file:
+                file.write(answer)
+            # convert markdown to docx ad save to file
+            markdown_to_docx(fname_md)
+
+
 
         
         with open(self.fname_report_template, "r") as file:
