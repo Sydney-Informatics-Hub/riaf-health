@@ -1,4 +1,4 @@
-What are the research outputs of this study?​ (Max 300 words)
+What are the research outputs of this study?​ (Max 400 words)
 
 Follow the RIAF context, answer this question by aligning up to five of the following research output impact assessment categories:
 - **Creating novel knowledge and expertise**: Qualitative evidence that demonstrate that the research is conducted in a scientifically rigorous and unbiased manner and produces results that are relevant to the hypothesis being investigated (examples indicators: Relative citation impact, including non-journal literature, highly cited publication count); Outreach indicators that demonstrate that research findings are distributed to other researchers to allow further research.
