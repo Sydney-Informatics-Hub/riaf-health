@@ -6,6 +6,9 @@ import time
 
 
 def main():
+    #Streamlit's default configuration is for development  mode, which does not allow CORS requests.
+    #st.set_option('server.enableCORS', True)
+
     st.title(r"$\textsf{\tiny RIAF Use-Case-Study Generator}$")
     
     # Create input fields for each argument
@@ -98,6 +101,23 @@ def main():
 
         if process.returncode == 0:
             st.success('Use-case study generated successfully.')
+            fname_out = query_topic + "_by_" + query_author
+            fname_out = fname_out.replace(" ", "_")
+            outpath = os.path.join('../../results/', fname_out)
+            with open(os.path.join(outpath, "Use_Case_Study.md"), "r") as file:
+                use_case_study = file.read()
+            # add scrollable textboxes for the generated use-case study
+            # Write subheader "Generated Use-case Study"
+            st.subheader("Generated Use-case Study")
+            with st.container(height=500):
+                st.markdown(
+                    """
+                    <div style="max-height: 500px; overflow-y: auto;">
+                    {content}
+                    </div>
+                    """.format(content=use_case_study),
+                    unsafe_allow_html=True,
+                )
         else:
             st.error('An error occurred while generating the use-case study.')
 
