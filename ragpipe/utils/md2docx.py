@@ -11,8 +11,12 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.shared import Pt, Inches
 import pypandoc
 from docxcompose.composer import Composer
+import logging
 
-def append_doc_riaf(src_paths, dst_path, out_path = None):
+def append_doc_riaf(src_paths, 
+                    dst_path, 
+                    out_path = None, 
+                    fname_question_titles = "./templates/question_titles.txt"):
     """
     Append the contents of one Word document to another.
 
@@ -20,6 +24,7 @@ def append_doc_riaf(src_paths, dst_path, out_path = None):
         src_paths (str): Path to the source document.
         dst_path (str): Path to the destination document.
         out_path (str): Path to the output document. If None, the destination document will be overwritten.
+        fname_question_titles (str): Path to the file containing the question titles.
     """
     # check if src_paths is a list
     if not isinstance(src_paths, list):
@@ -30,8 +35,8 @@ def append_doc_riaf(src_paths, dst_path, out_path = None):
 
     # Load the source and destination documents
     dst_doc = Document(dst_path)
-    
-    for src_path in src_paths:
+
+    for i, src_path in enumerate(src_paths):
         # Load the source and destination documents
         src_doc = Document(src_path)
 
@@ -50,8 +55,21 @@ def append_doc_riaf(src_paths, dst_path, out_path = None):
             p.get_or_add_pPr().append(shading)
 
         # set text color and the background color of the first paragraph (title)
-        first_paragraph = src_doc.paragraphs[0] #.clear()
-        set_paragraph_styles(first_paragraph, text_color=(255, 255, 255), bg_color='000000') 
+        #first_paragraph = src_doc.paragraphs[0] #.clear()
+        try:
+            questions = []
+            with open(fname_question_titles, 'r') as file:
+                questions = file.readlines()
+            # format
+            questions = [q.strip() for q in questions]
+            # Add i. to the question titles
+            questions = [f"{i+1}. {q}" for i, q in enumerate(questions)]
+            # Add the question 
+            dst_doc.add_paragraph(questions[i])
+            end_paragraph = dst_doc.paragraphs[-1]
+            set_paragraph_styles(end_paragraph, text_color=(255, 255, 255), bg_color='000000') 
+        except:
+            logging.error(f"Error setting paragraph styles for question {i+1}")
 
         composer = Composer(dst_doc)
         composer.append(src_doc)
