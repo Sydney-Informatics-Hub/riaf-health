@@ -13,6 +13,7 @@ dependencies:
       - azure-identity
       - beautifulsoup4
       - biopython==1.84
+      - docxcompose
       - docx2txt==0.8
       - docxtpl==0.18.0
       - langchain-text-splitters
