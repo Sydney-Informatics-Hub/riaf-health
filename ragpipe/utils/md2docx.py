@@ -62,8 +62,11 @@ def append_doc_riaf(src_paths,
                 questions = file.readlines()
             # format
             questions = [q.strip() for q in questions]
-            # Add i. to the question titles
+            # Add i. to the question titles and line space
             questions = [f"{i+1}. {q}" for i, q in enumerate(questions)]
+            # Add empty line to dst_doc at end
+            if i > 0:
+                dst_doc.add_paragraph("")
             # Add the question 
             dst_doc.add_paragraph(questions[i])
             end_paragraph = dst_doc.paragraphs[-1]
@@ -91,6 +94,30 @@ def markdown_to_docx(input_path):
 
     # remove the temporary HTML file
     os.remove(output_path_html)
+
+
+def md2html(input_path):
+    """
+    Convert a Markdown file to an HTML file.
+
+    Args:
+        input_path (str): Path to the input Markdown file.
+    """
+    output_path = os.path.splitext(input_path)[0] + ".html"
+    #pypandoc.convert_file(input_path, format='md', to='html5', outputfile=output_path, extra_args=[f"--css={css_file}"])
+    pypandoc.convert_file(input_path, format='md', to='html5', outputfile=output_path)
+
+  
+
+def md2pdf(input_path):
+    """
+    Convert a Markdown file to a PDF file.
+
+    Args:
+        input_path (str): Path to the input Markdown file.
+    """
+    output_path = os.path.splitext(input_path)[0] + ".pdf"
+    pypandoc.convert_file(input_path, format='md', to='pdf', outputfile=output_path, extra_args=['-V', 'geometry:margin=2cm'])
 
 
 # Function to convert markdown to DOCX format
