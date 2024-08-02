@@ -3,6 +3,7 @@
 import os
 import json
 import logging
+import time
 
 from llama_index.core import load_index_from_storage
 from llama_index.core.retrievers import VectorIndexRetriever
@@ -40,12 +41,13 @@ from indexengine.process import (
     )
 from agentreviewer.agentreviewer import AgentReviewer
 from utils.md2docx import markdown_to_docx, append_doc_riaf
+from utils.references import clean_references
 
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
 _fname_question_titles = "question_titles.txt"
 _list_max_word =  [250, 300, 500, 300]
-_context_window = 20000
+_context_window = 32000
 _num_output = 1000
 _scholar_limit = 50
 _model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
@@ -227,7 +229,7 @@ class RAGscholar:
             system_prompt=system_prompt,
             llm = OpenAI(model = _model_llm),
             verbose=True,
-            similarity_top_k=10,
+            similarity_top_k=8,
             )
         
     def query_chatengine(self, query):
@@ -350,6 +352,8 @@ class RAGscholar:
             #while len(content.split()) > list_max_word[i]:
             #    logging.info("Word count exceeds maximum word count. Content is run again though the model.")
             #    content, _ = self.query_chatengine(f"Shorten the last response to {list_max_word[i]} words.")
+            # wait for 3 seconds
+            time.sleep(3)
             if review:
                 self.list_answers_draft.append(content) 
                 print(f"Review response to question {i} ...")
@@ -599,18 +603,26 @@ class RAGscholar:
         
 
     def generate_case_study(self, process_sources = False, make_docx = True):
+        """
+        Generate case study document from answers.
+        
+        :param make_docx: bool, make docx file
+        :param process_sources: bool, process sources
+        """
 
         # clean up context and save to file
         answers_docxfiles = []
         outpath_answers = os.path.join(self.outpath, "Answers_individual")
         os.makedirs(outpath_answers, exist_ok=True)
-        print("Saving individual answers to file ...")
+        print("Cleaning answers and saving each to file ...")
         logging.info("Saving individual answers to file ...")
         for i, answer in enumerate(self.list_answers):
             if answer.startswith("```markdown"):
                 answer = answer[11:]
             if answer.endswith("```"):
                 answer = answer[:-3]
+            # clean references by removing duplicates (might be needed for snippet extraction later)
+            answer = clean_references(answer)
             self.list_answers[i] = answer
             fname_md = os.path.join(outpath_answers, f"Answer_q{i+1}.md")
             # save answer as md and docx
@@ -628,7 +640,6 @@ class RAGscholar:
             # convert markdown to docx ad save to file
             markdown_to_docx(fname_md)
 
-        
         with open(self.fname_report_template, "r") as file:
             report = file.read()
         #report = json.dumps(report_text, indent=2)
