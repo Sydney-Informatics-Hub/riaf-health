@@ -12,6 +12,8 @@ techlab_deployment = 'GPT35shopfront'
 techlab_embedding = 'text-embedding-ada-002'
 techlab_api_version = '2023-12-01-preview'
 
+_chunksize = 512
+
 # see for latest https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation
 
 import os
@@ -93,6 +95,7 @@ def create_index(docstore,
         embed_model = embed_model,
         context_window=context_window,
         num_output=num_output,
+        chunk_size=_chunksize
         )
     # Create index
     index = VectorStoreIndex.from_documents(docstore, service_context=service_context)
