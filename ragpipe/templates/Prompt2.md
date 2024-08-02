@@ -15,8 +15,9 @@ Follow the RIAF context, answer this question by aligning up to five of the foll
 In your response have an appropriate category as a subtitle.
 Generate text with a strong emphasis on past tense.
 Describe outputs that have already occurred with certainty, avoiding speculative or conditional language.
+Do not repeat the program information above in your response.
 Support your statements with specific quantitative examples, references, or evidence related to RIAF indicators.
 
-Provide information on the direct products of research activities. Research outputs may include but not be limited to books, journal articles, conference contributions, and exhibitions. Highlight the key findings or insights presented in the output and explain their potential influence. Include any relevant dissemination or engagement activities that have been undertaken to ensure that the outputs have been widely shared and have reached the intended audiences. This may include discussing any partnerships or collaborations that have been formed as result of the outputs.
+Provide information on the direct products of research activities. Research outputs may include but not be limited to books, journal articles, conference contributions, and exhibitions. Highlight the key findings or insights presented in the output and explain their potential influence. Include any relevant dissemination or engagement activities that have been undertaken to ensure that the outputs have been widely shared and have reached the intended audiences. This may include discussing any partnerships or collaborations that have been formed as result of the outputs. 
 
 You MUST cite sources along with your answer. Add citation numbers in your answer behind each sentence and provide corresponding list of references below **References**."

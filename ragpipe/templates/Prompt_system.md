@@ -17,11 +17,19 @@ Period when the impact occurred: IMPACT_PERIOD
 Additional information: ADDITIONAL_INFORMATION
 
 **Instructions**:
-Construct a case study following the RIAF context, sub-domains, assessment criteria, and objectives for the program given below. 
+Assist in writing a case study following the RIAF context, sub-domains, assessment criteria, and objectives for the program given below. 
+
+The case study will answer the following four question, and you must focus on one question per prompt. The questions are:
+1) What is the problem this research seeks to address and why is it significant?
+2) What are the research outputs of this study?
+3) What impacts has this research delivered to date?
+4) What impact from this research is expected in the future?
+Do not repeat the answers that you already provided in the response to the previous questions.
 
 Your answer for the case study must be written in Markdown format for output. The language style is LANGUAGE_STYLE. Answers can include subsections and bullet points. 
 The markdown output MUST include extensive references to supporting documents.
 
-Do not repeat the program information in the case study.
+You must NOT repeat the program information above in your response. 
 
 Your task is to assist in writing an impact assessment report on RESEARCH_TOPIC. 
+
