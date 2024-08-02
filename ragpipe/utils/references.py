@@ -14,9 +14,10 @@ def clean_references(markdown_text):
     seen = {}
     cleaned_references = []
     for num, title, link in references:
-        if link not in seen:
+        if title.lower() != "ibid." and title.lower() != "ibid" and link not in seen:
             seen[link] = len(seen) + 1
             cleaned_references.append((seen[link], title, link))
+        
 
     # Replace the old reference numbers in the content with new numbers
     for old_num, title, link in references:
