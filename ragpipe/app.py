@@ -3,6 +3,8 @@ import subprocess
 import sys
 import os
 import time
+import zipfile
+import io
 
 
 def main():
@@ -118,38 +120,33 @@ def main():
                     """.format(content=use_case_study),
                     unsafe_allow_html=True,
                 )
+
+            # Add a button to download all results as a zip file
+            if st.button('Download Results'):                
+                # Create a BytesIO object to store the zip file
+                zip_buffer = io.BytesIO()
+                
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                    for root, dirs, files in os.walk(outpath):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            arcname = os.path.relpath(file_path, outpath)
+                            zip_file.write(file_path, arcname)
+                
+                # Set the buffer's position to the beginning
+                zip_buffer.seek(0)
+                
+                # Create a download button for the zip file
+                st.download_button(
+                    label="Download Results as ZIP",
+                    data=zip_buffer,
+                    file_name=f"Results_{fname_out}.zip",
+                    mime="application/zip"
+                )
         else:
             st.error('An error occurred while generating the use-case study.')
 
-    # Add a button to download all results as a zip file
-    if st.button('Download Results'):
-        fname_out = query_topic + "_by_" + query_author
-        fname_out = fname_out.replace(" ", "_")
-        outpath = os.path.join('../../results/', fname_out)
-        
-        # Create a BytesIO object to store the zip file
-        zip_buffer = io.BytesIO()
-        
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            for root, dirs, files in os.walk(outpath):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, outpath)
-                    zip_file.write(file_path, arcname)
-        
-        # Set the buffer's position to the beginning
-        zip_buffer.seek(0)
-        
-        # Create a download button for the zip file
-        st.download_button(
-            label="Download Results as ZIP",
-            data=zip_buffer,
-            file_name=f"{fname_out}_results.zip",
-            mime="application/zip"
-        )
 
-import zipfile
-import io
 
 if __name__ == '__main__':
     main()
