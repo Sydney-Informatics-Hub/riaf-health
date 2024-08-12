@@ -121,12 +121,6 @@ def main():
         else:
             st.error('An error occurred while generating the use-case study.')
 
-import zipfile
-import io
-
-if __name__ == '__main__':
-    main()
-
     # Add a button to download all results as a zip file
     if st.button('Download Results'):
         fname_out = query_topic + "_by_" + query_author
@@ -153,3 +147,9 @@ if __name__ == '__main__':
             file_name=f"{fname_out}_results.zip",
             mime="application/zip"
         )
+
+import zipfile
+import io
+
+if __name__ == '__main__':
+    main()
