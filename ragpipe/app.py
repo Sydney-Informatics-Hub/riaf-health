@@ -3,13 +3,18 @@ import subprocess
 import sys
 import os
 import time
-import zipfile
+import shutil
 import io
+
+OUTPATH = '../../results/'
 
 
 def main():
     #Streamlit's default configuration is for development  mode, which does not allow CORS requests.
     #st.set_option('server.enableCORS', True)
+    # Initialization
+    if 'stage' not in st.session_state:
+        st.session_state['stage'] = 'process'
 
     st.title(r"$\textsf{\tiny RIAF Use-Case-Study Generator}$")
     
@@ -102,15 +107,16 @@ def main():
             process.wait()
 
         if process.returncode == 0:
+            st.session_state['stage'] = 'generated'
             st.success('Use-case study generated successfully.')
             fname_out = query_topic + "_by_" + query_author
             fname_out = fname_out.replace(" ", "_")
-            outpath = os.path.join('../../results/', fname_out)
+            outpath = os.path.join(OUTPATH, fname_out)
             with open(os.path.join(outpath, "Use_Case_Study.md"), "r") as file:
                 use_case_study = file.read()
             # add scrollable textboxes for the generated use-case study
             # Write subheader "Generated Use-case Study"
-            st.subheader("Generated Use-case Study")
+            st.subheader("Preview")
             with st.container(height=500):
                 st.markdown(
                     """
@@ -120,31 +126,25 @@ def main():
                     """.format(content=use_case_study),
                     unsafe_allow_html=True,
                 )
-
-            # Add a button to download all results as a zip file
-            if st.button('Download Results'):                
-                # Create a BytesIO object to store the zip file
-                zip_buffer = io.BytesIO()
-                
-                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-                    for root, dirs, files in os.walk(outpath):
-                        for file in files:
-                            file_path = os.path.join(root, file)
-                            arcname = os.path.relpath(file_path, outpath)
-                            zip_file.write(file_path, arcname)
-                
-                # Set the buffer's position to the beginning
-                zip_buffer.seek(0)
-                
-                # Create a download button for the zip file
-                st.download_button(
-                    label="Download Results as ZIP",
-                    data=zip_buffer,
-                    file_name=f"Results_{fname_out}.zip",
-                    mime="application/zip"
-                )
         else:
+            st.session_state['stage'] = 'failed'
             st.error('An error occurred while generating the use-case study.')
+
+        # Add a button to download all results as a zip file
+        if st.session_state.stage == 'generated':          
+            # Create a BytesIO object to store the zip file
+            print('Creating zip file for results...')
+            zip_filename = os.path.join(OUTPATH,f"Results_{fname_out}")
+            shutil.make_archive(zip_filename, 'zip', outpath)
+            zip_filename = zip_filename + ".zip"
+
+            with open(zip_filename, "rb") as fp:
+                btn = st.download_button(
+                    label="Download Results",
+                    data=fp,
+                    file_name= f"Results_{fname_out}.zip",
+                    mime="application/zip"
+                )  
 
 
 
