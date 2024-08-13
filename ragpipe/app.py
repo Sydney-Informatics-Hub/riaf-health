@@ -33,14 +33,38 @@ def main():
 
     impact_period_start = 2013
     impact_period_end = 2023
-    path_documents = st.text_input(r"$\textsf{\small Local document store}$", value='../test_data/Weiss_docs')
+    #path_documents = st.text_input(r"$\textsf{\small Local document store}$", value='../test_data/Weiss_docs')
 
     # Additional context input
     additional_context = st.text_area(r"$\textsf{\small Additional context and instructions}$", value="", height=100)
 
-    # File uploaders
-    if st.file_uploader(r"$\textsf{\small Upload your documents}$", type=None, accept_multiple_files=True):
-        st.write('Documents uploaded!')
+    uploaded_files = st.file_uploader(r"$\textsf{\small Upload your documents}$", type=None, accept_multiple_files=True)
+    # Check if files are uploaded
+    if uploaded_files is not None:
+        # generate a temporary directory name with unique name
+        path_documents = os.path.join(OUTPATH, 'temp_' + str(int(time.time())))
+        os.makedirs(path_documents, exist_ok=True)
+        progress_bar = st.progress(0)
+        total_files = len(uploaded_files)
+        for i, uploaded_file in enumerate(uploaded_files):
+            # Create the full path for the file
+            save_path = os.path.join(path_documents, uploaded_file.name)
+            # Save the uploaded file to the specified path
+            with open(save_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            # Update the progress bar
+            progress_bar.progress((i + 1) / total_files)
+
+
+        for uploaded_file in uploaded_files:
+            # Create the full path for the file
+            save_path = os.path.join(path_documents, uploaded_file.name)
+            
+            # Save the uploaded file to the specified path
+            with open(save_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            
+            print(f"File {uploaded_file.name} saved to {save_path}")
 
     # Button to run the RAGscholar process
     if st.button('Generate Use-case Study'):
@@ -126,6 +150,9 @@ def main():
                     """.format(content=use_case_study),
                     unsafe_allow_html=True,
                 )
+            # Cleanup the temporary directory, check if exists first
+            if os.path.exists(path_documents):
+                shutil.rmtree(path_documents)
         else:
             st.session_state['stage'] = 'failed'
             st.error('An error occurred while generating the use-case study.')
