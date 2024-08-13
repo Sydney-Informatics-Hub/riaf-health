@@ -4,8 +4,8 @@ import sys
 import os
 import time
 import shutil
-import io
 
+# Define the output path for the generated use-case study
 OUTPATH = '../../results/'
 
 
@@ -135,6 +135,8 @@ def main():
             # Create a BytesIO object to store the zip file
             print('Creating zip file for results...')
             zip_filename = os.path.join(OUTPATH,f"Results_{fname_out}")
+            # add the time generated to the filename
+            zip_filename = zip_filename + "_" + time.strftime("%Y-%m-%d-%H%M")
             shutil.make_archive(zip_filename, 'zip', outpath)
             zip_filename = zip_filename + ".zip"
 
