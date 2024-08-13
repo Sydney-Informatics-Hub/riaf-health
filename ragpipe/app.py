@@ -56,16 +56,6 @@ def main():
             progress_bar.progress((i + 1) / total_files)
 
 
-        for uploaded_file in uploaded_files:
-            # Create the full path for the file
-            save_path = os.path.join(path_documents, uploaded_file.name)
-            
-            # Save the uploaded file to the specified path
-            with open(save_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            
-            print(f"File {uploaded_file.name} saved to {save_path}")
-
     # Button to run the RAGscholar process
     if st.button('Generate Use-case Study'):
 
