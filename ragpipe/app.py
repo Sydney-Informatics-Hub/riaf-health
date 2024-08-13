@@ -13,6 +13,8 @@ def main():
     #Streamlit's default configuration is for development  mode, which does not allow CORS requests.
     #st.set_option('server.enableCORS', True)
     # Initialization
+    if 'uploaded' not in st.session_state:
+        st.session_state['uploaded'] = 0
     if 'stage' not in st.session_state:
         st.session_state['stage'] = 'process'
 
@@ -35,24 +37,30 @@ def main():
     organisation = st.text_input(r"$\textsf{\small Organisation}$", value="The University of Sydney")
     language_style = st.selectbox(r"$\textsf{\small Language style for report}$", options=['analytical', 'journalistic', 'academic', 'legal', 'medical'], index=0)
 
-    #impact_period_start = 2013
-    #impact_period_end = 2023
-    #path_documents = st.text_input(r"$\textsf{\small Local document store}$", value='../test_data/Weiss_docs')
 
     # Additional context input
     additional_context = st.text_area(r"$\textsf{\small Additional context and instructions}$", value="", height=100)
 
     uploaded_files = st.file_uploader(r"$\textsf{\small Upload your documents}$", type=None, accept_multiple_files=True)
-    # Check if files are uploaded
-    if uploaded_files is not None:
-        # generate a temporary directory name with unique name
-        path_documents = os.path.join(OUTPATH, 'temp_' + str(time.time()))
-        os.makedirs(path_documents, exist_ok=True)
+    savefiles = False
+    if len(uploaded_files) > 0:
+        # check if the temporary directory exist already
+        if st.session_state.uploaded == 0:
+            path_documents = os.path.join(OUTPATH, 'temp_' + str(time.time()))
+            st.session_state['path_documents'] = path_documents
+            os.makedirs(path_documents, exist_ok=True)
+            savefiles = True
+        else:
+            # check if the uploaded files are different from the previous ones
+            if uploaded_files != st.session_state.uploaded:
+                savefiles = True
+    if savefiles:
+        st.session_state['uploaded'] = uploaded_files 
         progress_bar = st.progress(0)
         total_files = len(uploaded_files)
         for i, uploaded_file in enumerate(uploaded_files):
             # Create the full path for the file
-            save_path = os.path.join(path_documents, uploaded_file.name)
+            save_path = os.path.join(st.session_state.path_documents, uploaded_file.name)
             # Save the uploaded file to the specified path
             with open(save_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
@@ -77,7 +85,7 @@ def main():
             "--impact_period_end", str(impact_period_end),
             "--organisation", organisation,
             "--language_style", language_style,
-            "--path_documents", path_documents,
+            "--path_documents", st.session_state.path_documents,
             "--additional_context", additional_context
         ]
 
