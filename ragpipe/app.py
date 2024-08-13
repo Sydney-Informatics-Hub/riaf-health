@@ -27,12 +27,16 @@ def main():
         research_period_start = st.text_input(r"$\textsf{\small Research period start (year)}$", value=2013)
     with col2:
         research_period_end = st.text_input(r"$\textsf{\small Research period end (year)}$", value=2023)
+    with col1:
+        impact_period_start = st.text_input(r"$\textsf{\small Impact period start (year)}$", value=research_period_start )
+    with col2:
+        impact_period_end = st.text_input(r"$\textsf{\small Impact period end (year)}$", value=research_period_end)
 
     organisation = st.text_input(r"$\textsf{\small Organisation}$", value="The University of Sydney")
     language_style = st.selectbox(r"$\textsf{\small Language style for report}$", options=['analytical', 'journalistic', 'academic', 'legal', 'medical'], index=0)
 
-    impact_period_start = 2013
-    impact_period_end = 2023
+    #impact_period_start = 2013
+    #impact_period_end = 2023
     #path_documents = st.text_input(r"$\textsf{\small Local document store}$", value='../test_data/Weiss_docs')
 
     # Additional context input
@@ -42,7 +46,7 @@ def main():
     # Check if files are uploaded
     if uploaded_files is not None:
         # generate a temporary directory name with unique name
-        path_documents = os.path.join(OUTPATH, 'temp_' + str(int(time.time())))
+        path_documents = os.path.join(OUTPATH, 'temp_' + str(time.time()))
         os.makedirs(path_documents, exist_ok=True)
         progress_bar = st.progress(0)
         total_files = len(uploaded_files)
