@@ -52,6 +52,10 @@ _num_output = 1000
 _scholar_limit = 50
 _model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.0
+_outpath = '../../results/'
+_path_index_store = '../../index_store'
+_path_local_docs = './templates/docs'
+_path_local_data = './templates/data'
 
 
 class RAGscholar:
@@ -823,6 +827,7 @@ class RAGscholar:
         if local_document_path: 
             print("Adding documents from local folder ...")
             self.index = add_docs_to_index(local_document_path, self.index)  
+        
 
         # Initialize chat engine with context prompt
         logging.info("Initializing chat engine ...")
@@ -900,8 +905,8 @@ def main():
     rag = RAGscholar(path_templates='./templates/',
                     fname_system_prompt='Prompt_context.md',
                     fname_report_template='Report.md',
-                    outpath='../../results/',
-                    path_index='../../index_store',
+                    outpath=_outpath,
+                    path_index=_path_index_store,
                     path_documents=args.path_documents,
                     language_style=args.language_style,
                     load_index_from_storage=False)
@@ -915,7 +920,8 @@ def main():
             impact_start=args.impact_period_start,
             impact_end=args.impact_period_end,
             scholarai_delete_pdfs=False,
-            additional_context=args.additional_context
+            additional_context=args.additional_context.
+            local_document_path = _path_local_data
             )
     print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
 

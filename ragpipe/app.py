@@ -17,6 +17,8 @@ def main():
         st.session_state['uploaded'] = 0
     if 'stage' not in st.session_state:
         st.session_state['stage'] = 'process'
+    if 'path_documents' in st.session_state:
+        st.session_state['uploaded'] = None
 
     st.title(r"$\textsf{\tiny RIAF Use-Case-Study Generator}$")
     
