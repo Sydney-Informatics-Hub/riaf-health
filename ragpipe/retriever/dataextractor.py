@@ -222,31 +222,33 @@ class DataExtractor:
                 response = self.llm.chat(messages)
                 result = response.message.content.strip()
                 print(f"LLM result: {result}")
-                # Parse the response to get indices and scores
-                lines = result.split('\n')
-                relevant_indices = []
-                scores = []
-                for line in lines:
-                    if ':' in line:
-                        idx, score = line.split(':')
-                        relevant_indices.append(int(idx.strip()))
-                        scores.append(float(score.strip()))
+                # Parse the JSON response
+                data = json.loads(result)
+                relevant_indices = [item['index'] for item in data['relevant_items']]
+                scores = [item['score'] for item in data['relevant_items']]
                 return relevant_indices, scores
             except Exception as e:
-                logging.error(f"LLM not responding: {str(e)}")
+                logging.error(f"LLM not responding or invalid JSON: {str(e)}")
                 max_try += 1
                 time.sleep(3)
         return [], []
 
     def system_prompt_with_scores(self):
         return ("You are an AI assistant tasked with identifying relevant rows in a table and scoring their relevance. "
-                "Given a search query and table data, determine which rows are most relevant to the query and assign a relevance score between 0 and 1 for each relevant row.")
+                "Given a search query and table data, determine which rows are most relevant to the query and assign a relevance score between 0 and 1 for each relevant row. "
+                "Return the results as a JSON object.")
 
     def query_prompt_with_scores(self, query: str, batch_data: List[Dict[str, str]]) -> str:
         return (f"Given the search query: '{query}', analyze the following table data and return "
                 f"the indices of rows that are most relevant to the query along with their relevance scores. "
-                f"Return the results in the format 'index: score' (one per line), where the score is between 0 and 1.\n\n "
-                #f"Only include rows with a relevance score greater than 0.5.\n\n"
+                f"Return the results as a JSON object with the following structure:\n"
+                "{\n"
+                '  "relevant_items": [\n'
+                '    {"index": <row_index>, "score": <relevance_score>},\n'
+                '    ...\n'
+                '  ]\n'
+                "}\n"
+                f"Where <row_index> is an integer and <relevance_score> is a float between 0 and 1.\n\n"
                 f"Table data:\n{json.dumps(batch_data, indent=2)}")
     
 
