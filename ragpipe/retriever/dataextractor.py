@@ -32,7 +32,7 @@ class DataExtractor:
         self.llm = OpenAI(
             temperature=0,
             model=model,
-            max_tokens=4*self.batchsize)  # Increased max_tokens for more detailed responses
+            max_tokens=10*self.batchsize)  # Increased max_tokens for more detailed responses
         self.llm_service = os.getenv("OPENAI_API_TYPE")
 
     def system_prompt(self):
@@ -201,6 +201,7 @@ class DataExtractor:
 
             # Use the LLM model to determine which rows are relevant to the search query and their scores
             relevant_indices, scores = self.query_with_scores(query, batch_dict)
+            print(f"relevant_indices: {relevant_indices}, scores: {scores}")
             relevant_rows.extend(relevant_indices)
             relevance_scores.extend(scores)
 
@@ -220,6 +221,7 @@ class DataExtractor:
             try:
                 response = self.llm.chat(messages)
                 result = response.message.content.strip()
+                print(f"LLM result: {result}")
                 # Parse the response to get indices and scores
                 lines = result.split('\n')
                 relevant_indices = []
@@ -233,7 +235,7 @@ class DataExtractor:
             except Exception as e:
                 logging.error(f"LLM not responding: {str(e)}")
                 max_try += 1
-                time.sleep(5)
+                time.sleep(3)
         return [], []
 
     def system_prompt_with_scores(self):
@@ -243,9 +245,12 @@ class DataExtractor:
     def query_prompt_with_scores(self, query: str, batch_data: List[Dict[str, str]]) -> str:
         return (f"Given the search query: '{query}', analyze the following table data and return "
                 f"the indices of rows that are most relevant to the query along with their relevance scores. "
-                f"Return the results in the format 'index: score' (one per line), where the score is between 0 and 1. "
-                f"Only include rows with a relevance score greater than 0.5.\n\n"
+                f"Return the results in the format 'index: score' (one per line), where the score is between 0 and 1.\n\n "
+                #f"Only include rows with a relevance score greater than 0.5.\n\n"
                 f"Table data:\n{json.dumps(batch_data, indent=2)}")
+    
+
+### test functions
 
 def test_dataextractor():
     """
@@ -305,6 +310,74 @@ def test_on_file():
         column_names,
         topic,
         relevance_ranking = True
+    )
+
+    # Check if the result is a DataFrame
+    assert isinstance(result, pd.DataFrame), "Result should be a pandas DataFrame"
+
+    # Check if the relevant row was extracted
+    assert len(result) == 1, "Expected 1 relevant row"
+    assert result.iloc[0]['title'] == "AI in Healthcare", "Expected to extract the AI in Healthcare row"
+
+    print("DataExtractor test on file passed successfully!")
+
+
+def test_dataextractor_score():
+    """
+    Test function for the DataExtractor class.
+    """
+
+    # Create a temporary CSV file for testing
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv') as temp_file:
+        temp_file.write("id,title,content\n")
+        temp_file.write("1,AI in Healthcare,Artificial Intelligence is revolutionizing healthcare.\n")
+        temp_file.write("2,Climate Change,Global warming is a pressing issue.\n")
+        temp_file.write("3,Space Exploration,NASA plans new missions to Mars.\n")
+        temp_filename = temp_file.name
+
+    try:
+        # Initialize DataExtractor
+        extractor = DataExtractor(batchsize=2)
+
+        # Test extract_relevant_data_from_table method
+        result = extractor.extract_score_data_from_table(
+            temp_filename,
+            ['title', 'content'],
+            "AI applications in healthcare"
+        )
+
+        # Check if the result is a DataFrame
+        assert isinstance(result, pd.DataFrame), "Result should be a pandas DataFrame"
+
+        # Check if the relevant row was extracted
+        assert len(result) == 1, "Expected 1 relevant row"
+        assert result.iloc[0]['title'] == "AI in Healthcare", "Expected to extract the AI in Healthcare row"
+
+        print("DataExtractor test passed successfully!")
+
+    finally:
+        # Clean up: remove the temporary file
+        os.unlink(temp_filename)
+
+
+def test_scores_on_file():
+    """
+    Test function for the DataExtractor class using a sample file.
+    """
+    # Initialize DataExtractor
+    extractor = DataExtractor()
+
+    topic = "Elastagan is a flexible, elastic material designed for medical applications,\
+        offering durability and comfort in wound care and surgical products."
+    
+    filename = "templates/data/Australia-Burden-of-Disease-Catalogue_2023.xlsx"
+    column_names = ['category', 'disease']
+
+    # Test extract_relevant_data_from_table method
+    result = extractor.extract_score_data_from_table(
+        filename,
+        column_names,
+        topic
     )
 
     # Check if the result is a DataFrame
