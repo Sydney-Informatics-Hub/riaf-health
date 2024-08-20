@@ -26,7 +26,7 @@ from llama_index.core.llms import ChatMessage
 
 class DataExtractor:
 
-    def __init__(self, model="gpt-4o-mini", batchsize=20):
+    def __init__(self, model="gpt-4o-mini", batchsize=10):
         self.batchsize = batchsize
         load_api_key(toml_file_path='secrets.toml')
         self.llm = OpenAI(
@@ -42,7 +42,8 @@ class DataExtractor:
     def query_prompt(self, query: str, batch_data: List[Dict[str, str]]) -> str:
         return (f"Given the search query: '{query}', analyze the following table data and return "
                 f"the indices of rows that are most relevant to the query. Only return the indices "
-                f"as a comma-separated list of numbers.\n\nTable data:\n{json.dumps(batch_data, indent=2)}")
+                f"as a comma-separated list of numbers.\n\n"
+                f"Table data:\n{json.dumps(batch_data, indent=2)}")
 
     def query(self, query: str, batch_data: List[Dict[str, str]]) -> List[int]:
         messages = [
@@ -59,6 +60,7 @@ class DataExtractor:
                 relevant_indices = [int(idx.strip()) for idx in result.split(',') if idx.strip().isdigit()]
                 return relevant_indices
             except Exception as e:
+                print(f"LLM not responding: {str(e)}")
                 logging.error(f"LLM not responding: {str(e)}")
                 max_try += 1
                 time.sleep(5)
@@ -133,23 +135,75 @@ class DataExtractor:
                 row_dict['row_index'] = index
                 batch_dict.append(row_dict)
 
-                # Use the LLM model to determine which rows are relevant to the search query
-                relevant_indices = self.query(query, batch_dict)
-                relevant_rows.extend(relevant_indices)
+            # Use the LLM model to determine which rows are relevant to the search query
+            relevant_indices = self.query(query, batch_dict)
+            relevant_rows.extend(relevant_indices)
 
         result = df.iloc[relevant_rows]
         if relevance_ranking:
+            print("not ranked results:")
+            print(result)
             # Rank and order the relevant rows in results by relevance
-            batch_dict = []
+            res_dict = []
             for index, row in result.iterrows():
                 row_dict = {col: str(row[col]) for col in column_names}
                 row_dict['row_index'] = index
-                batch_dict.append(row_dict)
-            
-            ranked_indices = self.rank_relevant_rows(query, batch_dict)
+                res_dict.append(row_dict)
+
+            ranked_indices = self.rank_relevant_rows(query, res_dict)
             result = result.loc[ranked_indices]
 
         # Return the relevant rows as a pandas dataframe, ordered by relevance if ranking was applied
+        return result
+    
+
+
+    def extract_score_data_from_table(self, path_file: str, 
+                                         column_names: List[str], 
+                                         query: str) -> pd.DataFrame:
+        """
+        Extract relevant rows for a table that are relevant to a search query using LLM and provide relevance scores.
+
+        :param path_file: str, path to the table file (excel or csv)
+        :param column_names: List[str], list of column names to consider
+        :param query: str, search query
+        :param relevance_ranking: bool, whether to rank the results by relevance
+        :return: pd.DataFrame, relevant rows from the table, ordered by relevance if specified
+        """
+        # Load the table into a pandas dataframe
+        if path_file.endswith('.csv'):
+            df = pd.read_csv(path_file)
+        elif path_file.endswith('.xlsx'):
+            df = pd.read_excel(path_file)
+        else:
+            raise ValueError("File type not supported. Please provide a csv or excel file.")
+
+        # Ensure all specified column names exist in the dataframe
+        if not all(col in df.columns for col in column_names):
+            raise ValueError("One or more specified column names do not exist in the table.")
+
+        # Batch data in the table
+        n_batches = len(df) // self.batchsize
+        if len(df) % self.batchsize != 0:
+            n_batches += 1
+
+        relevant_rows = []
+        for i in range(n_batches):
+            start = i * self.batchsize
+            end = min((i + 1) * self.batchsize, len(df))
+            batch = df.iloc[start:end]
+            batch_dict = []
+            for index, row in batch.iterrows():
+                row_dict = {col: str(row[col]) for col in column_names}
+                row_dict['row_index'] = index
+                batch_dict.append(row_dict)
+
+            # Use the LLM model to determine which rows are relevant to the search query
+            relevant_indices = self.query(query, batch_dict)
+            relevant_rows.extend(relevant_indices)
+
+        result = df.iloc[relevant_rows]
+
         return result
 
 def test_dataextractor():
@@ -173,7 +227,8 @@ def test_dataextractor():
         result = extractor.extract_relevant_data_from_table(
             temp_filename,
             ['title', 'content'],
-            "AI applications in healthcare"
+            "AI applications in healthcare",
+            relevance_ranking=True
         )
 
         # Check if the result is a DataFrame
@@ -208,7 +263,7 @@ def test_on_file():
         filename,
         column_names,
         topic,
-        relevance_ranking=True
+        relevance_ranking = True
     )
 
     # Check if the result is a DataFrame
