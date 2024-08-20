@@ -14,9 +14,10 @@ Also include the row index as a key. Add to a list of dicts for the batch.
 """
 import os
 import time
+import json
 import pandas as pd
 import logging
-from typing import List
+from typing import List, Dict
 from utils.envloader import load_api_key
 from llama_index.llms.openai import OpenAI
 from llama_index.core.llms import ChatMessage
