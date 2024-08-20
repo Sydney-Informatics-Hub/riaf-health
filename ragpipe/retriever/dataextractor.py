@@ -167,8 +167,7 @@ class DataExtractor:
         :param path_file: str, path to the table file (excel or csv)
         :param column_names: List[str], list of column names to consider
         :param query: str, search query
-        :param relevance_ranking: bool, whether to rank the results by relevance
-        :return: pd.DataFrame, relevant rows from the table, ordered by relevance if specified
+        :return: pd.DataFrame, relevant rows from the table with relevance scores
         """
         # Load the table into a pandas dataframe
         if path_file.endswith('.csv'):
@@ -188,6 +187,8 @@ class DataExtractor:
             n_batches += 1
 
         relevant_rows = []
+        relevance_scores = []
+
         for i in range(n_batches):
             start = i * self.batchsize
             end = min((i + 1) * self.batchsize, len(df))
@@ -198,13 +199,53 @@ class DataExtractor:
                 row_dict['row_index'] = index
                 batch_dict.append(row_dict)
 
-            # Use the LLM model to determine which rows are relevant to the search query
-            relevant_indices = self.query(query, batch_dict)
+            # Use the LLM model to determine which rows are relevant to the search query and their scores
+            relevant_indices, scores = self.query_with_scores(query, batch_dict)
             relevant_rows.extend(relevant_indices)
+            relevance_scores.extend(scores)
 
-        result = df.iloc[relevant_rows]
+        result = df.iloc[relevant_rows].copy()
+        result['relevance_score'] = relevance_scores
 
-        return result
+        return result.sort_values('relevance_score', ascending=False)
+
+    def query_with_scores(self, query: str, batch_data: List[Dict[str, str]]) -> Tuple[List[int], List[float]]:
+        messages = [
+            ChatMessage(role="system", content=self.system_prompt_with_scores()),
+            ChatMessage(role="user", content=self.query_prompt_with_scores(query, batch_data)),
+        ]
+        result = None
+        max_try = 0
+        while result is None and max_try < 3:
+            try:
+                response = self.llm.chat(messages)
+                result = response.message.content.strip()
+                # Parse the response to get indices and scores
+                lines = result.split('\n')
+                relevant_indices = []
+                scores = []
+                for line in lines:
+                    if ':' in line:
+                        idx, score = line.split(':')
+                        relevant_indices.append(int(idx.strip()))
+                        scores.append(float(score.strip()))
+                return relevant_indices, scores
+            except Exception as e:
+                logging.error(f"LLM not responding: {str(e)}")
+                max_try += 1
+                time.sleep(5)
+        return [], []
+
+    def system_prompt_with_scores(self):
+        return ("You are an AI assistant tasked with identifying relevant rows in a table and scoring their relevance. "
+                "Given a search query and table data, determine which rows are most relevant to the query and assign a relevance score between 0 and 1 for each relevant row.")
+
+    def query_prompt_with_scores(self, query: str, batch_data: List[Dict[str, str]]) -> str:
+        return (f"Given the search query: '{query}', analyze the following table data and return "
+                f"the indices of rows that are most relevant to the query along with their relevance scores. "
+                f"Return the results in the format 'index: score' (one per line), where the score is between 0 and 1. "
+                f"Only include rows with a relevance score greater than 0.5.\n\n"
+                f"Table data:\n{json.dumps(batch_data, indent=2)}")
 
 def test_dataextractor():
     """
