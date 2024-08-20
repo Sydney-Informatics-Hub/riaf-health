@@ -68,9 +68,13 @@ class DataExtractor:
         # Order the rows by relevance
         messages = [
             ChatMessage(role="system", content=self.system_prompt()),
-            ChatMessage(role="user", content=f"Given the search query: '{query}', analyze the following table data" + 
-                        "and return the indices of rows ordered by their relevance to the query, from most relevant to least relevant." +  
-                        f"Only return the indices as a comma-separated list of numbers.\n\nTable data:\n{json.dumps(batch_data, indent=2)}"),
+            ChatMessage(role="user", content=(
+                f"Given the search query: '{query}', analyze the following table data "
+                "and return the indices of rows ordered by their relevance to the query, "
+                "from most relevant to least relevant. "
+                "Only return the indices as a comma-separated list of numbers.\n\n"
+                f"Table data:\n{json.dumps(batch_data, indent=2)}"
+            )),
         ]
         
         result = None
