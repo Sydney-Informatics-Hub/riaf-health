@@ -18,7 +18,7 @@ import json
 import pandas as pd
 import logging
 import tempfile
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from utils.envloader import load_api_key
 from llama_index.llms.openai import OpenAI
 from llama_index.core.llms import ChatMessage
