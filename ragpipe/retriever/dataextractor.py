@@ -215,17 +215,33 @@ class DataExtractor:
             ChatMessage(role="system", content=self.system_prompt_with_scores()),
             ChatMessage(role="user", content=self.query_prompt_with_scores(query, batch_data)),
         ]
+        response_format = {
+            "type": "object",
+            "properties": {
+                "relevant_items": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "index": {"type": "integer"},
+                            "score": {"type": "number"}
+                        },
+                        "required": ["index", "score"]
+                    }
+                }
+            },
+            "required": ["relevant_items"]
+        }
         result = None
         max_try = 0
         while result is None and max_try < 3:
             try:
-                response = self.llm.chat(messages)
-                result = response.message.content.strip()
+                response = self.llm.chat(messages, response_format=response_format)
+                result = response.message.content
                 print(f"LLM result: {result}")
-                # Parse the JSON response
-                data = json.loads(result)
-                relevant_indices = [item['index'] for item in data['relevant_items']]
-                scores = [item['score'] for item in data['relevant_items']]
+                # The result is already a parsed JSON object
+                relevant_indices = [item['index'] for item in result['relevant_items']]
+                scores = [item['score'] for item in result['relevant_items']]
                 return relevant_indices, scores
             except Exception as e:
                 logging.error(f"LLM not responding or invalid JSON: {str(e)}")
