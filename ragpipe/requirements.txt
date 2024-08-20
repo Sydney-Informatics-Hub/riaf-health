@@ -18,6 +18,7 @@ llama-index-llms-azure-openai==0.1.9
 llama-index-readers-file==0.1.30
 llama-index-readers-web==0.1.23
 openai==1.36.1
+openpyxl
 pymupdf
 pypandoc_binary
 pypdf
