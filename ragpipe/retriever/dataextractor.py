@@ -127,14 +127,16 @@ class DataExtractor:
                 row_dict['row_index'] = index
                 batch_dict.append(row_dict)
 
-            if relevance_ranking:
-                # Use the LLM model to determine and rank relevant rows
-                ranked_indices = self.rank_relevant_rows(query, batch_dict)
-                relevant_rows.extend(ranked_indices)
-            else:
                 # Use the LLM model to determine which rows are relevant to the search query
                 relevant_indices = self.query(query, batch_dict)
                 relevant_rows.extend(relevant_indices)
+
+        result = df.iloc[relevant_rows]
+        if relevance_ranking:
+            # Rank and order the relevant rows in results by relevance
+            
+
+
 
         # Return the relevant rows as a pandas dataframe, ordered by relevance if ranking was applied
         return df.iloc[relevant_rows]
