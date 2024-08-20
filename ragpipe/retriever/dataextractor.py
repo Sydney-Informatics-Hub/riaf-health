@@ -65,7 +65,26 @@ class DataExtractor:
         return []
     
     def rank_relevant_rows(self, query: str, batch_data: List[Dict[str, str]]) -> List[int]:
-        # order the rows by relevance
+        # Order the rows by relevance
+        messages = [
+            ChatMessage(role="system", content=self.system_prompt()),
+            ChatMessage(role="user", content=f"Given the search query: '{query}', analyze the following table data and return the indices of rows ordered by their relevance to the query, from most relevant to least relevant. Only return the indices as a comma-separated list of numbers.\n\nTable data:\n{json.dumps(batch_data, indent=2)}"),
+        ]
+        
+        result = None
+        max_try = 0
+        while result is None and max_try < 3:
+            try:
+                response = self.llm.chat(messages)
+                result = response.message.content.strip()
+                # Parse the comma-separated list of indices
+                ranked_indices = [int(idx.strip()) for idx in result.split(',') if idx.strip().isdigit()]
+                return ranked_indices
+            except Exception as e:
+                logging.error(f"LLM not responding: {str(e)}")
+                max_try += 1
+                time.sleep(5)
+        return []
 
     def extract_relevant_data_from_table(self, path_file: str, 
                                          column_names: List[str], 
@@ -77,8 +96,8 @@ class DataExtractor:
         :param path_file: str, path to the table file (excel or csv)
         :param column_names: List[str], list of column names to consider
         :param query: str, search query
-        :param batchsize: int, batch size for processing the table
-        :return: pd.DataFrame, relevant rows from the table
+        :param relevance_ranking: bool, whether to rank the results by relevance
+        :return: pd.DataFrame, relevant rows from the table, ordered by relevance if specified
         """
         # Load the table into a pandas dataframe
         if path_file.endswith('.csv'):
@@ -108,11 +127,16 @@ class DataExtractor:
                 row_dict['row_index'] = index
                 batch_dict.append(row_dict)
 
-            # Use the LLM model to determine which rows are relevant to the search query
-            relevant_indices = self.query(query, batch_dict)
-            relevant_rows.extend(relevant_indices)
+            if relevance_ranking:
+                # Use the LLM model to determine and rank relevant rows
+                ranked_indices = self.rank_relevant_rows(query, batch_dict)
+                relevant_rows.extend(ranked_indices)
+            else:
+                # Use the LLM model to determine which rows are relevant to the search query
+                relevant_indices = self.query(query, batch_dict)
+                relevant_rows.extend(relevant_indices)
 
-        # Return the relevant rows as a pandas dataframe
+        # Return the relevant rows as a pandas dataframe, ordered by relevance if ranking was applied
         return df.iloc[relevant_rows]
 
 def test_dataextractor():
