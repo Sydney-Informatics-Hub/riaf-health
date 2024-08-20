@@ -17,6 +17,7 @@ import time
 import json
 import pandas as pd
 import logging
+import tempfile
 from typing import List, Dict
 from utils.envloader import load_api_key
 from llama_index.llms.openai import OpenAI
@@ -25,12 +26,13 @@ from llama_index.core.llms import ChatMessage
 
 class DataExtractor:
 
-    def __init__(self, model="gpt-4o-mini"):
+    def __init__(self, model="gpt-4o-mini", batchsize=20):
+        self.batchsize = batchsize
         load_api_key(toml_file_path='secrets.toml')
         self.llm = OpenAI(
             temperature=0,
             model=model,
-            max_tokens=512)  # Increased max_tokens for more detailed responses
+            max_tokens=4*self.batchsize)  # Increased max_tokens for more detailed responses
         self.llm_service = os.getenv("OPENAI_API_TYPE")
 
     def system_prompt(self):
@@ -64,7 +66,7 @@ class DataExtractor:
 
     def extract_relevant_data_from_table(self, path_file: str, 
                                          column_names: List[str], 
-                                         query: str, batchsize: int = 20) -> pd.DataFrame:
+                                         query: str) -> pd.DataFrame:
         """
         Extract relevant rows from a table that are relevant to a search query using LLM.
 
@@ -87,14 +89,14 @@ class DataExtractor:
             raise ValueError("One or more specified column names do not exist in the table.")
 
         # Batch data in the table
-        n_batches = len(df) // batchsize
-        if len(df) % batchsize != 0:
+        n_batches = len(df) // self.batchsize
+        if len(df) % self.batchsize != 0:
             n_batches += 1
 
         relevant_rows = []
         for i in range(n_batches):
-            start = i * batchsize
-            end = min((i + 1) * batchsize, len(df))
+            start = i * self.batchsize
+            end = min((i + 1) * self.batchsize, len(df))
             batch = df.iloc[start:end]
             batch_dict = []
             for index, row in batch.iterrows():
@@ -113,9 +115,6 @@ def test_dataextractor():
     """
     Test function for the DataExtractor class.
     """
-    import pandas as pd
-    import tempfile
-    import os
 
     # Create a temporary CSV file for testing
     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv') as temp_file:
@@ -127,14 +126,13 @@ def test_dataextractor():
 
     try:
         # Initialize DataExtractor
-        extractor = DataExtractor()
+        extractor = DataExtractor(batchsize=2)
 
         # Test extract_relevant_data_from_table method
         result = extractor.extract_relevant_data_from_table(
             temp_filename,
             ['title', 'content'],
-            "AI in healthcare",
-            batchsize=2
+            "AI applications in healthcare"
         )
 
         # Check if the result is a DataFrame
@@ -150,5 +148,32 @@ def test_dataextractor():
         # Clean up: remove the temporary file
         os.unlink(temp_filename)
 
-if __name__ == "__main__":
-    test_dataextractor()
+
+def test_on_file():
+    """
+    Test function for the DataExtractor class using a sample file.
+    """
+    # Initialize DataExtractor
+    extractor = DataExtractor()
+
+    topic = "Elastagan is a flexible, elastic material designed for medical applications,\
+        offering durability and comfort in wound care and surgical products."
+    
+    filename = "templates/data/Australia-Burden-of-Disease-Catalogue_2023.xlsx"
+    column_names = ['category', 'disease']
+
+    # Test extract_relevant_data_from_table method
+    result = extractor.extract_relevant_data_from_table(
+        filename,
+        column_names,
+        topic
+    )
+
+    # Check if the result is a DataFrame
+    assert isinstance(result, pd.DataFrame), "Result should be a pandas DataFrame"
+
+    # Check if the relevant row was extracted
+    assert len(result) == 1, "Expected 1 relevant row"
+    assert result.iloc[0]['title'] == "AI in Healthcare", "Expected to extract the AI in Healthcare row"
+
+    print("DataExtractor test on file passed successfully!")
