@@ -63,10 +63,14 @@ class DataExtractor:
                 max_try += 1
                 time.sleep(5)
         return []
+    
+    def rank_relevant_rows(self, query: str, batch_data: List[Dict[str, str]]) -> List[int]:
+        # order the rows by relevance
 
     def extract_relevant_data_from_table(self, path_file: str, 
                                          column_names: List[str], 
-                                         query: str) -> pd.DataFrame:
+                                         query: str,
+                                         relevance_ranking = True) -> pd.DataFrame:
         """
         Extract relevant rows from a table that are relevant to a search query using LLM.
 
