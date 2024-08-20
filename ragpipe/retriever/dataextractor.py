@@ -29,34 +29,37 @@ class DataExtractor:
         self.llm = OpenAI(
             temperature=0,
             model=model,
-            max_tokens=3)
+            max_tokens=512)  # Increased max_tokens for more detailed responses
         self.llm_service = os.getenv("OPENAI_API_TYPE")
-        self.llm = OpenAI(model=model)
 
     def system_prompt(self):
-        pass
+        return ("You are an AI assistant tasked with identifying relevant rows in a table. "
+                "Given a search query and table data, determine which rows are most relevant to the query.")
 
-    def query_prompt(self):
-        pass
+    def query_prompt(self, query: str, batch_data: List[Dict[str, str]]) -> str:
+        return (f"Given the search query: '{query}', analyze the following table data and return "
+                f"the indices of rows that are most relevant to the query. Only return the indices "
+                f"as a comma-separated list of numbers.\n\nTable data:\n{json.dumps(batch_data, indent=2)}")
 
-    def query(self, query):
+    def query(self, query: str, batch_data: List[Dict[str, str]]) -> List[int]:
         messages = [
-            ChatMessage(role="system", content=self.system_prompt),
-            ChatMessage(role="user", content=self.query_prompt),
+            ChatMessage(role="system", content=self.system_prompt()),
+            ChatMessage(role="user", content=self.query_prompt(query, batch_data)),
         ]
         result = None
         max_try = 0
         while result is None and max_try < 3:
             try:
                 response = self.llm.chat(messages)
-                result = response.message.content.strip().lower()
-            except:
-                logging.error(f"LLM not responding")
+                result = response.message.content.strip()
+                # Parse the comma-separated list of indices
+                relevant_indices = [int(idx.strip()) for idx in result.split(',') if idx.strip().isdigit()]
+                return relevant_indices
+            except Exception as e:
+                logging.error(f"LLM not responding: {str(e)}")
                 max_try += 1
-                # sleep for 5 seconds to avoid rate limit
                 time.sleep(5)
-
-        return result
+        return []
 
     def extract_relevant_data_from_table(self, path_file: str, 
                                          column_names: List[str], 
@@ -78,8 +81,9 @@ class DataExtractor:
         else:
             raise ValueError("File type not supported. Please provide a csv or excel file.")
 
-        # Load the LLM model
-        llm = OpenAI(model="gpt-4o-mini")
+        # Ensure all specified column names exist in the dataframe
+        if not all(col in df.columns for col in column_names):
+            raise ValueError("One or more specified column names do not exist in the table.")
 
         # Batch data in the table
         n_batches = len(df) // batchsize
@@ -93,10 +97,12 @@ class DataExtractor:
             batch = df.iloc[start:end]
             batch_dict = []
             for index, row in batch.iterrows():
-                # pass
+                row_dict = {col: str(row[col]) for col in column_names}
+                row_dict['row_index'] = index
+                batch_dict.append(row_dict)
 
             # Use the LLM model to determine which rows are relevant to the search query
-            relevant_indices = llm.query(query, batch_dict)
+            relevant_indices = self.query(query, batch_dict)
             relevant_rows.extend(relevant_indices)
 
         # Return the relevant rows as a pandas dataframe
