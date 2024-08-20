@@ -216,30 +216,32 @@ class DataExtractor:
             ChatMessage(role="user", content=self.query_prompt_with_scores(query, batch_data)),
         ]
         response_format = {
-            "type": "object",
-            "properties": {
-                "relevant_items": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "index": {"type": "integer"},
-                            "score": {"type": "number"}
-                        },
-                        "required": ["index", "score"]
+            "type": "json_object",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "relevant_items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "index": {"type": "integer"},
+                                "score": {"type": "number"}
+                            },
+                            "required": ["index", "score"]
+                        }
                     }
-                }
-            },
-            "required": ["relevant_items"]
+                },
+                "required": ["relevant_items"]
+            }
         }
         result = None
         max_try = 0
         while result is None and max_try < 3:
             try:
                 response = self.llm.chat(messages, response_format=response_format)
-                result = response.message.content
+                result = json.loads(response.message.content)
                 print(f"LLM result: {result}")
-                # The result is already a parsed JSON object
                 relevant_indices = [item['index'] for item in result['relevant_items']]
                 scores = [item['score'] for item in result['relevant_items']]
                 return relevant_indices, scores
