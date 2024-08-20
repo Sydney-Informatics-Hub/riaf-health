@@ -134,12 +134,17 @@ class DataExtractor:
         result = df.iloc[relevant_rows]
         if relevance_ranking:
             # Rank and order the relevant rows in results by relevance
+            batch_dict = []
+            for index, row in result.iterrows():
+                row_dict = {col: str(row[col]) for col in column_names}
+                row_dict['row_index'] = index
+                batch_dict.append(row_dict)
             
-
-
+            ranked_indices = self.rank_relevant_rows(query, batch_dict)
+            result = result.loc[ranked_indices]
 
         # Return the relevant rows as a pandas dataframe, ordered by relevance if ranking was applied
-        return df.iloc[relevant_rows]
+        return result
 
 def test_dataextractor():
     """
