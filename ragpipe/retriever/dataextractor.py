@@ -108,3 +108,47 @@ class DataExtractor:
 
         # Return the relevant rows as a pandas dataframe
         return df.iloc[relevant_rows]
+
+def test_dataextractor():
+    """
+    Test function for the DataExtractor class.
+    """
+    import pandas as pd
+    import tempfile
+    import os
+
+    # Create a temporary CSV file for testing
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv') as temp_file:
+        temp_file.write("id,title,content\n")
+        temp_file.write("1,AI in Healthcare,Artificial Intelligence is revolutionizing healthcare.\n")
+        temp_file.write("2,Climate Change,Global warming is a pressing issue.\n")
+        temp_file.write("3,Space Exploration,NASA plans new missions to Mars.\n")
+        temp_filename = temp_file.name
+
+    try:
+        # Initialize DataExtractor
+        extractor = DataExtractor()
+
+        # Test extract_relevant_data_from_table method
+        result = extractor.extract_relevant_data_from_table(
+            temp_filename,
+            ['title', 'content'],
+            "AI in healthcare",
+            batchsize=2
+        )
+
+        # Check if the result is a DataFrame
+        assert isinstance(result, pd.DataFrame), "Result should be a pandas DataFrame"
+
+        # Check if the relevant row was extracted
+        assert len(result) == 1, "Expected 1 relevant row"
+        assert result.iloc[0]['title'] == "AI in Healthcare", "Expected to extract the AI in Healthcare row"
+
+        print("DataExtractor test passed successfully!")
+
+    finally:
+        # Clean up: remove the temporary file
+        os.unlink(temp_filename)
+
+if __name__ == "__main__":
+    test_dataextractor()
