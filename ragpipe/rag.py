@@ -618,10 +618,12 @@ class RAGscholar:
         for filename in os.listdir(path_files):
             if filename.endswith(('.csv', '.xlsx')):
                 file_path = os.path.join(path_files, filename)
+                print(f"Extracting relevant data from {filename} ...")
                 
                 # Use DataExtractor to get relevant data
                 extractor = DataExtractor()
                 result_df = extractor.extract_relevant_data_from_table(file_path, column_names, query_string)
+                logging.info(f"Extracted {len(result_df)} relevant data rows from {filename}.")
                 
                 # Add top 5 rows of each table to self.context
                 table_content = f"\n\n### Data from {filename}\n\n"
