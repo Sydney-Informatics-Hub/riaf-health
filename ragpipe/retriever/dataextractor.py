@@ -125,10 +125,15 @@ class DataExtractor:
             df = pd.read_excel(path_file)
         else:
             raise ValueError("File type not supported. Please provide a csv or excel file.")
+        
+        # check which column names exist in the dataframe (case insensitive)
+        column_names = [col for col in column_names if col.lower() in [c.lower() for c in df.columns]]
+        # Check if at least one column name exists in the dataframe
+        if not column_names:
+            raise ValueError("None of the specified column names exist in the table.")
+        # convert column names in df to lowercase, Only the ones that match column_names (case insensitive)
+        df.columns = [col.lower() if col.lower() in [c.lower() for c in column_names] else col for col in df.columns]
 
-        # Ensure all specified column names exist in the dataframe
-        if not all(col in df.columns for col in column_names):
-            raise ValueError("One or more specified column names do not exist in the table.")
 
         # Batch data in the table
         n_batches = len(df) // self.batchsize
@@ -188,9 +193,13 @@ class DataExtractor:
         else:
             raise ValueError("File type not supported. Please provide a csv or excel file.")
 
-        # Ensure all specified column names exist in the dataframe
-        if not all(col in df.columns for col in column_names):
-            raise ValueError("One or more specified column names do not exist in the table.")
+        # check which column names exist in the dataframe (case insensitive)
+        column_names = [col for col in column_names if col.lower() in [c.lower() for c in df.columns]]
+        # Check if at least one column name exists in the dataframe
+        if not column_names:
+            raise ValueError("None of the specified column names exist in the table.")
+        # convert column names in df to lowercase, Only the ones that match column_names (case insensitive)
+        df.columns = [col.lower() if col.lower() in [c.lower() for c in column_names] else col for col in df.columns]
 
         # Batch data in the table
         n_batches = len(df) // self.batchsize
@@ -267,7 +276,10 @@ class DataExtractor:
                 f"Table data:\n{json.dumps(batch_data, indent=2)}")
     
 
-### test functions
+
+
+
+####### Test functions ########
 
 def test_dataextractor():
     """
@@ -318,7 +330,8 @@ def test_on_file():
     topic = "Elastagan is a flexible, elastic material designed for medical applications,\
         offering durability and comfort in wound care and surgical products."
     
-    filename = "templates/data/Australia-Burden-of-Disease-Catalogue_2023.xlsx"
+    #filename = "templates/data/Australia-Burden-of-Disease-Catalogue_2023.xlsx"
+    filename ="templates/data/Australia_Causes-of-Death.xlsx"
     column_names = ['category', 'disease']
 
     # Test extract_relevant_data_from_table method
