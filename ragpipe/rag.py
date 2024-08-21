@@ -32,6 +32,7 @@ from retriever.bingsearch import (
 from retriever.bingsearch import BingSearch
 from retriever.webcontent import web2docs_async, web2docs_simple
 from retriever.directoryreader import MyDirectoryReader
+from retriever.dataextractor import DataExtractor
 from queryengine.queryprocess import QueryEngine
 from queryengine.reviewer import ReviewAgent
 from indexengine.process import (
@@ -604,6 +605,22 @@ class RAGscholar:
         if len(self.context.split()) > max_tokens_context:
             logging.info("Token limit exceeded. Context is too long. Context is truncated.")
             self.context = " ".join(self.context.split()[:max_tokens_context])
+
+    def process_tabular_data(self, path_files = './templates/data', columns_names = ['category', 'disease']):
+        """
+        Process tabular data from documents.
+        """
+        # get query that is one short sentence that describes the topic (research_topic) and relation to healthcare and diseases.
+
+        # extract relevant data from all tables in ./templates/data
+        # Loop over each table in the data folder
+        # using columns category and disease as  column names to extract data with DataExtractor
+
+        # Add top 5 rows of each table to self.context as string. Use table name as subheader
+
+
+        pass
+
         
 
     def generate_case_study(self, process_sources = False, make_docx = True):
