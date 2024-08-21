@@ -606,22 +606,29 @@ class RAGscholar:
             logging.info("Token limit exceeded. Context is too long. Context is truncated.")
             self.context = " ".join(self.context.split()[:max_tokens_context])
 
-    def process_tabular_data(self, path_files = './templates/data', columns_names = ['category', 'disease']):
+    def process_tabular_data(self, path_files='./templates/data', column_names=['category', 'disease']):
         """
         Process tabular data from documents.
         """
-        # get query that is one short sentence that describes the topic (research_topic) and relation to healthcare and diseases.
+        # Step 1: Get query string via LLM call
+        query_prompt = f"Describe the research topic '{self.research_topic}' and its relation to healthcare and diseases in one short sentence."
+        query_string, _ = self.query_chatengine(query_prompt)
 
-        # extract relevant data from all tables in ./templates/data
-        # Loop over each table in the data folder
-        # using columns category and disease as  column names to extract data with DataExtractor
+        # Step 2: Loop over all files in ./templates/data
+        for filename in os.listdir(path_files):
+            if filename.endswith(('.csv', '.xlsx')):
+                file_path = os.path.join(path_files, filename)
+                
+                # Use DataExtractor to get relevant data
+                extractor = DataExtractor()
+                result_df = extractor.extract_relevant_data_from_table(file_path, column_names, query_string)
+                
+                # Add top 5 rows of each table to self.context
+                table_content = f"\n\n### Data from {filename}\n\n"
+                table_content += result_df.head().to_markdown(index=False)
+                self.context += table_content
 
-        # Add top 5 rows of each table to self.context as string. Use table name as subheader
-
-
-        pass
-
-        
+        logging.info(f"Processed tabular data and added to context.")
 
     def generate_case_study(self, process_sources = False, make_docx = True):
         """
