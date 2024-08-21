@@ -11,6 +11,17 @@ Also include the row index as a key. Add to a list of dicts for the batch.
 5. Use the LLM model to determine which rows are relevant to the search query amd return the relevant row indexes.
 6. Return the relevant rows as a pandas dataframe.
 
+Example how to use:
+
+from dataextractor import DataExtractor
+
+extractor = DataExtractor()
+
+topic = "Elastagan is a flexible, elastic material designed for medical applications"
+filename = "templates/data/Australia-Burden-of-Disease-Catalogue_2023.xlsx"
+column_names = ['category', 'disease']
+
+result = extractor.extract_relevant_data_from_table(filename, column_names,topic)
 """
 import os
 import time
@@ -211,39 +222,25 @@ class DataExtractor:
         return result.sort_values('relevance_score', ascending=False)
 
     def query_with_scores(self, query: str, batch_data: List[Dict[str, str]]) -> Tuple[List[int], List[float]]:
+        """
+        Query the LLM model with a search query and table data to get relevant rows and their relevance scores.
+        Note: currently not reliable
+        """
         messages = [
             ChatMessage(role="system", content=self.system_prompt_with_scores()),
             ChatMessage(role="user", content=self.query_prompt_with_scores(query, batch_data)),
         ]
-        response_format = {
-            "type": "json_object",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "relevant_items": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "index": {"type": "integer"},
-                                "score": {"type": "number"}
-                            },
-                            "required": ["index", "score"]
-                        }
-                    }
-                },
-                "required": ["relevant_items"]
-            }
-        }
         result = None
         max_try = 0
         while result is None and max_try < 3:
             try:
-                response = self.llm.chat(messages, response_format=response_format)
-                result = json.loads(response.message.content)
+                response = self.llm.chat(messages)
+                result = response.message.content
                 print(f"LLM result: {result}")
-                relevant_indices = [item['index'] for item in result['relevant_items']]
-                scores = [item['score'] for item in result['relevant_items']]
+                # Parse the result as JSON
+                parsed_result = json.loads(result)
+                relevant_indices = [item['index'] for item in parsed_result['relevant_items']]
+                scores = [item['score'] for item in parsed_result['relevant_items']]
                 return relevant_indices, scores
             except Exception as e:
                 logging.error(f"LLM not responding or invalid JSON: {str(e)}")
@@ -259,7 +256,7 @@ class DataExtractor:
     def query_prompt_with_scores(self, query: str, batch_data: List[Dict[str, str]]) -> str:
         return (f"Given the search query: '{query}', analyze the following table data and return "
                 f"the indices of rows that are most relevant to the query along with their relevance scores. "
-                f"Return the results as a JSON object with the following structure:\n"
+                f"You must return the results as a JSON object with the following structure:\n"
                 "{\n"
                 '  "relevant_items": [\n'
                 '    {"index": <row_index>, "score": <relevance_score>},\n'
@@ -345,6 +342,7 @@ def test_on_file():
 def test_dataextractor_score():
     """
     Test function for the DataExtractor class.
+    Currently not reliable due to the LLM model not responding correctly.
     """
 
     # Create a temporary CSV file for testing
@@ -383,6 +381,7 @@ def test_dataextractor_score():
 def test_scores_on_file():
     """
     Test function for the DataExtractor class using a sample file.
+    Currently not reliable due to the LLM model not responding correctly.
     """
     # Initialize DataExtractor
     extractor = DataExtractor()
