@@ -1,7 +1,6 @@
 import re
 
 def clean_references(markdown_text):
-
     # Split the text into two parts: content and references
     parts = markdown_text.split('**References**')
     content = parts[0]
@@ -17,13 +16,13 @@ def clean_references(markdown_text):
         if title.lower() != "ibid." and title.lower() != "ibid" and link not in seen:
             seen[link] = len(seen) + 1
             cleaned_references.append((seen[link], title, link))
-        
 
     # Replace the old reference numbers in the content with new numbers
     for old_num, title, link in references:
         if link in seen:
             new_num = seen[link]
-            content = re.sub(f'\[{old_num}\]', f'[{new_num}]', content)
+            # Replace both [old_num] and [^old_num^] formats
+            content = re.sub(r'\[(\^)?' + re.escape(old_num) + r'(\^)?\]', f'[{new_num}]', content)
 
     # Construct the new references section
     new_references_section = '**References**\n\n'
@@ -37,7 +36,7 @@ def test_clean_references():
     markdown_text = """
 ### Problem Statement
 
-The research conducted by Professor Anthony Weiss at the University of Sydney addresses the critical need for effective skin and tissue repair solutions, particularly for conditions such as acne scars, stretch marks, and surgical wounds [1]. These conditions not only affect millions of individuals globally but also impose significant health and socioeconomic burdens [2]. Chronic skin conditions and non-healing wounds can lead to prolonged recovery times, increased healthcare costs, and reduced quality of life for patients [3]. 
+The research conducted by Professor Anthony Weiss at the University of Sydney addresses the critical need for effective skin and tissue repair solutions, particularly for conditions such as acne scars, stretch marks, and surgical wounds [^1^]. These conditions not only affect millions of individuals globally but also impose significant health and socioeconomic burdens [2]. Chronic skin conditions and non-healing wounds can lead to prolonged recovery times, increased healthcare costs, and reduced quality of life for patients [^3^]. 
 
 Existing treatments often fall short in terms of efficacy and biocompatibility, necessitating the development of more advanced solutions. Elastagen's technology, based on recombinant human tropoelastin, offers a novel approach by utilizing a protein identical to natural elastin, thereby enhancing biocompatibility and effectiveness [4]. This innovation builds on decades of research and has demonstrated promising results in clinical trials, showing potential to accelerate healing, reduce scarring, and improve skin elasticity [5].
 
