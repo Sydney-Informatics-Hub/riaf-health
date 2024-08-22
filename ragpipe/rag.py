@@ -576,8 +576,8 @@ class RAGscholar:
                         f"{info} \n\n"
                         "Instructions: If possible return the original sentence with information replacing the blank.\n"
                         "Alternatively, find a related quantitative context information to the research topic in question.\n"
-                        "If you can't find the answer to fill in the blank or can't find any related quantitative information, you must respond with only 'None'.\n"
-                        "In all cases, you must include the reference to the source of the information."
+                        "You must include the reference to the source of the information after the answer.\n"
+                        "If you can't find the answer to fill in the blank or can't find any related quantitative information, you must respond with only 'None'."
                         )
                 response = chat_engine_context2.chat(query)
                 content = response.response
@@ -585,7 +585,7 @@ class RAGscholar:
                 logging.info(f"Answer: {content}")
                 # Step 9: add to self.context
                 if content == "None":
-                    missing_info_remaining.append(info)
+                    missing_info_remaining.append('- ' + info)
                 else:
                     self.context += content + "\n\n"
             if len(missing_info_remaining) > 0:
@@ -634,7 +634,8 @@ class RAGscholar:
                 table_content += result_df.head().to_markdown(index=False)
 
                 # Ask LLM to summarize the table in a few bullet points, including the most important data points. Reference must be included.
-                query_prompt = (f"Summarize the data from the table below in a few bullet points, including the most important data points." 
+                query_prompt = (f"You are a data analyst for medical and health care impact research.\n"
+                                "Summarize the data from the table below in a few short bullet points, including the most important data numbers." 
                                 "Reference must be included for each point.\n\n"
                                 f"{table_content}"
                                 )
@@ -884,7 +885,7 @@ class RAGscholar:
         # npublications = None
         if self.npublications is not None:
             self.context += "\n\n"
-            self.context += f"Publication analysis for {self.author}:\n"
+            self.context += f"### Publication analysis for {self.author}:\n"
             self.context += f"Number of topic-related publications for period {self.research_start} - {self.research_end}: At least {self.npublications}, Reference: SemanticScholar (https://www.semanticscholar.org)\n"
             self.context += f"Number of citations: At least {self.ncitations}, Reference: SemanticScholar (https://www.semanticscholar.org)\n"
             if len(self.top_cited_papers) > 0:
