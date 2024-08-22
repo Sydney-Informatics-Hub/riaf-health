@@ -732,6 +732,7 @@ class RAGscholar:
             impact_end = None,
             scholarai_delete_pdfs = False,
             local_document_path = None,
+            local_data_path = None,
             benchmark_review = False,
             additional_context = ""):
         """
@@ -746,7 +747,8 @@ class RAGscholar:
         :param impact_start: int, impact period start
         :param impact_end: int, impact period end
         :param scholarai_delete_pdfs: bool, delete pdfs after processing
-        :param local_document_path: str, path to the optional user-defined folder of documents  
+        :param local_document_path: str, path to the optional user-defined folder of documents 
+        :param local_data_path: str, path to the optional user-defined folder of data 
         :param benchmark_review: bool, run benchmark review
         :param additional_context: str, additional context
 
@@ -877,6 +879,11 @@ class RAGscholar:
                 for i, paper in enumerate(self.top_cited_papers):
                     self.context += f"{i+1}. {paper}\n"
 
+        # Process tabular data for Disease and Health priorities
+        if local_data_path is not None:
+            print("Processing tabular data ...")
+            self.process_tabular_data()
+
         # Save context to file
         with open(os.path.join(self.outpath, "context_analysis.txt"), "w") as file:
             file.write(self.context)
@@ -946,8 +953,9 @@ def main():
             impact_start=args.impact_period_start,
             impact_end=args.impact_period_end,
             scholarai_delete_pdfs=False,
-            additional_context=args.additional_context.
-            local_document_path = _path_local_data
+            additional_context=args.additional_context,
+            local_document_path = _path_local_docs,
+            local_data_path = _path_local_data,
             )
     print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
 
