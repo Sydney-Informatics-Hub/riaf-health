@@ -4,6 +4,7 @@ import os
 import json
 import logging
 import time
+import pandas as pd
 
 from llama_index.core import load_index_from_storage
 from llama_index.core.retrievers import VectorIndexRetriever
@@ -585,7 +586,7 @@ class RAGscholar:
                 logging.info(f"Answer: {content}")
                 # Step 9: add to self.context
                 if content == "None":
-                    missing_info_remaining.append('- ' + info)
+                    missing_info_remaining.append(info)
                 else:
                     self.context += content + "\n\n"
             if len(missing_info_remaining) > 0:
@@ -904,9 +905,23 @@ class RAGscholar:
 
         # Save missing documents to file
         if len(self.documents_missing) > 0:
-            with open(os.path.join(self.outpath, "missing_documents.txt"), "w") as file:
+            print("Saving missing documents to file ...")
+            try:
+                data = []
                 for doc in self.documents_missing:
-                    file.write(doc['title'] + ": " + doc['url'] + "\n")
+                    data.append({
+                        'Title': doc['title'],
+                        'URL': doc['url']
+                    })
+                df_docs_missing = pd.DataFrame(data)
+                df_docs_missing.to_excel(os.path.join(self.outpath, "missing_documents.xlsx"), index=False)
+            except:
+                logging.warning("Could not save missing documents to excel file. Falling back to txt file...")
+                with open(os.path.join(self.outpath, "missing_documents.txt"), "w") as file:
+                    for doc in self.documents_missing:
+                        file.write(doc['title'] + ": " + doc['url'] + "\n\n")
+
+
 
         # Run through prompt questions
         self.generate_chatengine_context()
