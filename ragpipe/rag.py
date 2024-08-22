@@ -488,7 +488,7 @@ class RAGscholar:
 
         # Step 4:  Extract missing information and generate web search queries
         prompt_text = ("Based on the questions and answers above, identify missing information and quantitative data statements to back up the answers.\n"
-                        "Then formulate up to 30 short Google search queries that will search for this missing information and data.\n"
+                        "Then formulate up to 15 short Google search queries that will search for this missing information and data.\n"
                         "What do you type in the search box?\n\n"
 
                         "Example missing information statements: \n"
@@ -625,10 +625,23 @@ class RAGscholar:
                 result_df = extractor.extract_relevant_data_from_table(file_path, column_names, query_string)
                 logging.info(f"Extracted {len(result_df)} relevant data rows from {filename}.")
                 
+                if len(result_df) == 0:
+                    logging.info(f"No relevant data rows found in {filename}.")
+                    continue
+            
                 # Add top 5 rows of each table to self.context
-                table_content = f"\n\n### Data from {filename}\n\n"
+                table_content = f"\n\n### Data from table {filename}\n\n"
                 table_content += result_df.head().to_markdown(index=False)
-                self.context += table_content
+
+                # Ask LLM to summarize the table in a few bullet points, including the most important data points. Reference must be included.
+                query_prompt = (f"Summarize the data from the table below in a few bullet points, including the most important data points." 
+                                "Reference must be included for each point.\n\n"
+                                f"{table_content}"
+                                )
+                
+                table_summary, _ = self.query_chatengine(query_prompt)
+                self.context += f"\n\n### Data analysis results from {filename}:\n"
+                self.context += table_summary
 
         logging.info(f"Processed tabular data and added to context.")
 
