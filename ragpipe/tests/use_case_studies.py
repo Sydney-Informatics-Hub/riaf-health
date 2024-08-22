@@ -26,7 +26,9 @@ from llama_index.core.callbacks import CallbackManager
 from langfuse.llama_index import LlamaIndexCallbackHandler
 #from langfuse.decorators import langfuse_context, observe
 
-ENABLE_LANGFUSE_CALLBACKS = True
+ENABLE_LANGFUSE_CALLBACKS = False
+PATH_LOCAL_DOCS = './templates/docs'
+PATH_LOCAL_DATA = './templates/data'
 
 
 
@@ -57,7 +59,9 @@ def test_RAGscholar_run1():
             research_period_end,
             impact_period_start,
             impact_period_end,
-            scholarai_delete_pdfs = False
+            scholarai_delete_pdfs = False,
+            local_document_path = PATH_LOCAL_DOCS,
+            local_data_path = PATH_LOCAL_DATA
             )
     print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
     # typical time with OpenAI API call (gpt-4-1106-preview)): 107.51 seconds
@@ -75,7 +79,8 @@ def test_RAGscholar_run2():
                     path_index = '../../index_store',
                     path_documents = '../test_data/Nursing_docs',
                     language_style = "analytical",
-                    load_index_from_storage = False)
+                    load_index_from_storage = False,
+)
     query_author="Kate Curtis"
     query_topic="Improving the safety and quality of emergency nursing care"
     keywords = "HIRAID, emergency nursing care"
@@ -92,7 +97,9 @@ def test_RAGscholar_run2():
             research_period_end,
             impact_period_start,
             impact_period_end,
-            scholarai_delete_pdfs = False
+            scholarai_delete_pdfs = False,
+            local_document_path = PATH_LOCAL_DOCS,
+            local_data_path = PATH_LOCAL_DATA,
             )
     print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
     # typical time with OpenAI API call: 102.06 seconds
@@ -122,7 +129,9 @@ def test_RAGscholar_run3():
             research_period_start,
             research_period_end,
             impact_period_start,
-            impact_period_end
+            impact_period_end,
+            local_document_path = PATH_LOCAL_DOCS,
+            local_data_path = PATH_LOCAL_DATA,
             )
     print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
     # typical time with OpenAI API call: 119.57 seconds
