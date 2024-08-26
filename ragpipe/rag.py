@@ -5,10 +5,11 @@ import json
 import logging
 import time
 import pandas as pd
+import re
 
 from llama_index.core import load_index_from_storage
 from llama_index.core.retrievers import VectorIndexRetriever
-from llama_index.core import PromptTemplate
+from llama_index.core import PromptTemplate, Document
 from llama_index.core.llms import ChatMessage, MessageRole
 from llama_index.core.chat_engine import CondenseQuestionChatEngine
 from llama_index.core.chat_engine import CondensePlusContextChatEngine
@@ -31,6 +32,7 @@ from retriever.bingsearch import (
     get_titles_from_bing,
     get_snippets_from_bing)
 from retriever.bingsearch import BingSearch
+from retriever.biomed import biomedAI
 from retriever.webcontent import web2docs_async, web2docs_simple
 from retriever.directoryreader import MyDirectoryReader
 from retriever.dataextractor import DataExtractor
@@ -50,7 +52,7 @@ _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md
 _fname_question_titles = "question_titles.txt"
 _list_max_word =  [250, 300, 500, 300]
 _context_window = 32000
-_num_output = 1000
+_num_output = 1200
 _scholar_limit = 50
 _model_llm = "gpt-4o" #"gpt-4-1106-preview" #"gpt-4-1106-preview" #"gpt-4-32k"
 _temperature = 0.0
@@ -235,7 +237,7 @@ class RAGscholar:
             system_prompt=system_prompt,
             llm = OpenAI(model = _model_llm),
             verbose=True,
-            similarity_top_k=8,
+            similarity_top_k=10,
             )
         
     def query_chatengine(self, query):
@@ -478,8 +480,10 @@ class RAGscholar:
             
                         "Instructions:\n"
                         "Do not repeat or rephrase the questions and only provide concise answers as bullet points within the word limit.\n"
-                        "Only answer a question if you can provide relevant and concise information that can be backed up with a context reference.\n"
                         "You must include references and links to relevant sources of evidence for each answer.\n"
+                        "References should be in the format: [Reference title]{reference link}\n\n"
+                        "If you cannot find the answer from context, respond with 'No data found' as answer to the question.\n"
+                        "If you cannot find a reference in the context, respond with 'No reference found' for the answer.\n"
                         )
         # Step 2
         content, sources = self.query_chatengine(prompt_text)
@@ -533,7 +537,35 @@ class RAGscholar:
             print(f"Running web search query: {query}")
             bing = BingSearch()
             bing_results, missing_results = bing.search_and_retrieve(query)
+            if missing_results > 0
             webdocs, documents_missing = bing.web2docs(bing_results)
+            if len(missing_results) > 0:
+                missing_results_updated = []
+                for missing_result in missing_results:
+                    url = missing_result['url']
+                    # if url string includes "www.ncbi.nlm.nih.gov/pmc/articles/PMC" use scholarai
+                    if "www.ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
+                        pmc_id = re.search(r'PMC\d+', url).group()
+                        biomedai = biomedAI()
+                        try:
+                            full_text_xml = biomedai.fetch_full_text(pmc_id)
+                            articles_content = biomedai.parse_full_text(full_text_xml)
+                        except Exception as e:
+                            logging.error(f"Failed to download full text from PubMedCentral with exception: {e}. Skipping document...")
+                            articles_content = []
+                        if len(articles_content) > 0:
+                            text = articles_content[0]
+                            # wait 0.35 seconds to avoid rate limit
+                            time.sleep(0.35)
+                            metadata = {'href': url, 'title':  missing_result['title'], 'description': missing_result['description']}
+                            doc = Document(text=text, doc_id = url, extra_info = metadata)
+                            webdocs.append(doc)
+                            logging.info(f"Added document from PubMedCentral with title: {missing_result['title']}")
+                        else:
+                            missing_results_updated.append(missing_result)
+                    else:
+                        missing_results_updated.append(missing_result)
+                missing_results = missing_results_updated                   
             webcontext.extend(webdocs)
             logging.info(f"Added {len(webdocs)} websnippets to context documents.")
             if len(missing_results) > 0:
