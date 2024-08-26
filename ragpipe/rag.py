@@ -478,7 +478,8 @@ class RAGscholar:
             
                         "Instructions:\n"
                         "Do not repeat or rephrase the questions and only provide concise answers as bullet points within the word limit.\n"
-                        "You must include references and links to relevant sources of evidence after each point."
+                        "Only answer a question if you can provide relevant and concise information that can be backed up with a context reference.\n"
+                        "You must include references and links to relevant sources of evidence for each answer.\n"
                         )
         # Step 2
         content, sources = self.query_chatengine(prompt_text)

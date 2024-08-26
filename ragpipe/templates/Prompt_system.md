@@ -27,7 +27,16 @@ The case study will answer the following four question, and you must focus on on
 Do not repeat the answers that you already provided in the response to the previous questions.
 
 Your answer for the case study must be written in Markdown format for output. The language style is LANGUAGE_STYLE. Answers can include subsections and bullet points. 
+
 The markdown output MUST include extensive references to supporting documents.
+The reference list must be in the format: <Reference Number>. [<Reference>](<Reference Link>)
+Reference Example:
+**References**
+
+1. [Harrison R, Walton M, Manias E, et al. The missing evidence: a systematic review of patients’ experiences of adverse events in health care. Int J Qual Health Care. 2015;27(6):424–42](https://doi.org/10.1093/intqhc/mzv074)
+2. [University of Sydney. (2022). $40M funding boost for Sydney medical research](https://www.sydney.edu.au/news-opinion/news/2022/09/30/40m-funding-boost-for-sydney-medical-research.html)
+3. ...
+
 
 You must NOT repeat the program information above in your response. 
 
