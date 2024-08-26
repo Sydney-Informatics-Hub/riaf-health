@@ -157,8 +157,6 @@ class DataExtractor:
 
         result = df.iloc[relevant_rows]
         if relevance_ranking:
-            print("not ranked results:")
-            print(result)
             # Rank and order the relevant rows in results by relevance
             res_dict = []
             for index, row in result.iterrows():
@@ -221,7 +219,7 @@ class DataExtractor:
 
             # Use the LLM model to determine which rows are relevant to the search query and their scores
             relevant_indices, scores = self.query_with_scores(query, batch_dict)
-            print(f"relevant_indices: {relevant_indices}, scores: {scores}")
+            #print(f"relevant_indices: {relevant_indices}, scores: {scores}")
             relevant_rows.extend(relevant_indices)
             relevance_scores.extend(scores)
 
@@ -330,8 +328,8 @@ def test_on_file():
     topic = "Elastagan is a flexible, elastic material designed for medical applications,\
         offering durability and comfort in wound care and surgical products."
     
-    #filename = "templates/data/Australia-Burden-of-Disease-Catalogue_2023.xlsx"
-    filename ="templates/data/Australia_Causes-of-Death.xlsx"
+    filename = "templates/data/Australia-Burden-of-Disease-Catalogue_2023.xlsx"
+    #filename ="templates/data/Australia_Causes-of-Death.xlsx"
     column_names = ['category', 'disease']
 
     # Test extract_relevant_data_from_table method
@@ -420,3 +418,4 @@ def test_scores_on_file():
     assert result.iloc[0]['title'] == "AI in Healthcare", "Expected to extract the AI in Healthcare row"
 
     print("DataExtractor test on file passed successfully!")
+
