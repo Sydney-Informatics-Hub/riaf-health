@@ -14,8 +14,12 @@ Author: Sebastian Haan
 """
 
 import os
+import time
+import logging
+import re
 from Bio import Entrez
 import xml.etree.ElementTree as ET
+from llama_index.core import Document
 
 
 class biomedAI:
@@ -131,6 +135,51 @@ class biomedAI:
         
             articles_metadata.append(metadata)
         return articles_metadata
+    
+    def check_for_pubmed_in_missing_documents(self, missing_results):
+        """
+        Check PubMedCentral for missing documents and add them to the list of documents.
+        update the list of missing documents with the documents that could not be retrieved.  
+
+        Args:
+            missing_results: List of missing documents: [{'title': title, 'url': url, 'description': desc}, ...]
+        """
+        # check if missing_results has key 'url' and 'title'
+        if not all('url' in missing_result and 'title' in missing_result for missing_result in missing_results):
+            raise ValueError("Missing documents must have 'url' and 'title' keys.")
+        # Check if missing_results has key 'description'
+        if not all('description' in missing_result for missing_result in missing_results):
+            logging.warning("Missing documents do not have 'description' key.")
+            missing_results = [{**missing_result, 'description': ''} for missing_result in missing_results]
+        missing_results_updated = []
+        docs = []
+        for missing_result in missing_results:
+            url = missing_result['url']
+            if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
+                pmc_id = re.search(r'PMC\d+', url).group()
+                try:
+                    full_text_xml = self.fetch_full_text(pmc_id)
+                    articles_content = self.parse_full_text(full_text_xml)
+                except Exception as e:
+                    logging.error(f"Failed to download full text from PubMedCentral with exception: {e}. Skipping document...")
+                    articles_content = []
+                if len(articles_content) > 0:
+                    text = articles_content[0]
+                    # wait 0.35 seconds to avoid rate limit
+                    time.sleep(0.35)
+                    metadata = {'href': url, 'title':  missing_result['title'], 'description': missing_result['description']}
+                    doc = Document(text=text, doc_id = url, extra_info = metadata)
+                    docs.append(doc)
+                    logging.info(f"Added document from PubMedCentral with title: {missing_result['title']}")
+                else:
+                    missing_results_updated.append(missing_result)
+            else:
+                missing_results_updated.append(missing_result)
+        missing_results = missing_results_updated                   
+        return docs, missing_results
+
+
+### Test functions
 
 def test_search_pmc(print_content=False):
     biomedai = biomedAI()
