@@ -161,34 +161,35 @@ def main():
             st.error('An error occurred while generating the use-case study.')
 
 
-        # Add a button to download all results as a zip file
-        if st.session_state.stage == 'generated':          
-            with open(st.session_state.zip_filename, "rb") as fp:
-                btn = st.download_button(
-                    label="Download Results",
-                    data=fp,
-                    file_name= f"Results_{fname_out}.zip",
-                    mime="application/zip"
-                ) 
-        
-        if st.session_state.stage == 'generated': 
-            with open(os.path.join(outpath, "Use_Case_Study.md"), "r") as file:
-                use_case_study = file.read()
-            # add scrollable textboxes for the generated use-case study
-            st.text("")
-            st.subheader("Preview")
-            with st.container(height=500):
-                st.markdown(
-                    """
-                    <div style="max-height: 500px; overflow-y: auto;">
-                    {content}
-                    </div>
-                    """.format(content=use_case_study),
-                    unsafe_allow_html=True,
-                )
-            # Cleanup the temporary directory, check if exists first
-            if os.path.exists(path_documents):
-                shutil.rmtree(path_documents)
+    # Add a button to download all results as a zip file
+    if st.session_state.stage == 'generated':          
+        with open(st.session_state.zip_filename, "rb") as fp:
+            btn = st.download_button(
+                label="Download Results",
+                data=fp,
+                file_name= f"Results_{fname_out}.zip",
+                mime="application/zip"
+            ) 
+
+
+    if st.session_state.stage == 'generated': 
+        with open(os.path.join(outpath, "Use_Case_Study.md"), "r") as file:
+            use_case_study = file.read()
+        # add scrollable textboxes for the generated use-case study
+        st.text("")
+        st.subheader("Preview")
+        with st.container(height=500):
+            st.markdown(
+                """
+                <div style="max-height: 500px; overflow-y: auto;">
+                {content}
+                </div>
+                """.format(content=use_case_study),
+                unsafe_allow_html=True,
+            )
+        # Cleanup the temporary directory, check if exists first
+        if os.path.exists(path_documents):
+            shutil.rmtree(path_documents)
 
 
  
