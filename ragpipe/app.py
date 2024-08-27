@@ -160,7 +160,8 @@ def main():
             st.session_state['stage'] = 'failed'
             st.error('An error occurred while generating the use-case study.')
 
-
+ 
+ 
     # Add a button to download all results as a zip file
     if st.session_state.stage == 'generated':          
         with open(st.session_state.zip_filename, "rb") as fp:
