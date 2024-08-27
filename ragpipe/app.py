@@ -20,6 +20,10 @@ def main():
     if 'path_documents' in st.session_state:
         st.session_state['uploaded'] = None
 
+    path_documents = os.path.join(OUTPATH, 'temp_' + str(time.time()))
+    st.session_state['path_documents'] = path_documents
+    os.makedirs(path_documents, exist_ok=True)
+
     st.title(r"$\textsf{\tiny RIAF Use-Case-Study Generator}$")
     
     # Create input fields for each argument
@@ -37,7 +41,13 @@ def main():
         impact_period_end = st.text_input(r"$\textsf{\small Impact period end (year)}$", value=research_period_end)
 
     organisation = st.text_input(r"$\textsf{\small Organisation}$", value="The University of Sydney")
-    language_style = st.selectbox(r"$\textsf{\small Language style for report}$", options=['analytical', 'journalistic', 'academic', 'legal', 'medical'], index=0)
+    language_style = st.selectbox(r"$\textsf{\small Language style for report}$", options=['analytical', 
+                                                                                           'journalistic', 
+                                                                                           'academic', 
+                                                                                           'scientific commentary', 
+                                                                                           'objective',
+                                                                                           'narrative',
+                                                                                           'engaging'], index=0)
 
 
     # Additional context input
@@ -47,15 +57,13 @@ def main():
     savefiles = False
     if len(uploaded_files) > 0:
         # check if the temporary directory exist already
-        if st.session_state.uploaded == 0:
-            path_documents = os.path.join(OUTPATH, 'temp_' + str(time.time()))
-            st.session_state['path_documents'] = path_documents
-            os.makedirs(path_documents, exist_ok=True)
+        if (st.session_state.uploaded == 0):
             savefiles = True
         else:
             # check if the uploaded files are different from the previous ones
             if uploaded_files != st.session_state.uploaded:
                 savefiles = True
+
     if savefiles:
         st.session_state['uploaded'] = uploaded_files 
         progress_bar = st.progress(0)
