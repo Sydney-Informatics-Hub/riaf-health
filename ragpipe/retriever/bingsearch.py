@@ -22,14 +22,11 @@ import json
 import requests
 import logging
 import os
-import re
 import sys
-import time
 from typing import Callable, Union, List
 from utils.envloader import load_api_key
 from retriever.webcontent import WebPageProcessor
 from llama_index.core import Document
-from retriever.biomed import biomedAI
 
 
 def init_bing():
@@ -348,36 +345,3 @@ class BingSearch():
                     documents.append(Document(text=snippet, doc_id = urls_ok[i], extra_info = metadata_ok[i]))
         #documents = [Document(text=content, doc_id = url, extra_info = metadata) for content, url, metadata in zip(contents_ok, urls_ok, metadata_ok)]
         return documents, documents_missing
-    
-    def check_pubmed_for_missing_documents(self, missing_results):
-        """
-        Check PubMedCentral for missing documents and add them to the list of documents.
-        update the list of missing documents with the documents that could not be retrieved.  
-        """
-        missing_results_updated = []
-        webdocs = []
-        for missing_result in missing_results:
-            url = missing_result['url']
-            if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
-                pmc_id = re.search(r'PMC\d+', url).group()
-                biomedai = biomedAI()
-                try:
-                    full_text_xml = biomedai.fetch_full_text(pmc_id)
-                    articles_content = biomedai.parse_full_text(full_text_xml)
-                except Exception as e:
-                    logging.error(f"Failed to download full text from PubMedCentral with exception: {e}. Skipping document...")
-                    articles_content = []
-                if len(articles_content) > 0:
-                    text = articles_content[0]
-                    # wait 0.35 seconds to avoid rate limit
-                    time.sleep(0.35)
-                    metadata = {'href': url, 'title':  missing_result['title'], 'description': missing_result['description']}
-                    doc = Document(text=text, doc_id = url, extra_info = metadata)
-                    webdocs.append(doc)
-                    logging.info(f"Added document from PubMedCentral with title: {missing_result['title']}")
-                else:
-                    missing_results_updated.append(missing_result)
-            else:
-                missing_results_updated.append(missing_result)
-        missing_results = missing_results_updated                   
-        return webdocs, missing_results
