@@ -143,15 +143,39 @@ def main():
             process.wait()
 
         if process.returncode == 0:
-            st.session_state['stage'] = 'generated'
             st.success('Use-case study generated successfully.')
             fname_out = query_topic + "_by_" + query_author
             fname_out = fname_out.replace(" ", "_")
             outpath = os.path.join(OUTPATH, fname_out)
+            print('Creating zip file for results...')
+            # Create a BytesIO object to store the zip file
+            zip_filename = os.path.join(OUTPATH,f"Results_{fname_out}")
+            # add the time generated to the filename
+            zip_filename = zip_filename + "_" + time.strftime("%Y-%m-%d-%H%M")
+            shutil.make_archive(zip_filename, 'zip', outpath)
+            zip_filename = zip_filename + ".zip"
+            st.session_state['stage'] = 'generated'
+            st.session_state['zip_filename'] = zip_filename
+        else:
+            st.session_state['stage'] = 'failed'
+            st.error('An error occurred while generating the use-case study.')
+
+
+        # Add a button to download all results as a zip file
+        if st.session_state.stage == 'generated':          
+            with open(st.session_state.zip_filename, "rb") as fp:
+                btn = st.download_button(
+                    label="Download Results",
+                    data=fp,
+                    file_name= f"Results_{fname_out}.zip",
+                    mime="application/zip"
+                ) 
+        
+        if st.session_state.stage == 'generated': 
             with open(os.path.join(outpath, "Use_Case_Study.md"), "r") as file:
                 use_case_study = file.read()
             # add scrollable textboxes for the generated use-case study
-            # Write subheader "Generated Use-case Study"
+            st.text("")
             st.subheader("Preview")
             with st.container(height=500):
                 st.markdown(
@@ -165,29 +189,8 @@ def main():
             # Cleanup the temporary directory, check if exists first
             if os.path.exists(path_documents):
                 shutil.rmtree(path_documents)
-        else:
-            st.session_state['stage'] = 'failed'
-            st.error('An error occurred while generating the use-case study.')
-
-        # Add a button to download all results as a zip file
-        if st.session_state.stage == 'generated':          
-            # Create a BytesIO object to store the zip file
-            print('Creating zip file for results...')
-            zip_filename = os.path.join(OUTPATH,f"Results_{fname_out}")
-            # add the time generated to the filename
-            zip_filename = zip_filename + "_" + time.strftime("%Y-%m-%d-%H%M")
-            shutil.make_archive(zip_filename, 'zip', outpath)
-            zip_filename = zip_filename + ".zip"
-
-            with open(zip_filename, "rb") as fp:
-                btn = st.download_button(
-                    label="Download Results",
-                    data=fp,
-                    file_name= f"Results_{fname_out}.zip",
-                    mime="application/zip"
-                )  
 
 
-
+ 
 if __name__ == '__main__':
     main()
