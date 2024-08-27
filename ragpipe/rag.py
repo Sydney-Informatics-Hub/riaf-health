@@ -538,16 +538,18 @@ class RAGscholar:
             bing = BingSearch()
             bing_results, missing_results = bing.search_and_retrieve(query)
             webdocs, documents_missing = bing.web2docs(bing_results)
-            webcontext.extend(webdocs)
-            logging.info(f"Added {len(webdocs)} websnippets to context documents.")
-            print(f"Added {len(webdocs)} websnippets to context documents.")
-            # Check if any urls in missing results are from PubMedCentral and download full text via API instead
+            if len(webdocs) > 0:
+                webcontext.extend(webdocs)
+                print(f"Added {len(webdocs)} websnippets to context documents.")  
+            logging.info(f"Added {len(webdocs)} websnippets to context documents.")     
             if len(missing_results) > 0:
+                # Check if any urls in missing results are from PubMedCentral and download full text via API instead
                 biomedai = biomedAI()
-                docs_pubmed, missing_results = biomedai.check_for_pubmed_in_missing_documents(missing_results)            
-                webcontext.extend(docs_pubmed)
-                logging.info(f"Added {len(docs_pubmed)} pubmed docs.")
-                print(f"Added {len(docs_pubmed)} more pubmed docs to context documents.")
+                docs_pubmed, missing_results = biomedai.check_for_pubmed_in_missing_documents(missing_results) 
+                if len(docs_pubmed) > 0:           
+                    webcontext.extend(docs_pubmed)
+                    logging.info(f"Added {len(docs_pubmed)} pubmed docs.")
+                    print(f"Added {len(docs_pubmed)} pubmed docs to context documents.")
             if len(missing_results) > 0:
                 self.documents_missing.extend(missing_results)
                 logging.info(f"Content missing for {len(missing_results)} sources. See missing_documents.xlsx.")
@@ -841,7 +843,7 @@ class RAGscholar:
         self.process_publications()
                 
         # Upload local documents to index from directory
-        if self.path_documents is not None:
+        if (self.path_documents is not None) & (len(os.listdir(self.path_documents)) > 0):
             print("Loading documents from directory ...")
             logging.info("Loading documents from directory ...")
             reader = MyDirectoryReader(self.path_documents)
@@ -863,11 +865,13 @@ class RAGscholar:
         else:
             self.documents = webdocs
         if len(missing_results) > 0:
+                # Check if any urls in missing results are from PubMedCentral and download full text via API instead
                 biomedai = biomedAI()
-                docs_pubmed, missing_results = biomedai.check_for_pubmed_in_missing_documents(missing_results)            
-                self.documents.extend(docs_pubmed)
-                logging.info(f"Added {len(docs_pubmed)} pubmed docs.")
-                print(f"Added {len(docs_pubmed)} more pubmed docs to context documents.")
+                docs_pubmed, missing_results = biomedai.check_for_pubmed_in_missing_documents(missing_results)  
+                if len(docs_pubmed) > 0:         
+                    self.documents.extend(docs_pubmed)
+                    logging.info(f"Added {len(docs_pubmed)} pubmed docs.")
+                    print(f"Added {len(docs_pubmed)} pubmed docs to context documents.")
             # add list of a urls and titles to missing documents
         if len(missing_results) > 0:
             self.documents_missing.extend(missing_results)
