@@ -537,40 +537,20 @@ class RAGscholar:
             print(f"Running web search query: {query}")
             bing = BingSearch()
             bing_results, missing_results = bing.search_and_retrieve(query)
-            if missing_results > 0
             webdocs, documents_missing = bing.web2docs(bing_results)
-            if len(missing_results) > 0:
-                missing_results_updated = []
-                for missing_result in missing_results:
-                    url = missing_result['url']
-                    # if url string includes "www.ncbi.nlm.nih.gov/pmc/articles/PMC" use scholarai
-                    if "www.ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
-                        pmc_id = re.search(r'PMC\d+', url).group()
-                        biomedai = biomedAI()
-                        try:
-                            full_text_xml = biomedai.fetch_full_text(pmc_id)
-                            articles_content = biomedai.parse_full_text(full_text_xml)
-                        except Exception as e:
-                            logging.error(f"Failed to download full text from PubMedCentral with exception: {e}. Skipping document...")
-                            articles_content = []
-                        if len(articles_content) > 0:
-                            text = articles_content[0]
-                            # wait 0.35 seconds to avoid rate limit
-                            time.sleep(0.35)
-                            metadata = {'href': url, 'title':  missing_result['title'], 'description': missing_result['description']}
-                            doc = Document(text=text, doc_id = url, extra_info = metadata)
-                            webdocs.append(doc)
-                            logging.info(f"Added document from PubMedCentral with title: {missing_result['title']}")
-                        else:
-                            missing_results_updated.append(missing_result)
-                    else:
-                        missing_results_updated.append(missing_result)
-                missing_results = missing_results_updated                   
             webcontext.extend(webdocs)
             logging.info(f"Added {len(webdocs)} websnippets to context documents.")
+            print(f"Added {len(webdocs)} websnippets to context documents.")
+            # Check if any urls in missing results are from PubMedCentral and download full text via API instead
+            if len(missing_results) > 0:
+                biomedai = biomedAI()
+                docs_pubmed, missing_results = biomedai.check_for_pubmed_in_missing_documents(missing_results)            
+                webcontext.extend(docs_pubmed)
+                logging.info(f"Added {len(docs_pubmed)} pubmed docs.")
+                print(f"Added {len(docs_pubmed)} more pubmed docs to context documents.")
             if len(missing_results) > 0:
                 self.documents_missing.extend(missing_results)
-                logging.info(f"Web content missing for {len(missing_results)} sources.")
+                logging.info(f"Content missing for {len(missing_results)} sources. See missing_documents.xlsx.")
         
         # Step 7. Generate index store and save content and metadata in vector database
         if len(webcontext) > 0:
@@ -882,9 +862,15 @@ class RAGscholar:
             logging.info(f"Added {len(webdocs)} websnippets to documents.")
         else:
             self.documents = webdocs
-        if len(documents_missing) > 0:
+        if len(missing_results) > 0:
+                biomedai = biomedAI()
+                docs_pubmed, missing_results = biomedai.check_for_pubmed_in_missing_documents(missing_results)            
+                self.documents.extend(docs_pubmed)
+                logging.info(f"Added {len(docs_pubmed)} pubmed docs.")
+                print(f"Added {len(docs_pubmed)} more pubmed docs to context documents.")
             # add list of a urls and titles to missing documents
-            self.documents_missing.extend(documents_missing)
+        if len(missing_results) > 0:
+            self.documents_missing.extend(missing_results)
             logging.info(f"Web content missing for {len(documents_missing)} sources.")
 
 
@@ -948,6 +934,7 @@ class RAGscholar:
                     })
                 df_docs_missing = pd.DataFrame(data)
                 df_docs_missing.to_excel(os.path.join(self.outpath, "missing_documents.xlsx"), index=False)
+                print(f"Content could not be downloaded for {len(missing_results)} sources. See missing_documents.xlsx.")
             except:
                 logging.warning("Could not save missing documents to excel file. Falling back to txt file...")
                 with open(os.path.join(self.outpath, "missing_documents.txt"), "w") as file:
