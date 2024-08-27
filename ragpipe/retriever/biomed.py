@@ -7,6 +7,8 @@ The Entrez database includes PubMed, PubMed Central, GenBank, GEO, and many othe
 Note API is limited to 3 requests per second.
 API key registration is required for higher usage limits.
 
+Keep in mind that not all articles are allowed downloading of the full text in XML form.
+
 See documentation for biopython: https://biopython.org/docs/dev/index.html
 See documentation for Entrez: https://biopython.org/docs/dev/Tutorial/chapter_entrez.html
 
@@ -89,6 +91,7 @@ class biomedAI:
         handle.close()
         return articles
 
+
     def parse_full_text(self, xml_data):
         """
         Parse the full-text XML and extract article content
@@ -104,7 +107,13 @@ class biomedAI:
         for article in root.findall(".//body"):
             paragraphs = [p.text for p in article.findall(".//p") if p.text is not None]
             articles_content.append("\n".join(paragraphs))
+        if len(articles_content) == 0:
+            # Check if no content was found. Some publishers doe not allow XML extractions. In his case extract abstract
+            logging.warning("No full-text content found in XML. Extracting abstract instead.")
+            abstract_element = root.find('.//abstract')
+            articles_content = [" ".join(["".join(p.itertext()) for p in abstract_element.findall('p')])]
         return articles_content
+    
 
     def parse_metadata(self, xml_data):
         """
@@ -155,7 +164,7 @@ class biomedAI:
         docs = []
         for missing_result in missing_results:
             url = missing_result['url']
-            if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
+            if "nih.gov/pmc/articles/PMC" in url:
                 pmc_id = re.search(r'PMC\d+', url).group()
                 try:
                     full_text_xml = self.fetch_full_text(pmc_id)
