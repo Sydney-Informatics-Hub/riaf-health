@@ -156,6 +156,8 @@ def main():
             zip_filename = zip_filename + ".zip"
             st.session_state['stage'] = 'generated'
             st.session_state['zip_filename'] = zip_filename
+            st.session_state['fname_out'] = fname_out
+            st.session_state['outpath_md'] = os.path.join(outpath, "Use_Case_Study.md")
         else:
             st.session_state['stage'] = 'failed'
             st.error('An error occurred while generating the use-case study.')
@@ -168,13 +170,13 @@ def main():
             btn = st.download_button(
                 label="Download Results",
                 data=fp,
-                file_name= f"Results_{fname_out}.zip",
+                file_name= f"Results_{st.session_state.fname_out}.zip",
                 mime="application/zip"
             ) 
 
 
     if st.session_state.stage == 'generated': 
-        with open(os.path.join(outpath, "Use_Case_Study.md"), "r") as file:
+        with open(st.session_state.outpath_md, "r") as file:
             use_case_study = file.read()
         # add scrollable textboxes for the generated use-case study
         st.text("")
