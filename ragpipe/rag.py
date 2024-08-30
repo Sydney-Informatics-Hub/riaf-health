@@ -135,6 +135,7 @@ class RAGscholar:
 
     def log_settings(self):
         # save all arguments to log file
+        logging.info(f"---------INPUT SETTINGS---------")
         logging.info(f"Research topic: {self.research_topic}")
         logging.info(f"Author: {self.author}")
         logging.info(f"Keywords: {self.keywords}")
@@ -151,6 +152,7 @@ class RAGscholar:
         logging.info(f"Language style: {self.language_style}")
         logging.info(f"LLM service: {self.llm_service}")
         logging.info(f"Benchmark Review enables: {self.benchmark_review}")
+        logging.info(f"--------------------------------")
 
 
     def generate_chatengine_react(self):
