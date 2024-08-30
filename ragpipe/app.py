@@ -4,9 +4,41 @@ import sys
 import os
 import time
 import shutil
+import yaml
+from yaml.loader import SafeLoader
+import streamlit_authenticator as stauth
 
 # Define the output path for the generated use-case study
 OUTPATH = '../../results/'
+
+
+def login():
+    with open('streamlit_secrets.yaml') as file:
+        config = yaml.load(file, Loader=SafeLoader)
+
+    authenticator = stauth.Authenticate(
+        config['credentials'],
+        config['cookie']['name'],
+        config['cookie']['key'],
+        config['cookie']['expiry_days'],
+        config['preauthorized']
+        )
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
+        name, authentication_status, username = authenticator.login(max_concurrent_users = 10) #'Login', 'main'
+
+    if authentication_status:
+        #print('name', name)
+        #print('username', username)
+        authenticator.logout('Logout', 'main')
+        st.write(f'Welcome *{name}*')
+    elif authentication_status == False:
+        st.error('Username/password is incorrect')
+    elif authentication_status == None:
+        st.warning('Please enter your username and password')
+
 
 
 def main():
@@ -21,8 +53,8 @@ def main():
         st.session_state['uploaded'] = None
 
 
-
     st.title(r"$\textsf{\tiny RIAF Use-Case-Study Generator}$")
+
     
     # Create input fields for each argument
     query_author = st.text_input(r"$\textsf{\small Author name to search for}$", value="Anthony Weiss")
@@ -199,4 +231,6 @@ def main():
 
  
 if __name__ == '__main__':
-    main()
+    login()
+    if st.session_state["authentication_status"]:
+        main()
