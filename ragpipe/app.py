@@ -52,6 +52,12 @@ def main():
     if 'path_documents' in st.session_state:
         st.session_state['uploaded'] = None
 
+    # Check if st.session_state['path_documents'] already exists
+    if 'path_documents' not in st.session_state:
+        path_documents = os.path.join(OUTPATH, 'temp_' + str(time.time()))
+        st.session_state['path_documents'] = path_documents
+        os.makedirs(path_documents, exist_ok=True)
+
 
     st.title(r"$\textsf{\tiny RIAF Use-Case-Study Generator}$")
 
@@ -110,10 +116,6 @@ def main():
 
     # Button to run the RAGscholar process
     if st.button('Generate Use-case Study'):
-
-        path_documents = os.path.join(OUTPATH, 'temp_' + str(time.time()))
-        st.session_state['path_documents'] = path_documents
-        os.makedirs(path_documents, exist_ok=True)
 
         # Prepare the command to run rag.py as a subprocess
         cmd = [
