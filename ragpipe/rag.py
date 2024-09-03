@@ -983,7 +983,13 @@ def main():
     parser.add_argument("--impact_period_start", type=int, default=2013, help="Impact period start (year)")
     parser.add_argument("--impact_period_end", type=int, default=2023, help="Impact period end (year)")
     parser.add_argument("--organisation", type=str, default="University of Sydney", help="Organisation")
-    parser.add_argument("--language_style", type=str, default="analytical", choices=['analytical', 'journalistic', 'academic', 'legal', 'medical'], help="Language style for report")
+    parser.add_argument("--language_style", type=str, default="analytical", choices=['analytical', 
+                                                                                           'journalistic', 
+                                                                                           'academic', 
+                                                                                           'scientific commentary', 
+                                                                                           'objective',
+                                                                                           'narrative',
+                                                                                           'engaging'], help="Language style for report")
     parser.add_argument("--path_documents", type=str, default=None, help="Path to directory with documents")
     parser.add_argument("--additional_context", type=str, default="", help="Additional context for the use case study")
 
