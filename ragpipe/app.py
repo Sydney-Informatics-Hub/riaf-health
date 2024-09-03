@@ -199,16 +199,27 @@ def main():
             st.error('An error occurred while generating the use-case study.')
 
  
- 
+    # for testing download
+    #st.session_state['stage'] = 'generated'
+    #st.session_state['zip_filename'] = '../../results/Results_Elastagen_by_Anthony_Weiss_2024-09-03-0056.zip'
+    #st.session_state['fname_out'] = 'Elastagen_by_Anthony_Weiss'
+    #st.session_state['outpath_md'] = '../../results/Elastagen_by_Anthony_Weiss/Use_Case_Study.md'
+
     # Add a button to download all results as a zip file
-    if st.session_state.stage == 'generated':          
+    if st.session_state.stage == 'generated':
+        st.text("")          
         with open(st.session_state.zip_filename, "rb") as fp:
-            btn = st.download_button(
+            if st.download_button(
                 label="Download Results",
                 data=fp,
                 file_name= f"Results_{st.session_state.fname_out}.zip",
-                mime="application/zip"
-            ) 
+                mime="application/zip"):
+                # make sure the download is complete before displaying the success message
+                time.sleep(5)
+                st.success('Download complete.')
+            
+            # wait for the download to complete
+            #time.sleep(5)
 
 
     if st.session_state.stage == 'generated': 
