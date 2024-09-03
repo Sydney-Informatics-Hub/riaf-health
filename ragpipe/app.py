@@ -225,8 +225,8 @@ def main():
                 unsafe_allow_html=True,
             )
         # Cleanup the temporary directory, check if exists first
-        if os.path.exists(path_documents):
-            shutil.rmtree(path_documents)
+        #if os.path.exists(st.session_state.path_documents):
+        #    shutil.rmtree(st.session_state.path_documents)
 
 
  
