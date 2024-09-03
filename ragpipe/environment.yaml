@@ -35,6 +35,7 @@ dependencies:
       - requests
       - semanticscholar==0.8.4
       - streamlit==1.36
+      - streamlit-authenticator
       - tabulate
       - trafilatura==1.11.0
 
