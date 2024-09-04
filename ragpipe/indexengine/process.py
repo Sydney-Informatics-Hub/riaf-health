@@ -12,7 +12,7 @@ techlab_deployment = 'GPT35shopfront'
 techlab_embedding = 'text-embedding-ada-002'
 techlab_api_version = '2023-12-01-preview'
 
-_chunksize = 512
+_chunksize = 1024
 
 # see for latest https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation
 
@@ -98,7 +98,11 @@ def create_index(docstore,
         chunk_size=_chunksize
         )
     # Create index
-    index = VectorStoreIndex.from_documents(docstore, service_context=service_context)
+    try:
+        index = VectorStoreIndex.from_documents(docstore, service_context=service_context)
+    except Exception as e:
+        logging.error(f"Failed to create index with exception: {e}")
+        return None
     # store index
     if outpath_index is not None:
         os.makedirs(outpath_index, exist_ok=True)
