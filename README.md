@@ -61,7 +61,7 @@ cd ragpipe
 python tests/use_case_studies.py run1
 ```
 
-### Run from Frontend APP
+### Run from Frontend App
 
 Launch the frontend app
 
@@ -92,11 +92,7 @@ The following command line arguments are available:
 - `--organisation`: Organisation
 - `--language_style`: Language style for report, default='analytical'
 - `--path_documents`: Path to directory with your documents, default=None
-- `--path_templates`: Path to templates, default='./templates/'
-- `--fname_system_prompt`: Filename for system prompt, default='Prompt_system.md'
-- `--fname_report_template`: Filename for report template, default='Report.md'
-- `--outpath`: Output path, default='../../results/'
-- `--path_index`: Path to index, default='../../index_store'
+- `--additional_context`: Additional context for the use case study
 
 To integrate RAGscholar in your code, add the following lines and add arguments to RAGscholar() and rag.run()
 ```python
@@ -114,6 +110,42 @@ rag.run(query_topic = '...',
 ```
 
 For more details about the class arguments, see code documentation. Three examples how to generate an assessment report can be found in the file `tests/use_case_studies`.
+
+## Deployment with Docker
+
+Config nginx:
+```bash
+sudo apt install nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+sudo nano /etc/nginx/sites-available/default
+```
+and paste the settings as shown in `nginx_settings.config`. 
+Feel free to edit or add more.
+
+The Dockerfile is located in the folder `ragpipe`. To build the Dockerimage run:
+```bash
+sudo docker build -t streamlit-app . 
+```
+
+Run docker image and restart nginx:
+```bash
+docker run -d -p 8501:8501  streamlit-app
+sudo systemctl restart nginx
+```
+This will make the streamlit ap available on the IP and port (here 8501) as configured in Dockerfile, nginx and instance network url.
+
+- If you want to stop the container:
+```bash
+docker ps
+docker container stop <CONTAINER ID>
+```
+- To start the the Docker service automatically:
+```bash
+sudo systemctl enable docker
+```
+
+
 
 ## RAG Pipeline
 
