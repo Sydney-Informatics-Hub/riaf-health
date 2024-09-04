@@ -45,6 +45,7 @@ dependencies:
   - stack_data=0.6.2
   - tk=8.6.13
   - traitlets=5.14.3
+  - typing_extensions=4.12.2
   - tzdata=2024a
   - wcwidth=0.2.13
   - wheel=0.43.0
@@ -61,15 +62,18 @@ dependencies:
       - azure-identity==1.17.1
       - babel==2.15.0
       - backoff==2.2.1
+      - bcrypt==4.2.0
       - beautifulsoup4==4.12.3
       - biopython==1.84
       - blinker==1.8.2
       - cachetools==5.4.0
+      - captcha==0.6.0
       - certifi==2024.7.4
       - cffi==1.16.0
       - charset-normalizer==3.3.2
       - chromedriver-autoinstaller==0.6.4
       - click==8.1.7
+      - cobble==0.1.4
       - courlan==1.2.0
       - cryptography==43.0.0
       - cssselect==1.2.0
@@ -81,6 +85,8 @@ dependencies:
       - docx2txt==0.8
       - docxcompose==1.4.0
       - docxtpl==0.18.0
+      - et-xmlfile==1.1.0
+      - extra-streamlit-components==0.1.71
       - feedfinder2==0.0.4
       - feedparser==6.0.11
       - filelock==3.15.4
@@ -90,6 +96,7 @@ dependencies:
       - gitpython==3.1.43
       - greenlet==3.0.3
       - h11==0.14.0
+      - html2docx==1.6.0
       - html2text==2024.2.26
       - htmldate==1.8.1
       - httpcore==1.0.5
@@ -97,6 +104,7 @@ dependencies:
       - idna==3.7
       - jieba3k==0.35.1
       - jinja2==3.1.4
+      - jiter==0.5.0
       - joblib==1.4.2
       - jsonpatch==1.33
       - jsonpointer==3.0.0
@@ -107,6 +115,7 @@ dependencies:
       - langchain-text-splitters==0.2.2
       - langfuse==2.39.2
       - langsmith==0.1.93
+      - latex2mathml==3.77.0
       - llama-cloud==0.0.9
       - llama-index==0.10.56
       - llama-index-agent-openai==0.2.9
@@ -127,6 +136,7 @@ dependencies:
       - llama-parse==0.4.9
       - lxml==5.2.2
       - lxml-html-clean==0.1.1
+      - mammoth==1.8.0
       - markdown-it-py==3.0.0
       - markupsafe==2.1.5
       - marshmallow==3.21.3
@@ -140,7 +150,8 @@ dependencies:
       - newspaper3k==0.2.8
       - nltk==3.8.1
       - numpy==1.26.4
-      - openai==1.36.1
+      - openai==1.41.1
+      - openpyxl==3.1.5
       - orjson==3.10.6
       - outcome==1.3.0.post0
       - packaging==23.2
@@ -157,6 +168,7 @@ dependencies:
       - pyjwt==2.8.0
       - pymupdf==1.24.7
       - pymupdfb==1.24.6
+      - pypandoc==1.13
       - pypdf==4.3.1
       - pypdf2==3.0.1
       - pysocks==1.7.1
@@ -178,9 +190,14 @@ dependencies:
       - spider-client==0.0.27
       - sqlalchemy==2.0.31
       - streamlit==1.36.0
+      - streamlit-authenticator==0.3.3
+      - streamlit-scrollable-textbox==0.0.3
       - striprtf==0.0.26
+      - svgwrite==1.4.3
+      - tabulate==0.9.0
       - tenacity==8.5.0
       - tiktoken==0.7.0
+      - tinycss2==1.3.0
       - tinysegmenter==0.3
       - tld==0.13
       - tldextract==5.1.2
@@ -191,10 +208,11 @@ dependencies:
       - trafilatura==1.11.0
       - trio==0.26.0
       - trio-websocket==0.11.1
-      - typing-extensions==4.9.0
       - typing-inspect==0.9.0
       - tzlocal==5.2
       - urllib3==2.2.2
+      - wavedrom==2.0.3.post3
+      - webencodings==0.5.1
       - websocket-client==1.8.0
       - wrapt==1.16.0
       - wsproto==1.2.0
