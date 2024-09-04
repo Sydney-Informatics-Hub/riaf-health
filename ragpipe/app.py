@@ -207,7 +207,7 @@ def main():
 
     # Add a button to download all results as a zip file
     if st.session_state.stage == 'generated':
-        st.text("")          
+        st.divider()           
         with open(st.session_state.zip_filename, "rb") as fp:
             if st.download_button(
                 label="Download Results",
@@ -215,12 +215,9 @@ def main():
                 file_name= f"Results_{st.session_state.fname_out}.zip",
                 mime="application/zip"):
                 # make sure the download is complete before displaying the success message
-                time.sleep(5)
+                #time.sleep(5)
                 st.success('Download complete.')
-            
-            # wait for the download to complete
-            #time.sleep(5)
-
+        
 
     if st.session_state.stage == 'generated': 
         with open(st.session_state.outpath_md, "r") as file:
@@ -237,7 +234,8 @@ def main():
                 """.format(content=use_case_study),
                 unsafe_allow_html=True,
             )
-        # Cleanup the temporary directory, check if exists first
+
+        ### Cleanup the temporary directory:
         #if os.path.exists(st.session_state.path_documents):
         #    shutil.rmtree(st.session_state.path_documents)
 
