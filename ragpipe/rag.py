@@ -61,6 +61,8 @@ _path_index_store = '../../index_store'
 _path_local_docs = './templates/docs'
 _path_local_data = './templates/data'
 
+ENABLE_LANGFUSE_CALLBACKS = True
+
 
 class RAGscholar:
     """
@@ -232,7 +234,7 @@ class RAGscholar:
         # Condense Plus Context Chat Engine (WIP)
         system_prompt = self.generate_system_prompt()
 
-        memory = ChatMemoryBuffer.from_defaults(token_limit=10000)
+        memory = ChatMemoryBuffer.from_defaults(token_limit=12000)
         self.chat_engine = self.index.as_chat_engine(
             chat_mode="context",
             memory=memory,
@@ -640,8 +642,12 @@ class RAGscholar:
                 
                 # Use DataExtractor to get relevant data
                 extractor = DataExtractor()
-                result_df = extractor.extract_relevant_data_from_table(file_path, column_names, query_string)
-                logging.info(f"Extracted {len(result_df)} relevant data rows from {filename}.")
+                try:
+                    result_df = extractor.extract_relevant_data_from_table(file_path, column_names, query_string)
+                    logging.info(f"Extracted {len(result_df)} relevant data rows from {filename}.")
+                except Exception as e:
+                    logging.error(f"Error extracting data from {filename}: {e}")
+                    continue
                 
                 if len(result_df) == 0:
                     logging.info(f"No relevant data rows found in {filename}.")
@@ -1021,4 +1027,16 @@ def main():
     print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
 
 if __name__ == '__main__':
+    if ENABLE_LANGFUSE_CALLBACKS:
+        load_api_key(toml_file_path='secrets.toml')
+        langfuse_callback_handler = LlamaIndexCallbackHandler(
+        secret_key=os.getenv('LANGFUSE_SECRET_KEY'),
+        public_key=os.getenv('LANGFUSE_PUBLIC_KEY'),
+        host="https://cloud.langfuse.com"
+        )
+        Settings.callback_manager = CallbackManager([langfuse_callback_handler]) 
+
     main()
+
+    if ENABLE_LANGFUSE_CALLBACKS:
+        langfuse_callback_handler.flush()
