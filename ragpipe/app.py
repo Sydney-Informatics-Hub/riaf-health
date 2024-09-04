@@ -42,8 +42,7 @@ def login():
 
 
 def main():
-    #Streamlit's default configuration is for development  mode, which does not allow CORS requests.
-    #st.set_option('server.enableCORS', True)
+    
     # Initialization
     if 'uploaded' not in st.session_state:
         st.session_state['uploaded'] = 0
@@ -63,14 +62,14 @@ def main():
 
     
     # Create input fields for each argument
-    query_author = st.text_input(r"$\textsf{\small Author name to search for}$", value="Anthony Weiss")
-    query_topic = st.text_input(r"$\textsf{\small Topic for Use-case Study}$", value="Elastagen")
-    query_keywords = st.text_input(r"$\textsf{\small Keywords for publication query (separated by commas)}$", value="elastin, tissue engineering, elastagen")
+    query_author = st.text_input(r"$\textsf{\small Author name to search for (separate multiple authors by comma)}$", value="")
+    query_topic = st.text_input(r"$\textsf{\small Topic for Use-case Study}$", value="")
+    query_keywords = st.text_input(r"$\textsf{\small Keywords for publication query (separated by commas)}$", value="")
     col1, col2 = st.columns(2)
     with col1:
         research_period_start = st.text_input(r"$\textsf{\small Research period start (year)}$", value=2013)
     with col2:
-        research_period_end = st.text_input(r"$\textsf{\small Research period end (year)}$", value=2023)
+        research_period_end = st.text_input(r"$\textsf{\small Research period end (year)}$", value=2024)
     with col1:
         impact_period_start = st.text_input(r"$\textsf{\small Impact period start (year)}$", value=research_period_start )
     with col2:
@@ -198,12 +197,6 @@ def main():
             st.session_state['stage'] = 'failed'
             st.error('An error occurred while generating the use-case study.')
 
- 
-    # for testing download
-    #st.session_state['stage'] = 'generated'
-    #st.session_state['zip_filename'] = '../../results/Results_Elastagen_by_Anthony_Weiss_2024-09-03-0056.zip'
-    #st.session_state['fname_out'] = 'Elastagen_by_Anthony_Weiss'
-    #st.session_state['outpath_md'] = '../../results/Elastagen_by_Anthony_Weiss/Use_Case_Study.md'
 
     # Add a button to download all results as a zip file
     if st.session_state.stage == 'generated':
@@ -242,6 +235,19 @@ def main():
 
  
 if __name__ == '__main__':
+    st.set_page_config(page_title="RIAF AI", page_icon=":robot:")
+    hide_streamlit_style = """
+    <style>
+        .reportview-container {
+            margin-top: -2em;
+        }
+        #MainMenu {visibility: hidden;}
+        .stDeployButton {display:none;}
+        footer {visibility: hidden;}
+        #stDecoration {display:none;}
+    </style>
+    """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
     login()
     if st.session_state["authentication_status"]:
         main()
