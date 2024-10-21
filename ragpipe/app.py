@@ -58,6 +58,34 @@ def login():
 
 
 
+# def reset_and_rerun():
+#     # Resets all values in session state except for authentication and rerun.
+#     st.session_state['uploaded'] = 0
+#     st.session_state['stage'] = 'process'
+#     st.session_state['uploaded'] = None
+#     st.session_state['zip_filename'] = None
+#     st.session_state['fname_out'] = None
+#     st.session_state['outpath_md'] = None
+#     st.session_state['path_documents'] = None
+#     st.session_state['query_author'] = None
+#     st.session_state['query_topic'] = None
+#     st.session_state['query_keywords'] = None
+#     st.session_state['research_period_start'] = None
+#     st.session_state['research_period_end'] = None
+#     st.session_state['impact_period_start'] = None
+#     st.session_state['impact_period_end']= None
+#     st.session_state['organisation'] = None
+#     st.session_state['language_style'] = None
+#     st.session_state['additional_context'] = None      
+#     #st.session_state['uploaded_files'] = None
+#     path_documents = os.path.join(OUTPATH, 'temp_' + str(time.time()))
+#     st.session_state['path_documents'] = path_documents
+#     os.makedirs(path_documents, exist_ok=True)
+#     st.rerun()
+
+
+
+
 def main():
     
     # Initialization
@@ -74,40 +102,51 @@ def main():
         st.session_state['path_documents'] = path_documents
         os.makedirs(path_documents, exist_ok=True)
 
+
     st.title(r"$\textsf{\tiny RIAF Use-Case-Study Generator}$")
+
+    # Add a full refresh button
+    #if st.button("Full Refresh"):
+    #    reset_and_rerun()
+    #    if progress_bar:
+    #        progress_bar.progress(0)
+        #print all session states
+        #print("Current Session State:")
+        #for key, value in st.session_state.items():
+        #    print(f"{key}: {value}")
 
     # Create input fields for each argument
     query_author = st.text_input(r"$\textsf{\small Author name to search for (separate multiple authors by comma)}$", 
-                                 value="",
+                                 value="", #key='query_author', 
                                  help="""Enter author names, e.g., Anthony Weiss, Kate Curtis. 
                                  The app will retrieve publications and other public content for each author on the list.
                                  Note that the processing time will be longer for more author names,
                                  and a author list of less than five main contributors is recommended.""")
     query_topic = st.text_input(r"$\textsf{\small Topic for Use-case Study}$", 
-                                value="",
+                                value="", #key='query_topic',
                                 help="""Title or topic for the Use Case Study to be generated.
                                 This will be the main topic that will guide the generation process.
                                 Note that you can add more specific instructions and context in the section `Additional context and instructions` below.
                                 """)
     query_keywords = st.text_input(r"$\textsf{\small Keywords for publication query (separated by commas)}$", 
-                                   value="",
+                                   value="",#key='query_keywords',
                                    help="""Enter all relevant keywords related to the study. 
                                    This will assist the app in selecting relevant publications.""")
     col1, col2 = st.columns(2)
     with col1:
-        research_period_start = st.text_input(r"$\textsf{\small Research period start (year)}$", value=2013, 
+        research_period_start = st.text_input(r"$\textsf{\small Research period start (year)}$", value=2013, #key='research_period_start',
                                               help="Specify the starting year of the active research timeframe for the Use Case Study.")
     with col2:
-        research_period_end = st.text_input(r"$\textsf{\small Research period end (year)}$", value=2024,
+        research_period_end = st.text_input(r"$\textsf{\small Research period end (year)}$", value=2024,#key='research_period_end',
                                             help="Specify the final year of the active research timeframe for the Use Case Study.")
     with col1:
-        impact_period_start = st.text_input(r"$\textsf{\small Impact period start (year)}$", value=research_period_start,
+        impact_period_start = st.text_input(r"$\textsf{\small Impact period start (year)}$", value=research_period_start, #key='impact_period_start',
                                             help="Specify the starting year of the research impact timeframe for the Use Case Study." )
     with col2:
-        impact_period_end = st.text_input(r"$\textsf{\small Impact period end (year)}$", value=research_period_end,
+        impact_period_end = st.text_input(r"$\textsf{\small Impact period end (year)}$", value=research_period_end, #key='impact_period_end',
                                           help="Specify the final year of the research impact timeframe for the Use Case Study.")
 
-    organisation = st.text_input(r"$\textsf{\small Organisation}$", value="The University of Sydney", 
+    organisation = st.text_input(r"$\textsf{\small Organisation}$", value="The University of Sydney", #key='organisation',
                                  help="Affiliation: University or organisation that hosted the research")
     
     language_style = st.selectbox(r"$\textsf{\small Language style for report}$", options=['analytical', 
@@ -118,10 +157,11 @@ def main():
                                                                                            'narrative',
                                                                                            'engaging'], index=0,
                                                                                            help="Specify the language style for writing the Use Case Study.")
+                                                                                           #key='language_style')
 
 
     # Additional context input
-    additional_context = st.text_area(r"$\textsf{\small Additional context and instructions}$", value="", height=100,
+    additional_context = st.text_area(r"$\textsf{\small Additional context and instructions}$", value="", height=100, #key='additional_context',
                                       help="""
                                       ## Context Help
                                       
@@ -144,6 +184,7 @@ def main():
                                       Also add any publications that have restricted access for automatic download.
                                       DO NOT UPLOAD ANY CONFIDENTIAL OR PRIVATE DATA.
                                       """)
+                                      #key = 'uploaded_files')
     savefiles = False
     if len(uploaded_files) > 0:
         # check if the temporary directory exist already
@@ -255,7 +296,8 @@ def main():
 
     # Add a button to download all results as a zip file
     if st.session_state.stage == 'generated':
-        st.divider()           
+        st.divider() 
+        st.text("Use-case study generated.")          
         with open(st.session_state.zip_filename, "rb") as fp:
             if st.download_button(
                 label="Download Results",
