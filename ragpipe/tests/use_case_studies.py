@@ -346,6 +346,36 @@ def test_RAGscholar_run10():
     print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
 
 
+def test_RAGscholar_run11():
+    time_now = time.time()
+    rag = RAGscholar(path_templates = './templates/',
+                    fname_system_prompt = 'Prompt_context.md',
+                    fname_report_template = 'Report.md',
+                    outpath = '../../results/',
+                    path_index = '../../index_store',
+                    path_documents = None)
+    query_author="Karen Canfell, Anne Cust, Michael Caruana, Michael David, Eleonora Feletto, Nehmat Houssami"
+    query_topic="The Daffodil Centre Impact"
+    keywords = "cancer research, population health research, epidemiology, predictive statistical forecasting"
+    research_period_start = 2021
+    research_period_end = 2024
+    impact_period_start = 2021
+    impact_period_end = 2024
+    organisation = "The University of Sydney"
+    rag.run(query_topic,
+            query_author,
+            keywords,
+            organisation,
+            research_period_start,
+            research_period_end,
+            impact_period_start,
+            impact_period_end,
+            local_document_path = PATH_LOCAL_DOCS,
+            local_data_path = PATH_LOCAL_DATA,
+            )
+    print(f"Time taken: {round(time.time() - time_now, 2)} seconds")
+
+
 if __name__ == '__main__':
 
     if ENABLE_LANGFUSE_CALLBACKS:
