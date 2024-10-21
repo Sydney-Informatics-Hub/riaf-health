@@ -18,14 +18,18 @@ def display_logo():
         image = Image.open(logo_path)
         # Calculate new width to maintain aspect ratio
         aspect_ratio = image.width / image.height
-        new_height = 60
+        new_height = 150
         new_width = int(new_height * aspect_ratio)
         image = image.resize((new_width, new_height))
-        st.image(image)
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.image(image)
     else:
         st.warning("Logo image not found.")
 
 def login():
+    display_logo()  # Add this line to display the logo
+
     with open('streamlit_secrets.yaml') as file:
         config = yaml.load(file, Loader=SafeLoader)
 
@@ -55,9 +59,6 @@ def login():
 
 
 def main():
-    
-    # Display the logo
-    display_logo()
     
     # Initialization
     if 'uploaded' not in st.session_state:
