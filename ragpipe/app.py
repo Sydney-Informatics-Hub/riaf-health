@@ -7,10 +7,23 @@ import shutil
 import yaml
 from yaml.loader import SafeLoader
 import streamlit_authenticator as stauth
+from PIL import Image
 
 # Define the output path for the generated use-case study
 OUTPATH = '../../results/'
 
+def display_logo():
+    logo_path = "./templates/logo.jpeg"
+    if os.path.exists(logo_path):
+        image = Image.open(logo_path)
+        # Calculate new width to maintain aspect ratio
+        aspect_ratio = image.width / image.height
+        new_height = 60
+        new_width = int(new_height * aspect_ratio)
+        image = image.resize((new_width, new_height))
+        st.image(image)
+    else:
+        st.warning("Logo image not found.")
 
 def login():
     with open('streamlit_secrets.yaml') as file:
@@ -43,6 +56,9 @@ def login():
 
 def main():
     
+    # Display the logo
+    display_logo()
+    
     # Initialization
     if 'uploaded' not in st.session_state:
         st.session_state['uploaded'] = 0
@@ -57,10 +73,8 @@ def main():
         st.session_state['path_documents'] = path_documents
         os.makedirs(path_documents, exist_ok=True)
 
-
     st.title(r"$\textsf{\tiny RIAF Use-Case-Study Generator}$")
 
-    
     # Create input fields for each argument
     query_author = st.text_input(r"$\textsf{\small Author name to search for (separate multiple authors by comma)}$", value="")
     query_topic = st.text_input(r"$\textsf{\small Topic for Use-case Study}$", value="")
