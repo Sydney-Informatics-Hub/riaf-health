@@ -138,24 +138,35 @@ class RAGscholar:
 
     def log_settings(self):
         # save all arguments to log file
-        logging.info(f"---------INPUT SETTINGS---------")
-        logging.info(f"Research topic: {self.research_topic}")
-        logging.info(f"Author: {self.author}")
-        logging.info(f"Keywords: {self.keywords}")
-        logging.info(f"Organisation: {self.organisation}")
-        logging.info(f"Research period: {self.research_period}")
-        logging.info(f"Impact period: {self.impact_period}")
-        logging.info(f"Additional context: {self.additional_context}")
-        logging.info(f"Path to output: {self.outpath}")
-        logging.info(f"Path to index: {self.path_index}")
-        logging.info(f"Path to templates: {self.path_templates}")
-        logging.info(f"Path to documents: {self.path_documents}")
-        logging.info(f"Load index from storage: {self.load_index_from_storage}")
-        logging.info(f"Use scholarai script: {self.scholarai_delete_pdfs}")
-        logging.info(f"Language style: {self.language_style}")
-        logging.info(f"LLM service: {self.llm_service}")
-        logging.info(f"Benchmark Review enables: {self.benchmark_review}")
-        logging.info(f"--------------------------------")
+        settings = [
+            f"---------INPUT SETTINGS---------",
+            f"Research topic: {self.research_topic}",
+            f"Author: {self.author}",
+            f"Keywords: {self.keywords}",
+            f"Organisation: {self.organisation}",
+            f"Research period: {self.research_period}",
+            f"Impact period: {self.impact_period}",
+            f"Additional context: {self.additional_context}",
+            f"Path to output: {self.outpath}",
+            f"Path to index: {self.path_index}",
+            f"Path to templates: {self.path_templates}",
+            f"Path to documents: {self.path_documents}",
+            f"Load index from storage: {self.load_index_from_storage}",
+            f"Use scholarai script: {self.scholarai_delete_pdfs}",
+            f"Language style: {self.language_style}",
+            f"LLM service: {self.llm_service}",
+            f"Benchmark Review enables: {self.benchmark_review}",
+            f"--------------------------------"
+        ]
+        
+        # Log to the log file
+        for setting in settings:
+            logging.info(setting)
+        
+        # Write to input_settings.txt
+        with open(os.path.join(self.outpath, "input_settings.txt"), "w") as f:
+            for setting in settings:
+                f.write(setting + "\n")
 
 
     def generate_chatengine_react(self):
