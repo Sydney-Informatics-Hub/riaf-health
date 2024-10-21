@@ -169,7 +169,7 @@ def main():
 
 
     # Button to run the RAGscholar process
-    if st.button('Generate Use-case Study'):
+    if st.button('Generate Use-Case Study', type="primary"):
 
         # Prepare the command to run rag.py as a subprocess
         cmd = [
