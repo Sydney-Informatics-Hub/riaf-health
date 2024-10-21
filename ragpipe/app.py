@@ -1,3 +1,5 @@
+# RIAF Streamlit App
+
 import streamlit as st
 import subprocess
 import sys
@@ -44,7 +46,7 @@ def login():
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
-        name, authentication_status, username = authenticator.login(max_concurrent_users = 10) #'Login', 'main'
+        name, authentication_status, username = authenticator.login(max_concurrent_users = 10) 
 
     if authentication_status:
         #print('name', name)
@@ -55,34 +57,6 @@ def login():
         st.error('Username/password is incorrect')
     elif authentication_status == None:
         st.warning('Please enter your username and password')
-
-
-
-# def reset_and_rerun():
-#     # Resets all values in session state except for authentication and rerun.
-#     st.session_state['uploaded'] = 0
-#     st.session_state['stage'] = 'process'
-#     st.session_state['uploaded'] = None
-#     st.session_state['zip_filename'] = None
-#     st.session_state['fname_out'] = None
-#     st.session_state['outpath_md'] = None
-#     st.session_state['path_documents'] = None
-#     st.session_state['query_author'] = None
-#     st.session_state['query_topic'] = None
-#     st.session_state['query_keywords'] = None
-#     st.session_state['research_period_start'] = None
-#     st.session_state['research_period_end'] = None
-#     st.session_state['impact_period_start'] = None
-#     st.session_state['impact_period_end']= None
-#     st.session_state['organisation'] = None
-#     st.session_state['language_style'] = None
-#     st.session_state['additional_context'] = None      
-#     #st.session_state['uploaded_files'] = None
-#     path_documents = os.path.join(OUTPATH, 'temp_' + str(time.time()))
-#     st.session_state['path_documents'] = path_documents
-#     os.makedirs(path_documents, exist_ok=True)
-#     st.rerun()
-
 
 
 
@@ -105,15 +79,6 @@ def main():
 
     st.title(r"$\textsf{\tiny RIAF Use-Case-Study Generator}$")
 
-    # Add a full refresh button
-    #if st.button("Full Refresh"):
-    #    reset_and_rerun()
-    #    if progress_bar:
-    #        progress_bar.progress(0)
-        #print all session states
-        #print("Current Session State:")
-        #for key, value in st.session_state.items():
-        #    print(f"{key}: {value}")
 
     # Create input fields for each argument
     query_author = st.text_input(r"$\textsf{\small Author name to search for (separate multiple authors by comma)}$", 
@@ -330,7 +295,6 @@ def main():
         #    shutil.rmtree(st.session_state.path_documents)
 
 
- 
 if __name__ == '__main__':
     st.set_page_config(page_title="RIAF AI", page_icon=":robot:")
     hide_streamlit_style = """
