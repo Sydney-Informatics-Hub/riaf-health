@@ -6,6 +6,7 @@ import logging
 import time
 import pandas as pd
 import re
+import datetime
 
 from llama_index.core import load_index_from_storage
 from llama_index.core.retrievers import VectorIndexRetriever
@@ -889,6 +890,13 @@ class RAGscholar:
         # generate index store from all documents gathered and save index in self.path_index
         logging.info("Generating index database from all documents ...")
         self.path_index = os.path.join(self.path_index, path_index_name)
+        
+        # Convert datetime objects in the documents to strings
+        for i in range(len(self.documents)):
+            for key in self.documents[i].metadata.keys():
+                if isinstance(self.documents[i].metadata[key],datetime.datetime):
+                    self.documents[i].metadata[key] = str(self.documents[i].metadata[key])
+                    
         self.index = create_index(self.documents, 
                                 self.path_index, 
                                 temperature=_temperature, 
