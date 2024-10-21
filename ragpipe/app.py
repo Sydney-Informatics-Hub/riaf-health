@@ -77,33 +77,73 @@ def main():
     st.title(r"$\textsf{\tiny RIAF Use-Case-Study Generator}$")
 
     # Create input fields for each argument
-    query_author = st.text_input(r"$\textsf{\small Author name to search for (separate multiple authors by comma)}$", value="")
-    query_topic = st.text_input(r"$\textsf{\small Topic for Use-case Study}$", value="")
-    query_keywords = st.text_input(r"$\textsf{\small Keywords for publication query (separated by commas)}$", value="")
+    query_author = st.text_input(r"$\textsf{\small Author name to search for (separate multiple authors by comma)}$", 
+                                 value="",
+                                 help="""Enter author names, e.g., Anthony Weiss, Kate Curtis. 
+                                 The app will retrieve publications and other public content for each author on the list.
+                                 Note that the processing time will be longer for more author names,
+                                 and a author list of less than five main contributors is recommended.""")
+    query_topic = st.text_input(r"$\textsf{\small Topic for Use-case Study}$", 
+                                value="",
+                                help="""Title or topic for the Use Case Study to be generated.
+                                This will be the main topic that will guide the generation process.
+                                Note that you can add more specific instructions and context in the section `Additional context and instructions` below.
+                                """)
+    query_keywords = st.text_input(r"$\textsf{\small Keywords for publication query (separated by commas)}$", 
+                                   value="",
+                                   help="""Enter all relevant keywords related to the study. 
+                                   This will assist the app in selecting relevant publications.""")
     col1, col2 = st.columns(2)
     with col1:
-        research_period_start = st.text_input(r"$\textsf{\small Research period start (year)}$", value=2013)
+        research_period_start = st.text_input(r"$\textsf{\small Research period start (year)}$", value=2013, 
+                                              help="Specify the starting year of the active research timeframe for the Use Case Study.")
     with col2:
-        research_period_end = st.text_input(r"$\textsf{\small Research period end (year)}$", value=2024)
+        research_period_end = st.text_input(r"$\textsf{\small Research period end (year)}$", value=2024,
+                                            help="Specify the final year of the active research timeframe for the Use Case Study.")
     with col1:
-        impact_period_start = st.text_input(r"$\textsf{\small Impact period start (year)}$", value=research_period_start )
+        impact_period_start = st.text_input(r"$\textsf{\small Impact period start (year)}$", value=research_period_start,
+                                            help="Specify the starting year of the research impact timeframe for the Use Case Study." )
     with col2:
-        impact_period_end = st.text_input(r"$\textsf{\small Impact period end (year)}$", value=research_period_end)
+        impact_period_end = st.text_input(r"$\textsf{\small Impact period end (year)}$", value=research_period_end,
+                                          help="Specify the final year of the research impact timeframe for the Use Case Study.")
 
-    organisation = st.text_input(r"$\textsf{\small Organisation}$", value="The University of Sydney")
+    organisation = st.text_input(r"$\textsf{\small Organisation}$", value="The University of Sydney", 
+                                 help="Affiliation: University or organisation that hosted the research")
+    
     language_style = st.selectbox(r"$\textsf{\small Language style for report}$", options=['analytical', 
                                                                                            'journalistic', 
                                                                                            'academic', 
                                                                                            'scientific commentary', 
                                                                                            'objective',
                                                                                            'narrative',
-                                                                                           'engaging'], index=0)
+                                                                                           'engaging'], index=0,
+                                                                                           help="Specify the language style for writing the Use Case Study.")
 
 
     # Additional context input
-    additional_context = st.text_area(r"$\textsf{\small Additional context and instructions}$", value="", height=100)
+    additional_context = st.text_area(r"$\textsf{\small Additional context and instructions}$", value="", height=100,
+                                      help="""
+                                      ## Context Help
+                                      
+                                      Add here any additional information, topical context, or instructions that might be relevant for the Use Case Study.
+                                      
+                                      ## Example information to include:
+                                      - List your key, related grants (titles, and amounts of funding) 
+                                      - List any HDRs (name) working on this project, or working on related research with you (To capture key higher degree research students)
+                                      - List any ECRs (name) working on this project, or working on related research with you (To capture ECRs/researcher development)
+                                      - List any key collaborating partners (e.g. other universities, government organisations, industry partners or community groups) involved in this project or research
+                                      (To capture key collaborations/partners in the research/for the researcher)
+                                      - Any project details, commercial spin-offs, patents etc. 
+                                      
+                                      DO NOT ADD ANY CONFIDENTIAL OR PRIVATE INFORMATION.
+                                      """
+                                      )
 
-    uploaded_files = st.file_uploader(r"$\textsf{\small Upload your documents}$", type=None, accept_multiple_files=True)
+    uploaded_files = st.file_uploader(r"$\textsf{\small Upload your documents}$", type=None, accept_multiple_files=True,
+                                      help="""Add here any files that might be relevant to Use Case Study.
+                                      Also add any publications that have restricted access for automatic download.
+                                      DO NOT UPLOAD ANY CONFIDENTIAL OR PRIVATE DATA.
+                                      """)
     savefiles = False
     if len(uploaded_files) > 0:
         # check if the temporary directory exist already
