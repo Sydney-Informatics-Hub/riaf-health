@@ -7,6 +7,7 @@ import time
 import pandas as pd
 import re
 import datetime
+import shutil
 
 from llama_index.core import load_index_from_storage
 from llama_index.core.retrievers import VectorIndexRetriever
@@ -14,6 +15,7 @@ from llama_index.core import PromptTemplate, Document
 from llama_index.core.llms import ChatMessage, MessageRole
 from llama_index.core.chat_engine import CondenseQuestionChatEngine
 from llama_index.core.chat_engine import CondensePlusContextChatEngine
+from llama_index.core.query_engine import CitationQueryEngine
 from llama_index.core.memory import ChatMemoryBuffer
 from docxtpl import DocxTemplate
 from llama_index.llms.openai import OpenAI
@@ -256,6 +258,15 @@ class RAGscholar:
             similarity_top_k=10,
             )
         
+    def generate_citationqueryengine(self):
+
+        query_engine = CitationQueryEngine.from_args(
+                self.index,
+                similarity_top_k=10,
+                citation_chunk_size=512,
+                )
+        return query_engine
+        
     def query_chatengine(self, query):
         """
         Query chat engine for content and sources.
@@ -425,12 +436,14 @@ class RAGscholar:
             keywords = self.keywords.split(",")
         else:
             keywords = self.keywords
+        self.path_documents_pdf = os.path.join(self.outpath, 'Source_Documents')
         scholar = ScholarAI(self.research_topic,
                             authors, 
                             year_start= self.research_start, 
                             year_end = self.research_end,
                             delete_pdfs = self.scholarai_delete_pdfs,
-                            keywords = keywords)
+                            keywords = keywords,
+                            outpath_pdfs = self.path_documents_pdf
         papers, citations = scholar.get_papers_from_authors(max_papers = _scholar_limit)
         self.documents, documents_missing = scholar.load_data(papers)
         self.papers_scholarai = papers
@@ -879,6 +892,7 @@ class RAGscholar:
         bing = BingSearch(k=10, year_start = self.impact_start, year_end= self.impact_end)
         bing_results, missing_results = bing.search_and_retrieve(self.research_topic)
         webdocs, documents_missing = bing.web2docs(bing_results)
+        # ToDo: Add webdocs to self.path_documents_pdf 
         if len(self.documents) > 0:
             self.documents = self.documents + webdocs
             logging.info(f"Added {len(webdocs)} websnippets to documents.")
@@ -887,6 +901,7 @@ class RAGscholar:
         if len(missing_results) > 0:
                 # Check if any urls in missing results are from PubMedCentral and download full text via API instead
                 biomedai = biomedAI()
+                 # ToDo: Add biomed xmls to self.path_documents_pdf 
                 docs_pubmed, missing_results = biomedai.check_for_pubmed_in_missing_documents(missing_results)  
                 if len(docs_pubmed) > 0:         
                     self.documents.extend(docs_pubmed)
@@ -920,6 +935,8 @@ class RAGscholar:
         if local_document_path: 
             print("Adding documents from local folder ...")
             self.index = add_docs_to_index(local_document_path, self.index)  
+            # copy all documents in local_document_path to directory self.path_documents_pdf (to save later in output)
+            shutil.copytree(local_document_path, self.path_documents_pdf, dirs_exist_ok=True)
         
 
         # Initialize chat engine with context prompt
