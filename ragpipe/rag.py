@@ -467,7 +467,7 @@ class RAGscholar:
             logging.info(f"Documents missing for {len(documents_missing)} sources.")
 
 
-    def context_engine(self, max_tokens_context = 2000):
+    def context_engine(self, max_tokens_context = 6000):
         """
         Analyse problem and context using chat engine.
         Save results to self.context
@@ -651,6 +651,55 @@ class RAGscholar:
         # for each author in authors, search web for background information in conjunction with affiliation
             # retrieve top 5 results
             # LLM: for generate summary of results in bullet points (with reference included after each point)
+        #create missing information index
+        # Check that self.author is a list
+        if not isinstance(self.author, list):
+            authors = [self.author]
+        else:
+            authors = self.author
+        if len(authors) > 3:
+            maxwords = str(int(1000/len(authors)))
+        else:
+            maxwords = '300'
+        for author in authors:
+            # Todo: replace with retriever.bingsearch.BingSearch (snippets created from web page content)
+            query = f"{author} {self.organisation}"
+            logging.info(f"Running web search query: {query}")
+            print(f"Running web search query: {query}")
+            bing = BingSearch()
+            bing_results, missing_results = bing.search_and_retrieve(query)
+            # convert bing results to webdocs
+            if len(bing_results) > 0:
+                #webdocs, _ = bing.web2docs(bing_results)
+                #authorcontext.extend(webdocs)
+                prompt_text = (f"Summarise the main background informations about {author} from the web results below:\n"
+                               "In particular focus on their achievements, awards, and innovations.\n"
+
+                        "Instructions:\n"
+                        "Provide key background information in bullet points.\n"
+                        "You must include references and links for each point.\n"
+                        "References should be in the format: [Reference title]{reference link}\n\n"
+                        f"Maximum length of the summary is {maxwords} words.\n" 
+                        )
+                prompt_text += f"\n\n### Web search results for {author} background information:\n"
+                for i, result in enumerate(bing_results):
+                    prompt_text += f"Title: {result['title']}\n"
+                    prompt_text += f"URL: {result['url']}\n"
+                    prompt_text += f"Description: {result['description']}\n"
+                    prompt_text += "Content:\n"
+                    for snippet in result['snippets']:
+                        prompt_text += f"{snippet}\n"
+                    prompt_text += "\n"
+                # Truncate prompt text if necessary to 10000 wordds
+                if len(prompt_text.split()) > 10000:
+                    prompt_text = " ".join(prompt_text.split()[:10000])
+                author_content, author_sources = self.query_chatengine(prompt_text)
+
+                # add to context
+                self.context += f"\n\n### Background information for {author}:\n"
+                self.context += author_content
+                logging.info(f"Background information for {author} added to context.")
+
 
         # check token limit and truncate context if necessary
         if len(self.context.split()) > max_tokens_context:
