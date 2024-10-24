@@ -38,14 +38,28 @@ def clean_text(text):
     text = text.replace('\r', '\n')
     text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]', '', text)
     
-    # Remove extra spaces at start/end of lines
+    # Fix spacing issues
+    # Fix multiple spaces
+    text = re.sub(r' +', ' ', text)
+    
+    # Step 4: Handle paragraph breaks
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    
+    # Step 5: Clean special characters
+    #text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]', '', text)
+    
+    # Step 6: Final formatting
+    # Remove spaces at start/end of lines
     lines = [line.strip() for line in text.split('\n')]
     text = '\n'.join(lines)
-    
+    text = text.strip()
     # Remove empty lines at start/end of document
     text = text.strip()
     
     return text
+
+
+
 
 def export_documents_to_json(documents, output_file):
     """
