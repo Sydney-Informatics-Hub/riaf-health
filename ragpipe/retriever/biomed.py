@@ -19,6 +19,7 @@ import os
 import time
 import logging
 import re
+import requests
 from Bio import Entrez
 import xml.etree.ElementTree as ET
 from llama_index.core import Document
@@ -30,6 +31,9 @@ class biomedAI:
             Entrez.email = os.environ.get('NCBI_EMAIL')
         else:
             raise ValueError("Please set the NCBI_EMAIL environment variable.")
+        
+        self.pdf_download_path = os.path.join(os.getcwd(), 'downloaded_pdfs')
+        os.makedirs(self.pdf_download_path, exist_ok=True)
 
     def search_pmc_by_title(self, title):
         """
