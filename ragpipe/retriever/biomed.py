@@ -26,14 +26,12 @@ from llama_index.core import Document
 
 
 class biomedAI:
-    def __init__(self):
+    def __init__(self, outpath_docs = 'biodocs'):
         if 'NCBI_EMAIL' in os.environ:
             Entrez.email = os.environ.get('NCBI_EMAIL')
         else:
             raise ValueError("Please set the NCBI_EMAIL environment variable.")
-        
-        self.pdf_download_path = os.path.join(os.getcwd(), 'downloaded_pdfs')
-        os.makedirs(self.pdf_download_path, exist_ok=True)
+        self.download_path = outpath_docs
 
     def search_pmc_by_title(self, title):
         """
@@ -173,6 +171,10 @@ class biomedAI:
                 try:
                     full_text_xml = self.fetch_full_text(pmc_id)
                     articles_content = self.parse_full_text(full_text_xml)
+                    # save xml as docx in self.pdf_download_path
+                    # convert first xml byte to string
+                    #with open(f"{self.download_path}/{pmc_id}.xml", "w") as f:
+                    #    f.write(full_text_xml.decode("utf-8"))               
                 except Exception as e:
                     logging.error(f"Failed to download full text from PubMedCentral with exception: {e}. Skipping document...")
                     articles_content = []
@@ -182,6 +184,8 @@ class biomedAI:
                     time.sleep(0.35)
                     metadata = {'href': url, 'title':  missing_result['title'], 'description': missing_result['description']}
                     doc = Document(text=text, doc_id = url, extra_info = metadata)
+                    # save doc as pdf in self.pdf_download_path
+                    doc.save_pdf(self.pdf_download_path)
                     docs.append(doc)
                     logging.info(f"Added document from PubMedCentral with title: {missing_result['title']}")
                 else:
@@ -214,3 +218,13 @@ def test_search_by_author():
     assert pubmed_ids, "No articles found."
     article_details_xml = biomedai.fetch_article_details(pubmed_ids[0])
     assert article_details_xml, "No article details found."
+
+def test_xml_download():
+    biomedai = biomedAI()
+    author_name = "Anthony Weiss"
+    pubmed_ids = biomedai.search_pubmed_by_author(author_name)
+    pmc_id = pubmed_ids[0]
+    full_text_xml = biomedai.fetch_full_text(pmc_id)
+    with open(f"{pmc_id}.xml", "w") as f:
+        f.write(full_text_xml.decode("utf-8")) 
+
