@@ -1006,7 +1006,7 @@ class RAGscholar:
                 try:
                     export_document_to_docx(doc, outpath_documents_converted)
                 except:
-                    logging.warning(f"Could not export document {doc['title']} to Word.")
+                    logging.warning(f"Could not export document {doc.doc_id} to Word.")
 
 
         # Run through prompt questions
