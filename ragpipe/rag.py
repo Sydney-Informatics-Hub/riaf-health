@@ -443,7 +443,7 @@ class RAGscholar:
                             year_end = self.research_end,
                             delete_pdfs = self.scholarai_delete_pdfs,
                             keywords = keywords,
-                            outpath_pdfs = self.path_documents_pdf
+                            outpath_pdfs = self.path_documents_pdf)
         papers, citations = scholar.get_papers_from_authors(max_papers = _scholar_limit)
         self.documents, documents_missing = scholar.load_data(papers)
         self.papers_scholarai = papers
@@ -645,6 +645,11 @@ class RAGscholar:
             with open(os.path.join(self.outpath, "missing_info.txt"), "w") as file:
                 for info in missing_info:
                     file.write(info + "\n")
+
+        #10. check for background information for authors and add to context
+        # for each author in authors, search web for background information in conjunction with affiliation
+            # retrieve top 5 results
+            # LLM: for generate summary of results in bullet points (with reference included after each point)
 
         # check token limit and truncate context if necessary
         if len(self.context.split()) > max_tokens_context:
