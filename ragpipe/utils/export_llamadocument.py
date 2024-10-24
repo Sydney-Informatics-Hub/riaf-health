@@ -5,6 +5,47 @@ from docx import Document as DocxDocument
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 import json
+import os
+import datetime
+import re
+
+
+def clean_text(text):
+    """
+    Clean text by handling various types of line breaks and spacing issues
+    
+    Args:
+        text (str): Input text to clean
+    Returns:
+        str: Cleaned text
+    """
+    if not text:
+        return ""
+    
+    # Replace multiple line breaks with two line breaks
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    
+    # Remove extra spaces before/after line breaks
+    text = re.sub(r' *\n *', '\n', text)
+    
+    # Remove extra spaces
+    text = re.sub(r' +', ' ', text)
+    
+    # Handle common HTML-style breaks
+    text = re.sub(r'<br\s*/?>|<p>|</p>', '\n', text)
+    
+    # Handle special characters often found in converted texts
+    text = text.replace('\r', '\n')
+    text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]', '', text)
+    
+    # Remove extra spaces at start/end of lines
+    lines = [line.strip() for line in text.split('\n')]
+    text = '\n'.join(lines)
+    
+    # Remove empty lines at start/end of document
+    text = text.strip()
+    
+    return text
 
 def export_documents_to_json(documents, output_file):
     """
@@ -45,7 +86,7 @@ def export_documents_to_txt(documents, output_file):
 
 
 
-def export_documents_to_docx_formatted(documents, output_file):
+def export_documents_to_docx_formatted(documents, outpath):
     """
     Export documents to a nicely formatted Word document
     """
@@ -99,5 +140,67 @@ def export_documents_to_docx_formatted(documents, output_file):
         doc.add_page_break()
     
     # Save the document
+    output_file = os.path.join(outpath, 'exported_documents.docx')
+    doc.save(output_file)
+
+
+
+def export_document_to_docx(document, outpath):
+    """
+    Export a single Document object to a Word document
+    
+    Args:
+        document: LlamaIndex Document object
+        output_file (str): Path for the output .docx file
+    """
+    doc = DocxDocument()
+    
+    # Add title using document id or first few words of content
+    #title = document.doc_id or document.text[:50] + "..."
+    
+    if document.metadata:
+        try:
+            title = document.metadata['title']
+        except:
+            title = document.text[:50] + "..."
+    else:
+        title = document.text[:50] + "..."
+    doc.add_heading(title, 0)
+    
+    # Add metadata section if exists
+    if document.metadata:
+        doc.add_heading('Metadata', level=1)
+        metadata_table = doc.add_table(rows=1, cols=2)
+        metadata_table.style = 'Table Grid'
+        
+        # Add headers
+        header_cells = metadata_table.rows[0].cells
+        header_cells[0].text = 'Key'
+        header_cells[1].text = 'Value'
+        
+        # Add metadata rows
+        for key, value in document.metadata.items():
+            row_cells = metadata_table.add_row().cells
+            row_cells[0].text = str(key)
+            row_cells[1].text = str(value)
+    
+    # Add content section
+    doc.add_heading('Content', level=1)
+
+    # Clean and split the text into paragraphs
+    cleaned_text = clean_text(document.text)
+    paragraphs = cleaned_text.split('\n\n')
+    
+    # Add each paragraph separately for better formatting
+    for para_text in paragraphs:
+        if para_text.strip():  # Only add non-empty paragraphs
+            paragraph = doc.add_paragraph()
+            run = paragraph.add_run(para_text.strip())
+            run.font.size = Pt(11)
+    #content_para = doc.add_paragraph()
+    #content_para.add_run(document.text).font.size = Pt(11)
+    
+    # Save the document
+    output_file = os.path.join(outpath, f'{title}.docx')
     doc.save(output_file)
 
