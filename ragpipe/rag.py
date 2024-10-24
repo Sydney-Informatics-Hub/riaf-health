@@ -648,13 +648,12 @@ class RAGscholar:
                     file.write(info + "\n")
 
         #10. check for background information for authors and add to context
-        # for each author in authors, search web for background information in conjunction with affiliation
-            # retrieve top 5 results
-            # LLM: for generate summary of results in bullet points (with reference included after each point)
-        #create missing information index
-        # Check that self.author is a list
         if not isinstance(self.author, list):
-            authors = [self.author]
+             # check if authors seperated by comma
+            if "," in self.author:
+                authors = self.author.split(",")
+            else:
+                authors = [self.author]
         else:
             authors = self.author
         if len(authors) > 3:
