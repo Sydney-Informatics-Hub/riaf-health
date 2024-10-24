@@ -49,6 +49,7 @@ from indexengine.process import (
 from agentreviewer.agentreviewer import AgentReviewer
 from utils.md2docx import markdown_to_docx, append_doc_riaf
 from utils.references import clean_references
+from utils.export_llamadocument import export_document_to_docx
 
 # Config parameters (TBD: move to config file)
 _fnames_question_prompt = ['Prompt1.md', 'Prompt2.md', 'Prompt3.md', 'Prompt4.md']
@@ -994,6 +995,18 @@ class RAGscholar:
                     for doc in self.documents_missing:
                         file.write(doc['title'] + ": " + doc['url'] + "\n\n")
 
+
+        # Eport all Documents to Word to save in output document folder
+        if len(self.documents) > 0:
+            outpath_documents_converted = os.path.join(self.path_documents_pdf, 'Documents_exported')
+            os.makedirs(outpath_documents_converted, exist_ok=True)
+            print("Exporting all documents to Word ...")
+            logging.info("Exporting all documents to Word ...")
+            for doc in self.documents:
+                try:
+                    export_document_to_docx(doc, outpath_documents_converted)
+                except:
+                    logging.warning(f"Could not export document {doc['title']} to Word.")
 
 
         # Run through prompt questions
