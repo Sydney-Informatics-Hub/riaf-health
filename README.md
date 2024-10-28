@@ -9,7 +9,26 @@ To improve the scalability of this framework, an AI powered software has been de
 
 The AI generator combines Large Language Models (LLM) with factual knowledge retrievers such as scholar publications and web content. For a complete overview of retrievers see modules in directory ragpipe/retrievers.
 
-## Installation
+## Webapp Use
+
+You need to be connected to the University network (either locally on campus or via University VPN).
+Open in browser http://10.122.246.100:8501
+
+When you open the url above the app will prompt you for a login.
+
+The output is available at the end via downloading the results as zip file.
+
+## Output Results
+
+- Research impact report (word docx and markdown)
+- Context analysis (text file)
+- Input settings (text file)
+- Table of relevant document for manual download (automatic download restricted)
+- Source documents (documents that are included in analysis)
+- Log file
+- Files of individual answers for each questions, before and after review
+
+## Local Installation
 
 Please follow the installations steps as outlined below
 
@@ -44,13 +63,13 @@ AZURE_API_BASE="your_azure_api_base_url"
 AZURE_API_VERSION="your_azure_api_version"
 # Set up Bing search API key.
 BING_SEARCH_API_KEY="your_bing_api_key"
+# Set up email for NCBI database access via biopython
+NCBI_EMAIL="your_ncbi_email"
+# setup Langfuse for for LLM monitoring and tracing
+LANGFUSE_SECRET_KEY="langfuse_secret_key"
+LANGFUSE_PUBLIC_KEY="langfuse_privat_key"
 
 ```
-
-## How-to and examples
-
-Add your `azure_sih_bing_key.txt` to the top level directory.
-Add your `openai_sih_key.txt` to the top level directory.
 
 ### Quick start
 
@@ -184,6 +203,7 @@ The pipeline includes the following steps:
 
 - Context agent:
     - defining general problem and context information
+    - author background check
     - find missing information online
     - generate context memory
 - Data-source search and retrieval agents:
