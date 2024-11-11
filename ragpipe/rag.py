@@ -409,7 +409,7 @@ class RAGscholar:
                                         + f"{content}\n\n"
                                         + "** Review text **: \n"
                                         + f"{review_txt}")
-            
+                      
                     print(f"Updating response {i} ...")
                     content, sources = self.query_chatengine(review_prompt)
                     logging.info(f"Response {i} after review: {content}")

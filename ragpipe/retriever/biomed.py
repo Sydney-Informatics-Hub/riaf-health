@@ -184,8 +184,6 @@ class biomedAI:
                     time.sleep(0.35)
                     metadata = {'href': url, 'title':  missing_result['title'], 'description': missing_result['description']}
                     doc = Document(text=text, doc_id = url, extra_info = metadata)
-                    # save doc as pdf in self.pdf_download_path
-                    doc.save_pdf(self.pdf_download_path)
                     docs.append(doc)
                     logging.info(f"Added document from PubMedCentral with title: {missing_result['title']}")
                 else:
