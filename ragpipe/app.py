@@ -28,6 +28,27 @@ def display_logo():
             st.image(image)
     else:
         st.warning("Logo image not found.")
+    #st.markdown("""
+    #        ### RIAF Use-Case-Study Generator 
+    #        *Generate research impact assessments in minutes with our AI-powered analysis.*
+    #        """)
+    st.markdown("""
+            **Disclaimer:** 
+            This application processes publicly available research data only. Users should review all AI-generated outputs 
+            for accuracy and must not upload any sensitive, confidential, or private information to this application. 
+            The application processes information during your session only and does not permanently store uploaded documents. 
+            By using ResearchPulse, you acknowledge that you understand these limitations and agree to use the tool responsibly. 
+            The University of Sydney makes no warranties about the completeness, reliability, and accuracy of this information.
+            """)
+    
+def display_footnote():
+    # Add a horizontal line and footnote at the end
+    st.write("")
+    st.write("")
+    st.markdown("""
+    <hr>
+    <small>© 2024 The University of Sydney | Sydney Informatics Hub | Principal Developer: Sebastian Haan | <a href="https://sydney-informatics-hub.github.io/ResearchPulseAI" target="_blank">ResearchPulse</a> </small>
+    """, unsafe_allow_html=True)
 
 def login():
     display_logo()  # Add this line to display the logo
@@ -52,7 +73,7 @@ def login():
         #print('name', name)
         #print('username', username)
         authenticator.logout('Logout', 'main')
-        st.write(f'Welcome *{name}*')
+        st.write(f'User: *{name}*')
     elif authentication_status == False:
         st.error('Username/password is incorrect')
     elif authentication_status == None:
@@ -126,6 +147,13 @@ def main():
 
 
     # Additional context input
+    context_placeholder="""Add any additional information, topical context, or instructions that might be relevant, such as:.
+    - List of related grants (titles, and amounts of funding): 
+    - List of HDRs (name) working on this project:
+    - List of ECRs (name) working on this project:
+    - List of key collaborating partners:
+    - Other project details, commercial spin-offs, patents etc:
+    """
     additional_context = st.text_area(r"$\textsf{\small Additional context and instructions}$", value="", height=100, #key='additional_context',
                                       help="""
                                       ## Context Help
@@ -141,7 +169,8 @@ def main():
                                       - Any project details, commercial spin-offs, patents etc. 
                                       
                                       DO NOT ADD ANY CONFIDENTIAL OR PRIVATE INFORMATION.
-                                      """
+                                      """,
+                                      placeholder=context_placeholder
                                       )
 
     uploaded_files = st.file_uploader(r"$\textsf{\small Upload your documents}$", type=None, accept_multiple_files=True,
@@ -294,7 +323,7 @@ def main():
         #if os.path.exists(st.session_state.path_documents):
         #    shutil.rmtree(st.session_state.path_documents)
 
-
+    
 if __name__ == '__main__':
     st.set_page_config(page_title="RIAF AI", page_icon=":robot:")
     hide_streamlit_style = """
@@ -312,3 +341,4 @@ if __name__ == '__main__':
     login()
     if st.session_state["authentication_status"]:
         main()
+    display_footnote()
