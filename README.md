@@ -1,7 +1,7 @@
 # AI Generator for Research Impact Assessment Studies
 <img width="1003" alt="Architecture" src="https://media.github.sydney.edu.au/user/291/files/a12249da-0c72-4f9d-a8a5-1e9677a6de18">
 
-[**Technical Documentation**](documentation/Technical_Documentation.md)
+[**Technical Documentation**](documentation/Technical_Documentation_ResearchPulse.pdf)
 
 [**ResearchPulse Public Homepage**](https://sydney-informatics-hub.github.io/ResearchPulseAI/)
 
@@ -11,7 +11,7 @@ This AI software generates research impact assessment studies for health and med
 
 To improve the scalability of this framework, an AI powered software has been developed that allows researchers and funding organisations to generate assessment reports about the research impact for a given research group and topic. Research impact is evaluated along distinct criteria such as overall problem addressed, research impact-to-date, and potential future applications. The current design of the case study template includes four assessment criteria and provides researchers the freedom to use a set of indicators that are relevant to their research program (e.g. research/impact period).
 
-The AI generator combines Large Language Models (LLM) with factual knowledge retrievers such as scholar publications and web content. For a complete overview of the system please see the [Technical Documentation](documentation/Technical_Documentation.md).
+The AI generator combines Large Language Models (LLM) with factual knowledge retrievers such as scholar publications and web content. For a complete overview of the system please see the [Technical Documentation](documentation/Technical_Documentation_ResearchPulse.pdf).
 
 ## Webapp Use
 
