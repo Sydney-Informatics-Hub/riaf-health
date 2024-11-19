@@ -470,7 +470,8 @@ class RAGscholar:
     def context_engine(self, max_tokens_context = 6000):
         """
         Analyse problem and context using chat engine.
-        Save results to self.context
+        Save results to self.context string. 
+        This will be saved as text and used in the prompt as additional context.
 
         Args:
         max_tokens_context: int, maximum tokens for context
@@ -485,6 +486,8 @@ class RAGscholar:
         7. Generate index store and save content and metadata in vector database
         8. Answer missing questions by querying database
         9. Add missing info to self.context
+        10.Check for background information for author
+        11. in run function: publication and citation analysis
         """
 
         # Step 1
