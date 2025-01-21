@@ -273,18 +273,30 @@ class ScholarAI:
 
         if url and not os.path.exists(persist_dir):
             # Download the document first
-            file_path = download_pdf(metadata["paperId"], url, persist_dir)
+            try:
+                file_path = download_pdf(metadata["paperId"], url, persist_dir)
+            except Exception as e:
+                logging.error(f"Failed to download pdf with exception: {e}. Skipping document...")
+                return None
 
         if (not url
             and externalIds
             and "ArXiv" in externalIds
             and not os.path.exists(persist_dir)):
             # download the pdf from arxiv
-            file_path = download_pdf_from_arxiv(paper_id, externalIds["ArXiv"], base_dir)
+            try:
+                file_path = download_pdf_from_arxiv(paper_id, externalIds["ArXiv"], base_dir)
+            except Exception as e:
+                logging.error(f"Failed to download pdf from ArXiv with exception: {e}. Skipping document...")
+                return None
 
         if not file_path and "ArXiv" in externalIds:
             logging.info(f"Downloading pdf from arxiv for paper {paper_id}")
-            file_path = download_pdf_from_arxiv(paper_id, externalIds["ArXiv"], base_dir)
+            try:
+                file_path = download_pdf_from_arxiv(paper_id, externalIds["ArXiv"], base_dir)
+            except Exception as e:
+                logging.error(f"Failed to download pdf from ArXiv with exception: {e}. Skipping document...")
+                return None
         elif not file_path and 'PubMedCentral' in externalIds and 'NCBI_EMAIL' in os.environ:
             logging.info(f"Downloading full text from PubMedCentral for paper {paper_id}")
             pmc_id = externalIds['PubMedCentral']
