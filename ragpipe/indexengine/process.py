@@ -123,7 +123,15 @@ def add_docs_to_index(path_docs, index):
     new_documents = SimpleDirectoryReader(path_docs).load_data()
 
     for doc in new_documents:
-        index.insert(doc)
+        # check if doc is empty or None
+        if doc is None or doc.text is None or len(doc.text) == 0:
+            logging.warning(f"Document with ID {doc.doc_id} is empty")
+            continue
+        try:
+            index.insert(doc)
+        except Exception as e:
+            logging.error(f"Failed to insert document with ID {doc.doc_id} with exception: {e}")
+            continue
 
     return index
 
