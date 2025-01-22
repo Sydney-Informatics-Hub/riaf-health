@@ -191,7 +191,51 @@ docker container stop <CONTAINER ID>
 ```bash
 sudo systemctl enable docker
 ```
+## Deployment with systemd service
 
+Set up nginx as above. Then instead of Docker use systemd service for managing webapp:
+
+First activate conda environment (assuming it is installed)
+```bash
+conda activate riaf
+```
+
+Create a systemd service file:
+```bash
+sudo nano /etc/systemd/system/streamlit.service
+```
+
+Add this to configuration:
+```ini
+[Unit]
+Description=RIAF Streamlit App
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/riaf/ragpipe
+Environment="PATH=/home/ubuntu/miniforge3/envs/riaf"
+ExecStart=/home/ubuntu/miniforge3/envs/riaf/bin/streamlit run app.py --server.address 10.122.246.100 --server.port 8501
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start the service:
+```bash
+sudo systemctl enable streamlit.service
+sudo systemctl start streamlit.service
+sudo systemctl restart nginx
+```
+
+Now if your app crashes, it will automatically restart. You can also manually control it with:
+```bash
+sudo systemctl restart streamlit.service  # Restart
+sudo systemctl status streamlit.service   # Check status
+sudo systemctl stop streamlit.service     # Stop
+```
 
 
 ## RAG Pipeline
