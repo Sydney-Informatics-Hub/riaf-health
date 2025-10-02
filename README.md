@@ -1,26 +1,25 @@
-# AI Generator for Research Impact Assessment Studies
-<img width="1003" alt="Architecture" src="https://media.github.sydney.edu.au/user/291/files/a12249da-0c72-4f9d-a8a5-1e9677a6de18">
+# AI Generator for Research Impact Assessment Studies (ResearchPulse)
 
-[**Technical Documentation**](documentation/Technical_Documentation_ResearchPulse.pdf)
+> [!WARNING]
+> **This repository is not actively maintained and has been archived.**
+> 
+> Please note:
+> - Some functions may not work as expected
+> - Dependencies are outdated and may have security vulnerabilities
+> - No updates or bug fixes will be provided
+> - Issues and pull requests will not be reviewed
+> - Consider forking if you need an actively maintained version
 
-[**ResearchPulse Public Homepage**](https://sydney-informatics-hub.github.io/ResearchPulseAI/)
+---
 
 ## Introduction
 
-This AI software generates research impact assessment studies for health and medical research, in accordance with the Research Impact Assessment Framework (RIAF). The RIAF evaluates the research environment and the alignment and influence of research, with the goal of providing funders a holistic analysis of NSW’s health and medical research ecosystem for making informed investment decisions.
+This AI software generates research impact assessment studies for health and medical research, in accordance with the Research Impact Assessment Framework (RIAF). The RIAF evaluates the research environment and the alignment and influence of research, with the goal of providing funders a holistic analysis of NSW's health and medical research ecosystem for making informed investment decisions.
 
 To improve the scalability of this framework, an AI powered software has been developed that allows researchers and funding organisations to generate assessment reports about the research impact for a given research group and topic. Research impact is evaluated along distinct criteria such as overall problem addressed, research impact-to-date, and potential future applications. The current design of the case study template includes four assessment criteria and provides researchers the freedom to use a set of indicators that are relevant to their research program (e.g. research/impact period).
 
-The AI generator combines Large Language Models (LLM) with factual knowledge retrievers such as scholar publications and web content. For a complete overview of the system please see the [Technical Documentation](documentation/Technical_Documentation_ResearchPulse.pdf).
+The AI generator combines Large Language Models (LLM) with factual knowledge retrievers such as scholar publications and web content. 
 
-## Webapp Use
-
-You need to be connected to the University network (either locally on campus or via University VPN).
-Open in browser http://10.122.246.100:8501
-
-When you open the url above the app will prompt you for a login.
-
-The output is available at the end via downloading the results as zip file.
 
 ## Output Results
 
@@ -62,41 +61,55 @@ Please follow the installations steps as outlined below
 
 1) Clone github repo:
 ```shell
-git clone git@github.sydney.edu.au:informatics/PIPE-4668-RIAF_NSWHEALTH.git
-cd PIPE-4668-RIAF_NSWHEALTH/ragpipe
+# Using HTTPS
+git clone https://github.com/Sydney-Informatics-Hub/riaf-health.git
+cd riaf-health/ragpipe
+
+# OR using SSH
+git clone git@github.com:Sydney-Informatics-Hub/riaf-health.git
+cd riaf-health/ragpipe
 ```
 
 2) To install dependencies, ensure you have Mamba or Conda installed. Then install dependencies with the following command:
 
 ```shell
-
-conda env update --file environment.yaml 
+# Create and activate the environment
+conda env create -f environment.yaml
 conda activate riaf
 ```
 
-If the installation fails, please try to install the dependencies with environment_all.yaml or use the `--prune` flag to remove unused packages.
+If the installation fails, please try to install the dependencies with `environment_all.yaml` or use the `--prune` flag to remove unused packages:
+
+```shell
+conda env update --file environment.yaml --prune
+```
 
 
 3) Set up OpenAI API and the Bing search API key. Create a file `secrets.toml` under the root directory (directory where you run the code from) and add the following content:
 
-```shell
-
-# Set up OpenAI API key.
+```toml
+# Required: OpenAI API Key
 OPENAI_API_KEY="your_openai_api_key"
-# If you are using the API service provided by OpenAI, include the following line:
-OPENAI_API_TYPE="openai"
-# If you are using the API service provided by Microsoft Azure, include the following lines:
-OPENAI_API_TYPE="azure"
-AZURE_API_BASE="your_azure_api_base_url"
-AZURE_API_VERSION="your_azure_api_version"
-# Set up Bing search API key.
-BING_SEARCH_API_KEY="your_bing_api_key"
-# Set up email for NCBI database access via biopython
-NCBI_EMAIL="your_ncbi_email"
-# setup Langfuse for for LLM monitoring and tracing
-LANGFUSE_SECRET_KEY="langfuse_secret_key"
-LANGFUSE_PUBLIC_KEY="langfuse_privat_key"
 
+# Required: Choose ONE of the following API types
+
+# Option 1: If you are using the API service provided by OpenAI:
+OPENAI_API_TYPE="openai"
+
+# Option 2: If you are using the API service provided by Microsoft Azure:
+# OPENAI_API_TYPE="azure"
+# AZURE_API_BASE="your_azure_api_base_url"
+# AZURE_API_VERSION="your_azure_api_version"
+
+# Required: Bing Search API Key
+BING_SEARCH_API_KEY="your_bing_api_key"
+
+# Required: Email for NCBI database access via biopython
+NCBI_EMAIL="your_ncbi_email"
+
+# Optional: Langfuse for LLM monitoring and tracing
+LANGFUSE_SECRET_KEY="langfuse_secret_key"
+LANGFUSE_PUBLIC_KEY="langfuse_public_key"
 ```
 
 ### Quick start
@@ -156,9 +169,13 @@ rag.run(query_topic = '...',
         )
 ```
 
-For more details about the class arguments, see code documentation. Three examples how to generate an assessment report can be found in the file `tests/use_case_studies`.
 
 ## Deployment with Docker
+
+**Prerequisites:**
+- Docker installed and running
+- nginx installed
+- Appropriate network permissions
 
 Config nginx:
 ```bash
@@ -170,73 +187,29 @@ sudo nano /etc/nginx/sites-available/default
 and paste the settings as shown in `nginx_settings.config`. 
 Feel free to edit or add more.
 
-The Dockerfile is located in the folder `ragpipe`. To build the Dockerimage run:
+The Dockerfile is located in the folder `ragpipe`. To build the Docker image run:
 ```bash
 sudo docker build -t streamlit-app . 
 ```
 
 Run docker image and restart nginx:
 ```bash
-docker run -d -p 8501:8501  streamlit-app
+docker run -d -p 8501:8501 streamlit-app
 sudo systemctl restart nginx
 ```
-This will make the streamlit ap available on the IP and port (here 8501) as configured in Dockerfile, nginx and instance network url.
+This will make the streamlit app available on the IP and port (here 8501) as configured in Dockerfile, nginx and instance network url.
+
+**Common Docker commands:**
 
 - If you want to stop the container:
 ```bash
 docker ps
 docker container stop <CONTAINER ID>
 ```
-- To start the the Docker service automatically:
+- To start the Docker service automatically:
 ```bash
 sudo systemctl enable docker
 ```
-## Deployment with systemd service
-
-Set up nginx as above. Then instead of Docker use systemd service for managing webapp:
-
-First activate conda environment (assuming it is installed)
-```bash
-conda activate riaf
-```
-
-Create a systemd service file:
-```bash
-sudo nano /etc/systemd/system/streamlit.service
-```
-
-Add this to configuration:
-```ini
-[Unit]
-Description=RIAF Streamlit App
-After=network.target
-
-[Service]
-User=ubuntu
-WorkingDirectory=/home/ubuntu/riaf/ragpipe
-Environment="PATH=/home/ubuntu/miniforge3/envs/riaf"
-ExecStart=/home/ubuntu/miniforge3/envs/riaf/bin/streamlit run app.py --server.address 10.122.246.100 --server.port 8501
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable and start the service:
-```bash
-sudo systemctl enable streamlit.service
-sudo systemctl start streamlit.service
-sudo systemctl restart nginx
-```
-
-Now if your app crashes, it will automatically restart. You can also manually control it with:
-```bash
-sudo systemctl restart streamlit.service  # Restart
-sudo systemctl status streamlit.service   # Check status
-sudo systemctl stop streamlit.service     # Stop
-```
-
 
 ## RAG Pipeline
 
@@ -334,7 +307,9 @@ You can access ResearchPulse through a hosted web interface or by installing it 
 <summary>What kind of output does ResearchPulse generate?</summary>
 
 ResearchPulse generates a downloadable zip file containing multiple outputs designed to ensure complete documentation and transparency. At its core, you'll receive a detailed research impact report available in both Word and Markdown formats, accompanied by context analysis documentation that details the research environment. The system also preserves individual answers for each assessment question, including both draft and final versions, allowing you to track the development of the assessment.
+
 To support transparency and verification, the package includes all source documents used in the analysis, along with a structured table of any documents that couldn't be automatically accessed (tracked in missing_documents.xlsx).
+
 For process validation and reproducibility, the system provides detailed logs tracking all system operations and AI process steps. All documents are exported in accessible formats, and a record of input settings ensures the assessment process can be reviewed or repeated if needed.
 </details>
 
@@ -342,16 +317,22 @@ For process validation and reproducibility, the system provides detailed logs tr
 <summary>Can I customise the research impact assessment criteria?</summary>
 
 Yes, ResearchPulse offers multiple customisation options to ensure your impact assessment aligns with your specific research context. Users can define custom time periods for both research activity and impact measurement, allowing for precise temporal analysis. The system's flexible framework enables you to select and prioritise relevant research indicators, whether you're focusing on academic impact, societal benefits, or economic outcomes.
+
 You can tailor the assessment criteria to align with your research goals and funding requirements, including specific institutional or grant body frameworks. This customisation extends to language style preferences, helping you generate reports that match your intended audience's expectations. The system also allows you to incorporate additional context through supplementary documentation and custom indicators, ensuring your unique research narrative is accurately captured.
 </details>
 
 
 <details>
 <summary>How does ResearchPulse ensure responsible AI practices and ethical use?</summary>
+
 ResearchPulse implements several key measures to ensure responsible AI use and ethical data handling. At its core, the system uses Retrieval-Augmented Generation (RAG) to ground all outputs in verifiable sources, ensuring that generated content is consistently backed by evidence. This approach is reinforced by a multi-stage review process that validates the accuracy of all assessments.
+
 To address potential biases, ResearchPulse integrates multiple diverse data sources and employs intelligent filtering mechanisms. The system maintains a human-in-the-loop review process, allowing researchers to validate and customise assessment criteria based on their specific field and requirements.
+
 Transparency and accountability are maintained through extensive process documentation and logging. Data sources are clearly attributed, ensuring users can trace any claim to its origin.
+
 Regarding security and user control, ResearchPulse operates within strict network security restrictions and processes only publicly available research data. Users maintain control over input parameters and can observe how outputs are generated, ensuring transparency throughout the assessment process.
+
 We continuously evaluate and improve these measures through user feedback and systematic monitoring, ensuring that responsible AI principles remain central to ResearchPulse's development and operation.
 </details>
 
@@ -363,13 +344,10 @@ Future development plans include enhanced security features like SSO integration
 
 <details>
 <summary>How can I contribute to development or report issues?</summary>
+
 All development activities and issue reporting are managed through a GitHub repository at the University of Sydney. Users with access can contribute to the project and report issues or feature requests through the repository's issue tracker.
 </details>
 
-<details>
-<summary>How can I get involved or contact the team?</summary>
-We're actively seeking researchers to test and provide feedback on ResearchPulse. If you're interested in becoming a tester or have questions about the platform, please contact our friendly RIAF program manager Kirsten Jackson at kirsten.jackson@sydney.edu.au. We particularly welcome feedback from researchers in health and medical fields who regularly prepare impact assessments or funding applications. For technical questions or integration options into your system, please contact our main software author Sebastian Haan at sebastian.haan@sydney.edu.au.
-</details>
 
 ## Main Software Contributors
 
@@ -378,10 +356,7 @@ We're actively seeking researchers to test and provide feedback on ResearchPulse
 
 ## Project Partners
 
-This project has been developed in collaboration with the Faculty of Medicine and Health at the UNiversity of Sydney, in particular:
-- Kirsten Jackson: <kirsten.jackson@sydney.edu.au>
-- Janine Richards: <janine.richards@sydney.edu.au>
-- Mona Shamshiri: <mona.shamshiri@sydney.edu.au>
+This project has been developed in collaboration with the Faculty of Medicine and Health and the Sydney Informatics Hub at the University of Sydney.
 
 ## Attribution and Acknowledgement
 
@@ -389,4 +364,4 @@ Acknowledgments are an important way for us to demonstrate the value we bring to
 
 If you make use of this software for your research project, please include the following acknowledgment:
 
-“This research was supported by the Sydney Informatics Hub, a Core Research Facility of the University of Sydney."
+"This research was supported by the Sydney Informatics Hub, a Core Research Facility of the University of Sydney."
